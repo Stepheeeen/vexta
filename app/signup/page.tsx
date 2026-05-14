@@ -17,6 +17,7 @@ export default function SignUp() {
     referralCode: '',
     acceptTerms: false,
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -24,13 +25,35 @@ export default function SignUp() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const validateStep = (currentStep: number) => {
+    const newErrors: Record<string, string> = {};
+    if (currentStep === 1) {
+      if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
+      if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
+      if (!formData.email.includes('@') || !formData.email.includes('.')) newErrors.email = 'Valid email is required';
+    } else if (currentStep === 2) {
+      if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
+      if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+    } else if (currentStep === 3) {
+      if (!formData.acceptTerms) newErrors.acceptTerms = 'You must agree to the Terms of Service';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleNext = () => {
-    if (step < 3) {
-      setStep(step + 1);
-    } else {
-      window.location.href = '/dashboard';
+    if (validateStep(step)) {
+      if (step < 3) {
+        setStep(step + 1);
+      } else {
+        window.location.href = '/dashboard';
+      }
     }
   };
 
@@ -49,43 +72,34 @@ export default function SignUp() {
           </div>
         </div>
 
-        <div className="bg-[#1A1F2E]/80 backdrop-blur-xl border border-[#2A2E3E]/50 rounded-2xl p-8 shadow-2xl shadow-[#00FF88]/5 relative overflow-hidden group">
-          {/* Futuristic corner accents */}
-          <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-[#00D9FF] rounded-tl-2xl opacity-50" />
-          <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-[#00FF88] rounded-tr-2xl opacity-50" />
-          <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-[#00D9FF] rounded-bl-2xl opacity-50" />
-          <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-[#00FF88] rounded-br-2xl opacity-50" />
-
+        <div className="bg-[#0A0F14]/60 backdrop-blur-3xl border border-white/5 rounded-2xl p-10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] relative overflow-hidden group">
           {/* Progress */}
-          <div className="flex justify-between mb-8">
+          <div className="flex justify-between mb-10">
             {[1, 2, 3].map((s) => (
               <div
                 key={s}
-                className={`h-1.5 flex-1 mx-1 rounded-full transition-all duration-500 ${
+                className={`h-1 flex-1 mx-1 rounded-full transition-all duration-500 ${
                   s < step 
-                    ? 'bg-[#00D9FF] shadow-[0_0_10px_rgba(0,217,255,0.5)]' 
+                    ? 'bg-white/80' 
                     : s === step 
-                      ? 'bg-gradient-to-r from-[#00D9FF] to-[#00FF88] shadow-[0_0_10px_rgba(0,255,136,0.5)]' 
-                      : 'bg-[#2A2E3E]'
+                      ? 'bg-gradient-to-r from-[#00D9FF] to-[#00FF88]' 
+                      : 'bg-white/10'
                 }`}
               />
             ))}
           </div>
 
           <div className="flex items-center gap-3 mb-2">
-            {step === 1 && <UserPlus className="w-6 h-6 text-[#00D9FF]" />}
-            {step === 2 && <Shield className="w-6 h-6 text-[#00D9FF]" />}
-            {step === 3 && <Share2 className="w-6 h-6 text-[#00FF88]" />}
-            <h1 className="text-2xl font-bold text-[#FFFFFF] font-sans tracking-tight">
-              {step === 1 && 'Deploy Profile'}
-              {step === 2 && 'Generate Keys'}
-              {step === 3 && 'Network Links'}
+            <h1 className="text-2xl font-light text-[#FFFFFF] font-sans tracking-tight">
+              {step === 1 && <><span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] to-[#00FF88]">Create</span> Account</>}
+              {step === 2 && <><span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] to-[#00FF88]">Secure</span> Account</>}
+              {step === 3 && <><span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#00D9FF] to-[#00FF88]">Referral</span> Links</>}
             </h1>
           </div>
-          <p className="text-[#A0A0A0] text-xs mb-8 font-mono tracking-widest uppercase">
-            {step === 1 && 'Phase 1: Basic Identity'}
-            {step === 2 && 'Phase 2: Security Credentials'}
-            {step === 3 && 'Phase 3: Referral Network'}
+          <p className="text-[#808A9D] text-[10px] mb-8 font-mono tracking-widest uppercase">
+            {step === 1 && 'Step 1: Personal Details'}
+            {step === 2 && 'Step 2: Password Setup'}
+            {step === 3 && 'Step 3: Optional Referral'}
           </p>
 
           <div className="min-h-[280px]">
@@ -94,39 +108,42 @@ export default function SignUp() {
               <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="group/input">
-                    <label className="block text-xs font-mono text-[#00D9FF]/80 uppercase tracking-widest mb-2">Given Name</label>
+                    <label className="block text-[10px] font-mono text-white/50 uppercase tracking-widest mb-2">First Name</label>
                     <input
                       type="text"
                       name="firstName"
                       value={formData.firstName}
                       onChange={handleChange}
-                      className="w-full bg-[#0F1419]/80 border border-[#2A2E3E] rounded-xl px-4 py-3 text-[#FFFFFF] placeholder-[#606060] focus:outline-none focus:border-[#00D9FF] focus:ring-1 focus:ring-[#00D9FF] transition-all font-mono text-sm"
-                      placeholder="Satoshi"
+                      className={`w-full bg-white/5 border ${errors.firstName ? 'border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50' : 'border-white/5 focus:border-[#00D9FF]/50 focus:ring-[#00D9FF]/50'} rounded-xl px-4 py-3.5 text-[#FFFFFF] placeholder-white/20 focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono text-sm`}
+                      placeholder="Jane"
                     />
+                    {errors.firstName && <p className="text-[10px] text-red-400 mt-1 font-mono uppercase tracking-wider">{errors.firstName}</p>}
                   </div>
                   <div className="group/input">
-                    <label className="block text-xs font-mono text-[#00D9FF]/80 uppercase tracking-widest mb-2">Family Name</label>
+                    <label className="block text-[10px] font-mono text-white/50 uppercase tracking-widest mb-2">Last Name</label>
                     <input
                       type="text"
                       name="lastName"
                       value={formData.lastName}
                       onChange={handleChange}
-                      className="w-full bg-[#0F1419]/80 border border-[#2A2E3E] rounded-xl px-4 py-3 text-[#FFFFFF] placeholder-[#606060] focus:outline-none focus:border-[#00D9FF] focus:ring-1 focus:ring-[#00D9FF] transition-all font-mono text-sm"
-                      placeholder="Nakamoto"
+                      className={`w-full bg-white/5 border ${errors.lastName ? 'border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50' : 'border-white/5 focus:border-[#00D9FF]/50 focus:ring-[#00D9FF]/50'} rounded-xl px-4 py-3.5 text-[#FFFFFF] placeholder-white/20 focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono text-sm`}
+                      placeholder="Doe"
                     />
+                    {errors.lastName && <p className="text-[10px] text-red-400 mt-1 font-mono uppercase tracking-wider">{errors.lastName}</p>}
                   </div>
                 </div>
 
                 <div className="group/input">
-                  <label className="block text-xs font-mono text-[#00D9FF]/80 uppercase tracking-widest mb-2">Comms Relay (Email)</label>
+                  <label className="block text-[10px] font-mono text-white/50 uppercase tracking-widest mb-2">Email Address</label>
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full bg-[#0F1419]/80 border border-[#2A2E3E] rounded-xl px-4 py-3 text-[#FFFFFF] placeholder-[#606060] focus:outline-none focus:border-[#00D9FF] focus:ring-1 focus:ring-[#00D9FF] transition-all font-mono text-sm"
-                    placeholder="node@network.com"
+                    className={`w-full bg-white/5 border ${errors.email ? 'border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50' : 'border-white/5 focus:border-[#00D9FF]/50 focus:ring-[#00D9FF]/50'} rounded-xl px-4 py-3.5 text-[#FFFFFF] placeholder-white/20 focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono text-sm`}
+                    placeholder="you@example.com"
                   />
+                  {errors.email && <p className="text-[10px] text-red-400 mt-1 font-mono uppercase tracking-wider">{errors.email}</p>}
                 </div>
               </div>
             )}
@@ -135,30 +152,32 @@ export default function SignUp() {
             {step === 2 && (
               <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
                 <div className="group/input">
-                  <label className="block text-xs font-mono text-[#00FF88]/80 uppercase tracking-widest mb-2">Access Key (Password)</label>
+                  <label className="block text-[10px] font-mono text-white/50 uppercase tracking-widest mb-2">Password</label>
                   <input
                     type="password"
                     name="password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="w-full bg-[#0F1419]/80 border border-[#2A2E3E] rounded-xl px-4 py-3 text-[#FFFFFF] placeholder-[#606060] focus:outline-none focus:border-[#00FF88] focus:ring-1 focus:ring-[#00FF88] transition-all font-mono"
+                    className={`w-full bg-white/5 border ${errors.password ? 'border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50' : 'border-white/5 focus:border-[#00FF88]/50 focus:ring-[#00FF88]/50'} rounded-xl px-4 py-3.5 text-[#FFFFFF] placeholder-white/20 focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono`}
                     placeholder="••••••••••••"
                   />
-                  <p className="text-[10px] text-[#A0A0A0] mt-2 font-mono uppercase tracking-wider">
+                  <p className="text-[10px] text-[#808A9D] mt-2 font-mono uppercase tracking-wider">
                     Min. 8 chars / Numbers / Symbols required
                   </p>
+                  {errors.password && <p className="text-[10px] text-red-400 mt-1 font-mono uppercase tracking-wider">{errors.password}</p>}
                 </div>
 
                 <div className="group/input">
-                  <label className="block text-xs font-mono text-[#00FF88]/80 uppercase tracking-widest mb-2">Verify Access Key</label>
+                  <label className="block text-[10px] font-mono text-white/50 uppercase tracking-widest mb-2">Confirm Password</label>
                   <input
                     type="password"
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="w-full bg-[#0F1419]/80 border border-[#2A2E3E] rounded-xl px-4 py-3 text-[#FFFFFF] placeholder-[#606060] focus:outline-none focus:border-[#00FF88] focus:ring-1 focus:ring-[#00FF88] transition-all font-mono"
+                    className={`w-full bg-white/5 border ${errors.confirmPassword ? 'border-red-500/50 focus:ring-red-500/50 focus:border-red-500/50' : 'border-white/5 focus:border-[#00FF88]/50 focus:ring-[#00FF88]/50'} rounded-xl px-4 py-3.5 text-[#FFFFFF] placeholder-white/20 focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono`}
                     placeholder="••••••••••••"
                   />
+                  {errors.confirmPassword && <p className="text-[10px] text-red-400 mt-1 font-mono uppercase tracking-wider">{errors.confirmPassword}</p>}
                 </div>
               </div>
             )}
@@ -167,22 +186,22 @@ export default function SignUp() {
             {step === 3 && (
               <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
                 <div className="group/input">
-                  <label className="block text-xs font-mono text-[#00D9FF]/80 uppercase tracking-widest mb-2">Invite Code (Optional)</label>
+                  <label className="block text-[10px] font-mono text-white/50 uppercase tracking-widest mb-2">Referral Code (Optional)</label>
                   <input
                     type="text"
                     name="referralCode"
                     value={formData.referralCode}
                     onChange={handleChange}
-                    className="w-full bg-[#0F1419]/80 border border-[#2A2E3E] rounded-xl px-4 py-3 text-[#FFFFFF] placeholder-[#606060] focus:outline-none focus:border-[#00D9FF] focus:ring-1 focus:ring-[#00D9FF] transition-all font-mono text-sm"
-                    placeholder="VEXTA_REF_12345"
+                    className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3.5 text-[#FFFFFF] placeholder-white/20 focus:outline-none focus:border-[#00D9FF]/50 focus:ring-1 focus:ring-[#00D9FF]/50 focus:bg-white/10 transition-all font-mono text-sm"
+                    placeholder="VEXTA123"
                   />
                 </div>
 
-                <div className="bg-[#0F1419]/80 border border-[#00D9FF]/30 rounded-xl p-5 relative overflow-hidden">
-                  <Hexagon className="absolute -right-4 -bottom-4 w-24 h-24 text-[#00D9FF]/10" />
-                  <p className="text-[10px] text-[#00D9FF] font-mono tracking-widest uppercase mb-2">Generated Node ID</p>
-                  <p className="text-xl font-bold text-[#FFFFFF] font-mono tracking-wider">VXT_N8K2L9</p>
-                  <p className="text-[10px] text-[#A0A0A0] mt-2 font-mono uppercase">Distribute to earn network rewards</p>
+                <div className="bg-white/5 border border-white/10 rounded-xl p-5 relative overflow-hidden">
+                  <Hexagon className="absolute -right-4 -bottom-4 w-24 h-24 text-white/5" />
+                  <p className="text-[10px] text-white/50 font-mono tracking-widest uppercase mb-2">Your Referral Link</p>
+                  <p className="text-xl font-light text-[#FFFFFF] font-mono tracking-wider">vexta.app/ref/N8K2L9</p>
+                  <p className="text-[10px] text-[#808A9D] mt-2 font-mono uppercase">Share this link to earn rewards</p>
                 </div>
 
                 <label className="flex items-start gap-3 cursor-pointer group mt-4">
@@ -192,53 +211,51 @@ export default function SignUp() {
                       name="acceptTerms"
                       checked={formData.acceptTerms}
                       onChange={handleChange}
-                      className="w-5 h-5 rounded-md border-2 border-[#2A2E3E] appearance-none checked:bg-[#00FF88] checked:border-[#00FF88] transition-all cursor-pointer peer"
+                      className={`w-5 h-5 rounded-md border ${errors.acceptTerms ? 'border-red-500 bg-red-500/10' : 'border-white/20 bg-white/5'} appearance-none checked:bg-white checked:border-white transition-all cursor-pointer peer`}
                     />
-                    <div className="absolute text-[#0F1419] pointer-events-none opacity-0 peer-checked:opacity-100">
+                    <div className="absolute text-black pointer-events-none opacity-0 peer-checked:opacity-100">
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
                   </div>
-                  <span className="text-xs text-[#A0A0A0] font-mono leading-relaxed">
-                    I acknowledge the <span className="text-[#00D9FF]">Smart Contract Terms</span> and assume all risks associated with decentralized participation.
-                  </span>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] text-[#808A9D] font-mono leading-relaxed uppercase tracking-wider">
+                      I agree to the <span className="text-white">Terms of Service</span> and Privacy Policy.
+                    </span>
+                    {errors.acceptTerms && <span className="text-[10px] text-red-400 mt-1 font-mono uppercase tracking-wider">{errors.acceptTerms}</span>}
+                  </div>
                 </label>
               </div>
             )}
           </div>
 
           {/* Navigation */}
-          <div className="flex gap-4 mt-8 pt-6 border-t border-[#2A2E3E]/50">
+          <div className="flex gap-4 mt-8 pt-6 border-t border-white/5">
             {step > 1 && (
               <button
                 onClick={() => setStep(step - 1)}
-                className="flex-1 px-4 py-3.5 border-2 border-[#2A2E3E] text-[#A0A0A0] hover:text-[#FFFFFF] hover:border-[#FFFFFF]/30 font-mono text-sm tracking-widest rounded-xl transition-all"
+                className="flex-1 px-4 py-3.5 border border-white/10 text-white/50 hover:text-[#FFFFFF] hover:bg-white/5 font-mono text-sm tracking-widest rounded-xl transition-all uppercase"
               >
-                BACK
+                Back
               </button>
             )}
             <button
               onClick={handleNext}
-              className={`flex-[2] px-4 py-3.5 bg-gradient-to-r ${
-                step === 3 
-                  ? 'from-[#00FF88] to-[#00D9FF] hover:from-[#00FF88]/90 hover:to-[#00D9FF]/90 text-[#0F1419]' 
-                  : 'from-[#00D9FF] to-[#00FF88] hover:from-[#00D9FF]/90 hover:to-[#00FF88]/90 text-[#0F1419]'
-              } font-bold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group/btn relative overflow-hidden`}
+              className={`flex-[2] px-4 py-3.5 bg-white text-black hover:bg-gray-100 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group/btn relative overflow-hidden`}
             >
-              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300 ease-in-out" />
-              <span className="relative z-10 font-mono tracking-widest text-sm">
-                {step === 3 ? 'DEPLOY NODE' : 'PROCEED'}
+              <span className="relative z-10 font-mono tracking-widest text-sm uppercase">
+                {step === 3 ? 'Create Account' : 'Continue'}
               </span>
               <ArrowRight className="w-4 h-4 relative z-10 group-hover/btn:translate-x-1 transition-transform" />
             </button>
           </div>
 
           <div className="mt-8 text-center">
-            <p className="text-[#A0A0A0] text-xs font-mono">
-              Active node?{' '}
-              <Link href="/login" className="text-[#00D9FF] hover:text-[#00D9FF]/80 font-bold tracking-wider underline decoration-[#00D9FF]/30 underline-offset-4">
-                Initialize Session
+            <p className="text-[#808A9D] text-[10px] font-mono uppercase tracking-widest">
+              Already have an account?{' '}
+              <Link href="/login" className="text-white hover:text-white/80 font-semibold tracking-wider underline decoration-white/30 underline-offset-4">
+                Sign In
               </Link>
             </p>
           </div>
