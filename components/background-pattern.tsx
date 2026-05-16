@@ -1,9 +1,23 @@
 import React from 'react';
+import { useEffect, useState } from 'react';
 
 export function BackgroundPattern() {
-  const horizontalLines = 16;
-  const verticalLines = 24;
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const horizontalLines = isMobile ? 12 : 16;
+  const verticalLines = isMobile ? 18 : 24;
   const segments = 40;
+  const strokeWidth = isMobile ? 0.8 : 1;
 
   return (
     <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
@@ -14,6 +28,7 @@ export function BackgroundPattern() {
         viewBox="0 0 1200 800" 
         preserveAspectRatio="xMidYMid slice" 
         xmlns="http://www.w3.org/2000/svg"
+        style={{ minWidth: '100%', minHeight: '100%' }}
       >
         <g className="opacity-[0.07]">
           {/* Horizontal lines (Cyan) */}
@@ -43,7 +58,7 @@ export function BackgroundPattern() {
                 d={d}
                 fill="none"
                 stroke="#00D9FF"
-                strokeWidth={1}
+                strokeWidth={strokeWidth}
               />
             );
           })}
@@ -75,7 +90,7 @@ export function BackgroundPattern() {
                 d={d}
                 fill="none"
                 stroke="#00FF88"
-                strokeWidth={1}
+                strokeWidth={strokeWidth}
               />
             );
           })}
