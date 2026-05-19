@@ -21,8 +21,8 @@ export function BackgroundPattern() {
 
   return (
     <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-      {/* Dark background */}
-      <div className="absolute inset-0 bg-[#090C10]" />
+      {/* Dynamic background matching current theme */}
+      <div className="absolute inset-0 bg-slate-50 dark:bg-[#090C10] transition-colors duration-250" />
       <svg 
         className="absolute inset-0 w-full h-full"
         viewBox="0 0 1200 800" 
@@ -30,8 +30,8 @@ export function BackgroundPattern() {
         xmlns="http://www.w3.org/2000/svg"
         style={{ minWidth: '100%', minHeight: '100%' }}
       >
-        <g className="opacity-[0.07]">
-          {/* Horizontal lines (Cyan) */}
+        <g className="opacity-[0.35] dark:opacity-[0.07]">
+          {/* Horizontal lines (Cyan/Violet) */}
           {Array.from({ length: horizontalLines }).map((_, i) => {
             const v = i / (horizontalLines - 1);
             
@@ -57,13 +57,13 @@ export function BackgroundPattern() {
                 key={`h-${i}`}
                 d={d}
                 fill="none"
-                stroke="#00D9FF"
+                className="stroke-violet-300 dark:stroke-[#00D9FF]"
                 strokeWidth={strokeWidth}
               />
             );
           })}
 
-          {/* Vertical lines (Green) */}
+          {/* Vertical lines (Green/Blue) */}
           {Array.from({ length: verticalLines }).map((_, i) => {
             const u = i / (verticalLines - 1);
             
@@ -89,7 +89,7 @@ export function BackgroundPattern() {
                 key={`v-${i}`}
                 d={d}
                 fill="none"
-                stroke="#00FF88"
+                className="stroke-blue-200 dark:stroke-[#00FF88]"
                 strokeWidth={strokeWidth}
               />
             );

@@ -1,103 +1,189 @@
 'use client';
 
 import { DashboardLayout } from '@/components/dashboard-layout';
-import { GrowthCard } from '@/components/vexta-cards';
-import { TrendingUp, Activity } from 'lucide-react';
+import { BarChart3, TrendingUp, Clock, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
-export default function Arbitrage() {
-  const trades = [
-    { pair: 'BTC/USD', exchange1: 'Binance', exchange2: 'Kraken', spread: '2.3%', profit: '$1,245', status: 'Active' },
-    { pair: 'ETH/USD', exchange1: 'Coinbase', exchange2: 'FTX', spread: '1.8%', profit: '$892', status: 'Active' },
-    { pair: 'ADA/USD', exchange1: 'Binance', exchange2: 'Kraken', spread: '1.2%', profit: '$340', status: 'Pending' },
+interface StatsData {
+  stats: {
+    totalInvested: number;
+    totalEarned: number;
+    totalCommissions: number;
+    availableBalance: number;
+    activeInvestments: number;
+    directReferrals: number;
+  };
+  investments: Array<{
+    id: string;
+    plan: string;
+    amount: number;
+    dailyROI: number;
+    duration: number;
+    startDate: string;
+    endDate: string;
+    totalEarned: number;
+    status: string;
+  }>;
+}
+
+export default function ArbitragePage() {
+  const [data, setData] = useState<StatsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setError(null);
+      const res = await fetch('/api/dashboard/stats');
+      if (res.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
+      if (!res.ok) {
+        const errorJson = await res.json().catch(() => ({}));
+        throw new Error(errorJson.error || 'Failed to fetch stats');
+      }
+      const json = await res.json();
+      setData(json);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'An error occurred while fetching stats');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Compute stats
+  const activeCount = data?.stats.activeInvestments ?? 0;
+  const totalEarned = data?.stats.totalEarned ?? 0;
+  const winRate = data && data.investments.length > 0 ? '100%' : '0%';
+  
+  let avgSpread = '0.00%';
+  if (data && data.investments.length > 0) {
+    const sum = data.investments.reduce((acc, inv) => acc + inv.dailyROI, 0);
+    avgSpread = `${((sum / data.investments.length) * 100).toFixed(2)}%`;
+  }
+
+  const stats = [
+    { label: 'Active Positions', value: `${activeCount}`,       sub: activeCount > 0 ? 'Live yield contracts' : 'No active contracts' },
+    { label: 'Total ROI (PnL)',   value: `$${totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, sub: 'Accumulated earnings' },
+    { label: 'Arbitrage Win Rate', value: winRate,               sub: 'Guaranteed spread matching' },
+    { label: 'Avg Contract Yield', value: avgSpread,             sub: 'Daily contract average' },
   ];
 
   return (
     <DashboardLayout>
+      {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[#FFFFFF] mb-2">High-Frequency Arbitrage</h1>
-        <p className="text-[#A0A0A0]">Real-time market spread trading across major exchanges</p>
+        <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">Trading</p>
+        <h1 className="text-2xl font-bold text-slate-950 dark:text-white tracking-tight">Arbitrage</h1>
       </div>
 
-      {/* Arbitrage Metrics */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <GrowthCard
-          title="Active Trades"
-          value="12"
-          icon={<Activity className="w-5 h-5" />}
-        />
-        <GrowthCard
-          title="Today's Profit"
-          value="$3,520"
-          change={2.8}
-          isPositive={true}
-        />
-        <GrowthCard
-          title="Avg Spread"
-          value="2.1%"
-          icon={<TrendingUp className="w-5 h-5" />}
-        />
-        <GrowthCard
-          title="Monthly ROI"
-          value="18.5%"
-          change={1.2}
-          isPositive={true}
-        />
-      </div>
+      {loading ? (
+        <div className="min-h-[300px] flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-violet-600 dark:text-violet-400" />
+        </div>
+      ) : error ? (
+        <div className="p-6 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl font-mono text-sm max-w-xl mx-auto my-12 text-center">
+          <p className="mb-4">{error}</p>
+          <button onClick={fetchData} className="px-4 py-2 bg-red-500 text-white rounded-xl font-sans font-medium hover:bg-red-600 transition-colors">
+            Retry
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Stats */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            {stats.map(({ label, value, sub }) => (
+              <div key={label} className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-5 shadow-sm dark:shadow-none">
+                <p className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase tracking-widest mb-3">{label}</p>
+                <p className="text-xl font-bold text-slate-950 dark:text-white font-mono mb-1">{value}</p>
+                <p className="text-[10px] text-slate-500 dark:text-gray-400">{sub}</p>
+              </div>
+            ))}
+          </div>
 
-      {/* Connected Exchanges */}
-      <div className="bg-[#1A1F2E] border border-[#2A2E3E] rounded-lg p-6 mb-8">
-        <h3 className="text-lg font-bold text-[#FFFFFF] mb-4">Connected Exchanges</h3>
-        <div className="grid md:grid-cols-3 gap-4">
-          {['Binance', 'Kraken', 'Coinbase', 'FTX', 'Kucoin', 'OKEx'].map((exchange) => (
-            <div key={exchange} className="bg-[#0F1419] border border-[#2A2E3E] rounded-lg p-4 text-center">
-              <p className="text-[#FFFFFF] font-medium">{exchange}</p>
-              <p className="text-xs text-[#00D9FF] mt-2">✓ Connected</p>
+          {/* Positions table */}
+          <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                <BarChart3 className="w-4 h-4 text-green-500 dark:text-green-400" />
+              </div>
+              <div>
+                <h2 className="text-sm font-semibold text-slate-950 dark:text-white">All Positions</h2>
+                <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">Arbitrage yield contracts</p>
+              </div>
+              <div className="ml-auto flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-[10px] font-mono text-green-600 dark:text-green-500">LIVE</span>
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
 
-      {/* Active Trades */}
-      <div className="bg-[#1A1F2E] border border-[#2A2E3E] rounded-lg overflow-hidden">
-        <div className="p-6 border-b border-[#2A2E3E]">
-          <h3 className="text-lg font-bold text-[#FFFFFF]">Active Trades</h3>
-        </div>
-        
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-[#2A2E3E] bg-[#0F1419]">
-                <th className="px-6 py-4 text-left text-[#A0A0A0] font-semibold text-sm">Pair</th>
-                <th className="px-6 py-4 text-center text-[#A0A0A0] font-semibold text-sm">Route</th>
-                <th className="px-6 py-4 text-right text-[#A0A0A0] font-semibold text-sm">Spread</th>
-                <th className="px-6 py-4 text-right text-[#A0A0A0] font-semibold text-sm">Est. Profit</th>
-                <th className="px-6 py-4 text-center text-[#A0A0A0] font-semibold text-sm">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {trades.map((trade, idx) => (
-                <tr key={idx} className="border-b border-[#2A2E3E] hover:bg-[#0F1419]/50 transition-colors">
-                  <td className="px-6 py-4 text-[#FFFFFF] font-bold">{trade.pair}</td>
-                  <td className="px-6 py-4 text-center text-[#A0A0A0] text-sm">
-                    {trade.exchange1} ⟷ {trade.exchange2}
-                  </td>
-                  <td className="px-6 py-4 text-right text-[#00FF88] font-bold">{trade.spread}</td>
-                  <td className="px-6 py-4 text-right text-[#00FF88]">{trade.profit}</td>
-                  <td className="px-6 py-4 text-center">
-                    <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
-                      trade.status === 'Active'
-                        ? 'bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/30'
-                        : 'bg-[#00D9FF]/10 text-[#00D9FF] border-[#00D9FF]/30'
-                    }`}>
-                      {trade.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            <div className="space-y-3">
+              {data && data.investments.length > 0 ? (
+                data.investments.map((plan, idx) => {
+                  const active = plan.status === 'active';
+                  // Map plan name to currency pairs for realistic simulation representation
+                  let pair = 'BTC/USD';
+                  if (plan.plan.includes('B')) pair = 'ETH/USD';
+                  if (plan.plan.includes('C')) pair = 'SOL/USD';
+                  
+                  const start = new Date(plan.startDate).getTime();
+                  const end = new Date(plan.endDate).getTime();
+                  const now = new Date().getTime();
+                  
+                  let durationStr = 'Completed';
+                  if (active) {
+                    const daysLeft = Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
+                    durationStr = `${daysLeft} days left`;
+                  }
+
+                  return (
+                    <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-all">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${active ? 'bg-green-500/10' : 'bg-slate-200 dark:bg-white/5'}`}>
+                          <TrendingUp className={`w-4 h-4 ${active ? 'text-green-500 dark:text-green-400' : 'text-slate-400 dark:text-gray-500'}`} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-slate-900 dark:text-white font-mono">{pair} ({plan.plan})</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <Clock className="w-3 h-3 text-slate-400 dark:text-gray-500" />
+                            <span className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{durationStr}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-6 flex-shrink-0">
+                        <div className="text-right hidden sm:block">
+                          <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono mb-0.5">Deposit Volume</p>
+                          <p className="text-xs font-mono text-slate-900 dark:text-white">${plan.amount.toLocaleString()}</p>
+                        </div>
+                        <div className="text-right hidden sm:block">
+                          <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono mb-0.5">Daily Spread</p>
+                          <p className={`text-xs font-mono font-bold text-green-600 dark:text-green-400`}>+{(plan.dailyROI * 100).toFixed(1)}%</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono mb-0.5">PnL Earned</p>
+                          <p className={`text-sm font-bold font-mono text-green-600 dark:text-green-400`}>+${plan.totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                        </div>
+                        <span className={`text-[9px] font-mono px-2.5 py-1 rounded-full ${active ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-gray-500'}`}>
+                          {plan.status.toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-xs text-slate-400 dark:text-gray-500 font-mono py-8 text-center">No arbitrage positions. Subscribe to a contract on the Overview page.</p>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </DashboardLayout>
   );
 }

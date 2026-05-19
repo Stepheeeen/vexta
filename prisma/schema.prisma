@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Users ────────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  email        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  referralCode String   @unique
+  referredById String?  @db.ObjectId
+
+  isVerified Boolean @default(false)
+  isActive   Boolean @default(true)
+  role       String  @default("user")
+
+  verificationCode        String?
+  verificationCodeExpires DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  investments           Investment[]
+  transactions          Transaction[]
+  withdrawals           Withdrawal[]
+  referralsAsReferrer   ReferralLink[] @relation("Referrer")
+  referralsAsReferred   ReferralLink[] @relation("Referred")
+  commissions           Commission[]
+}
+
+// ─── Investment Plans ─────────────────────────────────────────────────────────
+
+model Plan {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  name       String  @unique
+  tag        String
+  minDeposit Float
+  dailyROI   Float   // e.g. 0.020 = 2%
+  duration   Int     // days
+  isActive   Boolean @default(true)
+
+  investments Investment[]
+}
+
+// ─── Investments ──────────────────────────────────────────────────────────────
+
+model Investment {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  planId      String   @db.ObjectId
+  amount      Float
+  startDate   DateTime @default(now())
+  endDate     DateTime
+  status      String   @default("active") // active | completed | cancelled
+  totalEarned Float    @default(0)
+  createdAt   DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan     Plan      @relation(fields: [planId], references: [id])
+  dailyROIs DailyROIEntry[]
+}
+
+model DailyROIEntry {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  investmentId String   @db.ObjectId
+  amount       Float
+  date         DateTime @default(now())
+
+  investment Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+}
+
+// ─── Referrals ────────────────────────────────────────────────────────────────
+
+model ReferralLink {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  referrerId String   @db.ObjectId
+  referredId String   @db.ObjectId
+  createdAt  DateTime @default(now())
+
+  referrer User @relation("Referrer", fields: [referrerId], references: [id])
+  referred User @relation("Referred", fields: [referredId], references: [id])
+
+  @@unique([referredId]) // one user can only be referred once
+}
+
+model Commission {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String   @db.ObjectId// recipient
+  sourceUserId  String   @db.ObjectId// who triggered it
+  investmentId  String   @db.ObjectId
+  level         Int      // 1-5
+  rate          Float    // e.g. 0.10
+  amount        Float
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Transactions ─────────────────────────────────────────────────────────────
+
+model Transaction {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  type        String   // deposit | withdrawal | roi | commission
+  amount      Float
+  status      String   @default("completed") // pending | completed | failed
+  description String?
+  reference   String?
+  metadata    String?  // JSON string
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Withdrawals ──────────────────────────────────────────────────────────────
+
+model Withdrawal {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String    @db.ObjectId
+  amount        Float
+  walletAddress String
+  network       String    @default("TRC20")
+  status        String    @default("pending") // pending | approved | rejected
+  note          String?
+  createdAt     DateTime  @default(now())
+  processedAt   DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

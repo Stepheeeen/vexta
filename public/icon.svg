@@ -1,26 +1,133 @@
-<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <style>
-    @media (prefers-color-scheme: light) {
-      .background { fill: black; }
-      .foreground { fill: white; }
-    }
-    @media (prefers-color-scheme: dark) {
-      .background { fill: white; }
-      .foreground { fill: black; }
-    }
-  </style>
-  <g clip-path="url(#clip0_7960_43945)">
-    <rect class="background" width="180" height="180" rx="37" />
-    <g style="transform: scale(95%); transform-origin: center">
-      <path class="foreground"
-        d="M101.141 53H136.632C151.023 53 162.689 64.6662 162.689 79.0573V112.904H148.112V79.0573C148.112 78.7105 148.098 78.3662 148.072 78.0251L112.581 112.898C112.701 112.902 112.821 112.904 112.941 112.904H148.112V126.672H112.941C98.5504 126.672 86.5638 114.891 86.5638 100.5V66.7434H101.141V100.5C101.141 101.15 101.191 101.792 101.289 102.422L137.56 66.7816C137.255 66.7563 136.945 66.7434 136.632 66.7434H101.141V53Z" />
-      <path class="foreground"
-        d="M65.2926 124.136L14 66.7372H34.6355L64.7495 100.436V66.7372H80.1365V118.47C80.1365 126.278 70.4953 129.958 65.2926 124.136Z" />
-    </g>
-  </g>
+<svg width="180" height="180" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <clipPath id="clip0_7960_43945">
-      <rect width="180" height="180" fill="white" />
+    <!-- Cyan/Blue Left Leg Gradient -->
+    <linearGradient id="leftLegGradIcon" x1="40" y1="40" x2="110" y2="150" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#00D9FF" />
+      <stop offset="100%" stopColor="#005B94" />
+    </linearGradient>
+    
+    <!-- Green/Emerald Trend Arrow Gradient -->
+    <linearGradient id="arrowGradIcon" x1="100" y1="140" x2="170" y2="40" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#008060" />
+      <stop offset="50%" stopColor="#00FF88" />
+      <stop offset="100%" stopColor="#05FFA6" />
+    </linearGradient>
+
+    <!-- Bull Metallic Gradient -->
+    <linearGradient id="bullGradIcon" x1="90" y1="50" x2="130" y2="130" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#7F9AA5" />
+      <stop offset="50%" stopColor="#2E4A56" />
+      <stop offset="100%" stopColor="#0A1820" />
+    </linearGradient>
+
+    <clipPath id="circleClip">
+      <circle cx="100" cy="100" r="90" />
     </clipPath>
   </defs>
+
+  <style>
+    .bg-circle {
+      fill: #090C10;
+    }
+    @media (prefers-color-scheme: light) {
+      .bg-circle {
+        fill: #FFFFFF;
+      }
+    }
+  </style>
+
+  <!-- Background Circle (responsive light/dark background) -->
+  <circle cx="100" cy="100" r="90" class="bg-circle" stroke="#2A2E3E" stroke-width="2" />
+
+  <!-- Logo Graphics clipped inside the circle -->
+  <g clip-path="url(#circleClip)">
+    <!-- Left branch of "V" (Cyan/Blue Ribbon) -->
+    <path 
+      d="M 35 55 L 58 55 L 100 135 L 85 147 Z M 85 147 L 100 135 L 108 135 L 94 147 Z" 
+      fill="url(#leftLegGradIcon)" 
+    />
+    <path 
+      d="M 35 55 L 100 135 L 93 147 L 30 65 Z" 
+      fill="url(#leftLegGradIcon)" 
+      opacity="0.85"
+    />
+
+    <!-- Center: Stylized Bull Head & Body Silhouette -->
+    <g id="bull-silhouette">
+      <path 
+        d="M 75 75 Q 85 70 95 85 Q 105 100 100 115 L 90 120 Z" 
+        fill="url(#bullGradIcon)" 
+      />
+      <path 
+        d="M 98 85 Q 108 72 125 78 Q 128 85 125 90 Q 120 95 110 93 L 105 102 Z" 
+        fill="url(#bullGradIcon)" 
+      />
+      <path 
+        d="M 112 79 Q 125 65 130 55 Q 120 62 110 77 Z" 
+        fill="#00D9FF" 
+      />
+      <path 
+        d="M 106 75 Q 118 60 122 52 Q 114 59 104 73 Z" 
+        fill="#005B94" 
+        opacity="0.7"
+      />
+      <circle cx="115" cy="82" r="2.2" fill="#00D9FF" />
+      <path 
+        d="M 95 85 L 100 115 L 88 120 Z" 
+        fill="#0F1419" 
+        opacity="0.3" 
+      />
+    </g>
+
+    <!-- Right branch: Dynamic Arrow and Growing Bar Chart -->
+    <g id="growth-chart">
+      <path 
+        d="M 92 135 L 165 48" 
+        stroke="url(#arrowGradIcon)" 
+        stroke-width="11" 
+        stroke-linecap="round" 
+      />
+      <path 
+        d="M 152 44 L 170 42 L 166 60 Z" 
+        fill="#05FFA6" 
+      />
+
+      <!-- Bar Chart bars rising vertically along the diagonal path -->
+      <rect 
+        x="115" 
+        y="110" 
+        width="8" 
+        height="22" 
+        rx="1.5" 
+        fill="#00FF88" 
+        opacity="0.6" 
+      />
+      <rect 
+        x="127" 
+        y="95" 
+        width="8" 
+        height="37" 
+        rx="1.5" 
+        fill="#00FF88" 
+        opacity="0.75" 
+      />
+      <rect 
+        x="139" 
+        y="80" 
+        width="8" 
+        height="52" 
+        rx="1.5" 
+        fill="#00FF88" 
+        opacity="0.9" 
+      />
+      <rect 
+        x="151" 
+        y="65" 
+        width="8" 
+        height="67" 
+        rx="1.5" 
+        fill="#05FFA6" 
+      />
+    </g>
+  </g>
 </svg>

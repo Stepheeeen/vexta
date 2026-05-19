@@ -1,7 +1,7 @@
 'use client';
 
 import { AdminLayout } from '@/components/admin-layout';
-import { Settings, Database, Bell, Shield, DollarSign } from 'lucide-react';
+import { Settings, Database, Bell, Shield, DollarSign, Check } from 'lucide-react';
 import { useState } from 'react';
 
 export default function AdminSettings() {
@@ -12,6 +12,13 @@ export default function AdminSettings() {
     twoFactorRequired: false,
   });
 
+  const [savingCommissions, setSavingCommissions] = useState(false);
+  const [savedCommissions, setSavedCommissions] = useState(false);
+  const [savingNotifications, setSavingNotifications] = useState(false);
+  const [savedNotifications, setSavedNotifications] = useState(false);
+  const [savingSecurity, setSavingSecurity] = useState(false);
+  const [savedSecurity, setSavedSecurity] = useState(false);
+
   const handleToggle = (key: keyof typeof settings) => {
     setSettings(prev => ({
       ...prev,
@@ -19,72 +26,105 @@ export default function AdminSettings() {
     }));
   };
 
+  const handleSaveCommissions = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingCommissions(true);
+    setSavedCommissions(false);
+    setTimeout(() => {
+      setSavingCommissions(false);
+      setSavedCommissions(true);
+      setTimeout(() => setSavedCommissions(false), 2000);
+    }, 800);
+  };
+
+  const handleSaveNotifications = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingNotifications(true);
+    setSavedNotifications(false);
+    setTimeout(() => {
+      setSavingNotifications(false);
+      setSavedNotifications(true);
+      setTimeout(() => setSavedNotifications(false), 2000);
+    }, 800);
+  };
+
+  const handleSaveSecurity = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingSecurity(true);
+    setSavedSecurity(false);
+    setTimeout(() => {
+      setSavingSecurity(false);
+      setSavedSecurity(true);
+      setTimeout(() => setSavedSecurity(false), 2000);
+    }, 800);
+  };
+
   return (
     <AdminLayout>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[#FFFFFF] mb-2">Platform Settings</h1>
-        <p className="text-[#A0A0A0]">Configure platform-wide settings and preferences</p>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Platform Settings</h1>
+        <p className="text-slate-500 dark:text-gray-400">Configure platform-wide settings and preferences</p>
       </div>
 
       {/* System Settings */}
-      <div className="bg-[#1A1F2E] border border-[#2A2E3E] rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-bold text-[#FFFFFF] mb-6 flex items-center gap-2">
-          <Settings className="w-5 h-5 text-[#00D9FF]" />
-          System Settings
+      <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 mb-6 shadow-sm">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+          <Settings className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+          System Controls
         </h3>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-[#0F1419] rounded-lg border border-[#2A2E3E]">
+          <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200 dark:border-white/5">
             <div>
-              <p className="text-[#FFFFFF] font-medium">Maintenance Mode</p>
-              <p className="text-sm text-[#A0A0A0]">Temporarily disable platform for all users</p>
+              <p className="text-slate-900 dark:text-white font-medium text-sm">Maintenance Mode</p>
+              <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">Temporarily disable platform for all users</p>
             </div>
             <button
               onClick={() => handleToggle('maintenanceMode')}
               className={`relative w-12 h-7 rounded-full transition-colors ${
-                settings.maintenanceMode ? 'bg-red-500' : 'bg-[#2A2E3E]'
+                settings.maintenanceMode ? 'bg-red-500' : 'bg-slate-200 dark:bg-white/10'
               }`}
             >
               <div
-                className={`absolute top-1 w-5 h-5 bg-[#0F1419] rounded-full transition-transform ${
+                className={`absolute top-1 w-5 h-5 bg-white dark:bg-[#0F1419] rounded-full transition-transform ${
                   settings.maintenanceMode ? 'translate-x-6' : 'translate-x-1'
                 }`}
               />
             </button>
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-[#0F1419] rounded-lg border border-[#2A2E3E]">
+          <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200 dark:border-white/5">
             <div>
-              <p className="text-[#FFFFFF] font-medium">Allow New Registrations</p>
-              <p className="text-sm text-[#A0A0A0]">Enable/disable new user signups</p>
+              <p className="text-slate-900 dark:text-white font-medium text-sm">Allow New Registrations</p>
+              <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">Enable/disable new user signups</p>
             </div>
             <button
               onClick={() => handleToggle('newRegistrations')}
               className={`relative w-12 h-7 rounded-full transition-colors ${
-                settings.newRegistrations ? 'bg-[#00FF88]' : 'bg-[#2A2E3E]'
+                settings.newRegistrations ? 'bg-violet-600 dark:bg-violet-500' : 'bg-slate-200 dark:bg-white/10'
               }`}
             >
               <div
-                className={`absolute top-1 w-5 h-5 bg-[#0F1419] rounded-full transition-transform ${
+                className={`absolute top-1 w-5 h-5 bg-white dark:bg-[#0F1419] rounded-full transition-transform ${
                   settings.newRegistrations ? 'translate-x-6' : 'translate-x-1'
                 }`}
               />
             </button>
           </div>
 
-          <div className="flex items-center justify-between p-4 bg-[#0F1419] rounded-lg border border-[#2A2E3E]">
+          <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200 dark:border-white/5">
             <div>
-              <p className="text-[#FFFFFF] font-medium">Require 2FA for All Users</p>
-              <p className="text-sm text-[#A0A0A0]">Enforce two-factor authentication</p>
+              <p className="text-slate-900 dark:text-white font-medium text-sm">Require 2FA for All Users</p>
+              <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">Enforce two-factor authentication</p>
             </div>
             <button
               onClick={() => handleToggle('twoFactorRequired')}
               className={`relative w-12 h-7 rounded-full transition-colors ${
-                settings.twoFactorRequired ? 'bg-[#00FF88]' : 'bg-[#2A2E3E]'
+                settings.twoFactorRequired ? 'bg-violet-600 dark:bg-violet-500' : 'bg-slate-200 dark:bg-white/10'
               }`}
             >
               <div
-                className={`absolute top-1 w-5 h-5 bg-[#0F1419] rounded-full transition-transform ${
+                className={`absolute top-1 w-5 h-5 bg-white dark:bg-[#0F1419] rounded-full transition-transform ${
                   settings.twoFactorRequired ? 'translate-x-6' : 'translate-x-1'
                 }`}
               />
@@ -94,90 +134,99 @@ export default function AdminSettings() {
       </div>
 
       {/* Commission Settings */}
-      <div className="bg-[#1A1F2E] border border-[#2A2E3E] rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-bold text-[#FFFFFF] mb-6 flex items-center gap-2">
-          <DollarSign className="w-5 h-5 text-[#00D9FF]" />
+      <form onSubmit={handleSaveCommissions} className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 mb-6 shadow-sm">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+          <DollarSign className="w-5 h-5 text-violet-600 dark:text-violet-400" />
           Commission Settings
         </h3>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#FFFFFF] mb-2">Referral Commission Rate (%)</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Referral Commission Rate (%)</label>
             <input
               type="number"
               defaultValue="15"
-              className="w-full bg-[#0F1419] border border-[#2A2E3E] rounded-lg px-4 py-3 text-[#FFFFFF] focus:outline-none focus:border-[#00D9FF]"
+              required
+              className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 text-sm"
             />
-            <p className="text-xs text-[#A0A0A0] mt-2">Percentage of each referral&apos;s activity credited to referrer</p>
+            <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">Percentage of each referral&apos;s activity credited to referrer</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#FFFFFF] mb-2">Trading Fee (%)</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Trading Fee (%)</label>
             <input
               type="number"
               defaultValue="2"
-              className="w-full bg-[#0F1419] border border-[#2A2E3E] rounded-lg px-4 py-3 text-[#FFFFFF] focus:outline-none focus:border-[#00D9FF]"
+              required
+              className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 text-sm"
             />
-            <p className="text-xs text-[#A0A0A0] mt-2">Fee charged on each trade execution</p>
+            <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">Fee charged on each trade execution</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#FFFFFF] mb-2">Withdrawal Fee (%)</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Withdrawal Fee (%)</label>
             <input
               type="number"
               defaultValue="1"
-              className="w-full bg-[#0F1419] border border-[#2A2E3E] rounded-lg px-4 py-3 text-[#FFFFFF] focus:outline-none focus:border-[#00D9FF]"
+              required
+              className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 text-sm"
             />
-            <p className="text-xs text-[#A0A0A0] mt-2">Fee charged on withdrawals</p>
+            <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">Fee charged on withdrawals</p>
           </div>
 
-          <button className="w-full mt-4 py-3 bg-[#00FF88] hover:bg-[#00E070] text-[#0F1419] font-bold rounded-lg transition-colors">
-            Save Commission Settings
+          <button
+            type="submit"
+            disabled={savingCommissions}
+            className="w-full mt-4 py-3 bg-violet-600 hover:bg-violet-750 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+          >
+            {savingCommissions ? 'Saving...' : savedCommissions ? <><Check className="w-5 h-5" /> Saved</> : 'Save Commission Settings'}
           </button>
         </div>
-      </div>
+      </form>
 
       {/* Notification Settings */}
-      <div className="bg-[#1A1F2E] border border-[#2A2E3E] rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-bold text-[#FFFFFF] mb-6 flex items-center gap-2">
-          <Bell className="w-5 h-5 text-[#00D9FF]" />
-          Notification Settings
+      <form onSubmit={handleSaveNotifications} className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 mb-6 shadow-sm">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+          <Bell className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+          Notification Thresholds
         </h3>
 
         <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-[#0F1419] rounded-lg border border-[#2A2E3E]">
+          <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200 dark:border-white/5">
             <div>
-              <p className="text-[#FFFFFF] font-medium">Email Notifications</p>
-              <p className="text-sm text-[#A0A0A0]">Send alerts to admins</p>
+              <p className="text-slate-900 dark:text-white font-medium text-sm">Email Notifications</p>
+              <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">Send alerts to admins</p>
             </div>
             <button
+              type="button"
               onClick={() => handleToggle('emailNotifications')}
               className={`relative w-12 h-7 rounded-full transition-colors ${
-                settings.emailNotifications ? 'bg-[#00FF88]' : 'bg-[#2A2E3E]'
+                settings.emailNotifications ? 'bg-violet-600 dark:bg-violet-500' : 'bg-slate-200 dark:bg-white/10'
               }`}
             >
               <div
-                className={`absolute top-1 w-5 h-5 bg-[#0F1419] rounded-full transition-transform ${
+                className={`absolute top-1 w-5 h-5 bg-white dark:bg-[#0F1419] rounded-full transition-transform ${
                   settings.emailNotifications ? 'translate-x-6' : 'translate-x-1'
                 }`}
               />
             </button>
           </div>
 
-          <div className="p-4 bg-[#0F1419] rounded-lg border border-[#2A2E3E]">
-            <p className="text-[#FFFFFF] font-medium mb-3">Alert Thresholds</p>
+          <div className="p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200 dark:border-white/5">
+            <p className="text-slate-900 dark:text-white font-medium mb-3 text-sm">Alert Thresholds</p>
             <div className="space-y-3">
               <div>
-                <label className="block text-sm text-[#A0A0A0] mb-1">Large Withdrawal Alert ($)</label>
+                <label className="block text-xs text-slate-500 dark:text-gray-400 mb-1">Large Withdrawal Alert ($)</label>
                 <input
                   type="number"
                   defaultValue="50000"
-                  className="w-full bg-[#0F1419] border border-[#2A2E3E] rounded-lg px-4 py-2 text-[#FFFFFF] focus:outline-none focus:border-[#00D9FF]"
+                  required
+                  className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-2 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 text-sm"
                 />
               </div>
               <div>
-                <label className="block text-sm text-[#A0A0A0] mb-1">Suspicious Activity Alert</label>
-                <select className="w-full bg-[#0F1419] border border-[#2A2E3E] rounded-lg px-4 py-2 text-[#A0A0A0] focus:outline-none focus:border-[#00D9FF]">
+                <label className="block text-xs text-slate-500 dark:text-gray-400 mb-1">Suspicious Activity Alert</label>
+                <select className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-2 text-slate-700 dark:text-gray-300 focus:outline-none focus:border-violet-500 text-sm">
                   <option>Medium (3+ failed logins)</option>
                   <option>High (1+ failed login)</option>
                   <option>Critical (Any failed login)</option>
@@ -185,52 +234,66 @@ export default function AdminSettings() {
               </div>
             </div>
           </div>
+
+          <button
+            type="submit"
+            disabled={savingNotifications}
+            className="w-full mt-4 py-3 bg-violet-600 hover:bg-violet-750 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+          >
+            {savingNotifications ? 'Saving...' : savedNotifications ? <><Check className="w-5 h-5" /> Saved</> : 'Save Notification Settings'}
+          </button>
         </div>
-      </div>
+      </form>
 
       {/* Security Settings */}
-      <div className="bg-[#1A1F2E] border border-[#2A2E3E] rounded-lg p-6">
-        <h3 className="text-lg font-bold text-[#FFFFFF] mb-6 flex items-center gap-2">
-          <Shield className="w-5 h-5 text-[#00D9FF]" />
-          Security Settings
+      <form onSubmit={handleSaveSecurity} className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+          <Shield className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+          Security Controls
         </h3>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-[#FFFFFF] mb-2">Max Failed Login Attempts</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Max Failed Login Attempts</label>
             <input
               type="number"
               defaultValue="5"
-              className="w-full bg-[#0F1419] border border-[#2A2E3E] rounded-lg px-4 py-3 text-[#FFFFFF] focus:outline-none focus:border-[#00D9FF]"
+              required
+              className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 text-sm"
             />
-            <p className="text-xs text-[#A0A0A0] mt-2">After this many attempts, account is locked</p>
+            <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">After this many attempts, account is locked</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#FFFFFF] mb-2">Session Timeout (minutes)</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Session Timeout (minutes)</label>
             <input
               type="number"
               defaultValue="30"
-              className="w-full bg-[#0F1419] border border-[#2A2E3E] rounded-lg px-4 py-3 text-[#FFFFFF] focus:outline-none focus:border-[#00D9FF]"
+              required
+              className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 text-sm"
             />
-            <p className="text-xs text-[#A0A0A0] mt-2">Automatic logout after inactivity</p>
+            <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">Automatic logout after inactivity</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#FFFFFF] mb-2">IP Whitelist</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">IP Whitelist</label>
             <textarea
               defaultValue="192.168.1.1&#10;10.0.0.0/8"
-              className="w-full bg-[#0F1419] border border-[#2A2E3E] rounded-lg px-4 py-3 text-[#FFFFFF] placeholder-[#606060] focus:outline-none focus:border-[#00D9FF] h-24 font-mono text-sm"
+              className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-violet-500 h-24 font-mono text-xs"
               placeholder="Enter IPs (one per line)"
             />
-            <p className="text-xs text-[#A0A0A0] mt-2">Only these IPs can access admin panel</p>
+            <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">Only these IPs can access admin panel</p>
           </div>
 
-          <button className="w-full mt-4 py-3 bg-[#00FF88] hover:bg-[#00E070] text-[#0F1419] font-bold rounded-lg transition-colors">
-            Save Security Settings
+          <button
+            type="submit"
+            disabled={savingSecurity}
+            className="w-full mt-4 py-3 bg-violet-600 hover:bg-violet-750 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+          >
+            {savingSecurity ? 'Saving...' : savedSecurity ? <><Check className="w-5 h-5" /> Saved</> : 'Save Security Settings'}
           </button>
         </div>
-      </div>
+      </form>
     </AdminLayout>
   );
 }

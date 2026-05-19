@@ -1,0 +1,300 @@
+'use client';
+
+import { DashboardLayout } from '@/components/dashboard-layout';
+import { ArrowUpRight, ArrowDownRight, Wallet, Calendar, AlertCircle, Loader2, ArrowLeftRight, CheckCircle2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useTranslation } from '@/components/translation-provider';
+
+interface StatsData {
+  stats: {
+    totalInvested: number;
+    totalEarned: number;
+    totalCommissions: number;
+    availableBalance: number;
+    activeInvestments: number;
+    directReferrals: number;
+  };
+}
+
+interface WithdrawalItem {
+  id: string;
+  amount: number;
+  status: string;
+  walletAddress: string;
+  network: string;
+  createdAt: string;
+}
+
+const inputClass =
+  'w-full bg-white/3 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 focus:bg-white/5 transition-all font-mono';
+
+const sectionClass =
+  'bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl p-6 mb-5';
+
+export default function WithdrawPage() {
+  const router = useRouter();
+  const { t } = useTranslation();
+  const [loading, setLoading] = useState(true);
+  const [balance, setBalance] = useState(0);
+  const [withdrawals, setWithdrawals] = useState<WithdrawalItem[]>([]);
+
+  // Form states
+  const [amount, setAmount] = useState('');
+  const [walletAddress, setWalletAddress] = useState('');
+  const [network, setNetwork] = useState('TRC20');
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pageError, setPageError] = useState<string | null>(null);
+
+  const fetchWithdrawalData = async () => {
+    try {
+      setPageError(null);
+      const [statsRes, withdrawRes] = await Promise.all([
+        fetch('/api/dashboard/stats'),
+        fetch('/api/withdrawals'),
+      ]);
+
+      if (statsRes.status === 401 || withdrawRes.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
+
+      if (!statsRes.ok || !withdrawRes.ok) throw new Error('Failed to fetch financial data');
+
+      const sJson = await statsRes.json();
+      const wJson = await withdrawRes.json();
+
+      setBalance(sJson.stats.availableBalance ?? 0);
+      setWithdrawals(wJson.withdrawals || []);
+    } catch (err: any) {
+      console.error(err);
+      setPageError(err.message || 'An error occurred while loading withdrawal panel');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWithdrawalData();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    setSuccess(null);
+    setError(null);
+
+    const numericAmount = parseFloat(amount);
+    if (isNaN(numericAmount) || numericAmount < 10) {
+      setError('Minimum withdrawal amount is $10.00');
+      setSubmitting(false);
+      return;
+    }
+
+    if (numericAmount > balance) {
+      setError(`Insufficient balance. Maximum available: $${balance.toLocaleString()}`);
+      setSubmitting(false);
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/withdrawals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: numericAmount,
+          walletAddress,
+          network,
+        }),
+      });
+
+      if (res.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to request withdrawal');
+
+      setSuccess(`Your withdrawal of $${numericAmount.toLocaleString()} (${network}) was requested successfully!`);
+      setAmount('');
+      setWalletAddress('');
+      await fetchWithdrawalData();
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Failed to process withdrawal request');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const statusColor: Record<string, string> = {
+    pending:  'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+    approved: 'bg-emerald-500/10 text-emerald-600 dark:text-[#00FF88]',
+    rejected: 'bg-red-500/10 text-red-600 dark:text-red-400',
+  };
+
+  return (
+    <DashboardLayout>
+      {/* Header */}
+      <div className="mb-8">
+        <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">Transfer</p>
+        <h1 className="text-2xl font-bold text-slate-950 dark:text-white tracking-tight">{t('withdraw')}</h1>
+      </div>
+
+      {loading ? (
+        <div className="min-h-[300px] flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-violet-600 dark:text-violet-400" />
+        </div>
+      ) : pageError ? (
+        <div className="p-6 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl font-mono text-sm max-w-xl mx-auto my-12 text-center">
+          <p className="mb-4">{pageError}</p>
+          <button onClick={fetchWithdrawalData} className="px-4 py-2 bg-red-500 text-white rounded-xl font-sans font-medium hover:bg-red-600 transition-colors">
+            Retry
+          </button>
+        </div>
+      ) : (
+        <div className="grid lg:grid-cols-3 gap-6 items-start">
+          {/* Form and info */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Info Card */}
+            <div className="bg-gradient-to-br from-violet-600/15 via-blue-600/5 to-transparent border border-violet-500/20 rounded-2xl p-6 relative overflow-hidden group shadow-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] font-mono text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-1">Available Funds</p>
+                  <p className="text-3xl font-bold text-slate-950 dark:text-white font-mono tracking-tight">
+                    ${balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </p>
+                </div>
+                <Wallet className="w-6 h-6 text-violet-600 dark:text-violet-400 flex-shrink-0" />
+              </div>
+            </div>
+
+            {/* Withdrawal Form */}
+            <form onSubmit={handleSubmit} className={sectionClass}>
+              <div className="flex items-center gap-3 mb-6">
+                <ArrowLeftRight className="w-5 h-5 text-violet-500 dark:text-violet-400 flex-shrink-0" />
+                <h2 className="text-sm font-semibold text-slate-950 dark:text-white">Request Withdrawal</h2>
+              </div>
+
+              {success && (
+                <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-mono flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>{success}</span>
+                </div>
+              )}
+
+              {error && (
+                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 rounded-xl text-xs font-mono flex items-start gap-2.5">
+                  <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2">Network Protocol</label>
+                  <select
+                    value={network}
+                    onChange={(e) => setNetwork(e.target.value)}
+                    className="w-full bg-white/3 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-violet-500/50 focus:bg-white/5 transition-all"
+                  >
+                    <option value="TRC20">USDT (TRC20) — TRON Network</option>
+                    <option value="BEP20">USDT (BEP20) — BNB Smart Chain</option>
+                    <option value="ERC20">USDT (ERC20) — Ethereum Network</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2">Amount to Withdraw (USD)</label>
+                  <input
+                    type="number"
+                    step="any"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="0.00"
+                    className={inputClass}
+                    required
+                    disabled={submitting}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2">Destination Wallet Address</label>
+                  <input
+                    type="text"
+                    value={walletAddress}
+                    onChange={(e) => setWalletAddress(e.target.value)}
+                    placeholder="Enter recipient address"
+                    className={inputClass}
+                    required
+                    disabled={submitting}
+                  />
+                  <span className="block text-[9px] text-slate-400 dark:text-gray-500 font-mono mt-1.5 leading-relaxed">
+                    Please double-check address details. Network transfer fees apply and will be deducted from your virtual transaction.
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full py-3 text-xs font-semibold text-white bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Processing withdrawal...</span>
+                  </>
+                ) : (
+                  <span>Request Virtual Withdrawal</span>
+                )}
+              </button>
+            </form>
+          </div>
+
+          {/* Right sidebar: Recent history */}
+          <div className="space-y-4">
+            <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Past Withdrawals</h3>
+              
+              <div className="space-y-3.5">
+                {withdrawals.length > 0 ? (
+                  withdrawals.map((item) => (
+                    <div key={item.id} className="p-3 bg-slate-50 dark:bg-white/2 border border-slate-100 dark:border-white/5 rounded-xl flex flex-col gap-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] text-slate-400 dark:text-gray-500 font-mono">
+                          {new Date(item.createdAt).toLocaleDateString()}
+                        </span>
+                        <span className={`text-[9px] font-mono px-2 py-0.5 rounded-full ${statusColor[item.status] || 'bg-slate-200 text-slate-600'}`}>
+                          {item.status.toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-baseline">
+                        <span className="text-xs text-slate-700 dark:text-gray-300 font-medium">
+                          {item.network} Address
+                        </span>
+                        <span className="text-sm font-bold font-mono text-slate-900 dark:text-white">
+                          -${item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <span className="text-[9px] text-slate-400 dark:text-gray-500 font-mono truncate">
+                        {item.walletAddress}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="py-6 text-center text-xs text-slate-400 dark:text-gray-500 font-mono">
+                    No past requests.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </DashboardLayout>
+  );
+}

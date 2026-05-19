@@ -1,49 +1,96 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { AdminLayout } from '@/components/admin-layout';
-import { Search, Filter } from 'lucide-react';
-import { useState } from 'react';
+import { Search, Loader2 } from 'lucide-react';
+
+interface Transaction {
+  id: string;
+  user: string;
+  email: string;
+  type: string;
+  amount: string;
+  status: string;
+  date: string;
+  description: string;
+}
 
 export default function AdminTransactions() {
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [typeFilter, setTypeFilter] = useState('All Types');
+  const [statusFilter, setStatusFilter] = useState('All Status');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const transactions = [
-    { id: 'TXN001', user: 'Alice Johnson', type: 'Deposit', amount: '$5,000', status: 'Completed', date: '2024-03-15', method: 'Bank Transfer' },
-    { id: 'TXN002', user: 'Bob Smith', type: 'Arbitrage', amount: '+$245.30', status: 'Completed', date: '2024-03-15', method: 'Auto Trade' },
-    { id: 'TXN003', user: 'Carol Davis', type: 'Withdrawal', amount: '-$2,000', status: 'Pending', date: '2024-03-15', method: 'Bank Transfer' },
-    { id: 'TXN004', user: 'David Wilson', type: 'Deposit', amount: '$10,000', status: 'Completed', date: '2024-03-14', method: 'Crypto' },
-    { id: 'TXN005', user: 'Eve Martinez', type: 'Referral', amount: '+$125.00', status: 'Completed', date: '2024-03-14', method: 'Auto Credit' },
-  ];
+  const fetchTransactions = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/admin/transactions');
+      if (!res.ok) throw new Error('Failed to fetch transactions');
+      const data = await res.json();
+      setTransactions(data.transactions || []);
+    } catch (err: any) {
+      setError(err.message || 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTransactions();
+  }, []);
+
+  const filteredTransactions = transactions.filter((tx) => {
+    const matchesSearch = 
+      tx.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tx.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tx.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tx.description.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesType = typeFilter === 'All Types' || tx.type === typeFilter;
+    const matchesStatus = statusFilter === 'All Status' || tx.status === statusFilter;
+
+    return matchesSearch && matchesType && matchesStatus;
+  });
 
   return (
     <AdminLayout>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[#FFFFFF] mb-2">Transaction Management</h1>
-        <p className="text-[#A0A0A0]">View and manage all platform transactions</p>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Transaction Management</h1>
+        <p className="text-slate-500 dark:text-gray-400">View and manage all platform transactions</p>
       </div>
 
       {/* Search and Filter */}
-      <div className="bg-[#1A1F2E] border border-[#2A2E3E] rounded-lg p-6 mb-8">
-        <div className="flex items-center gap-2 bg-[#0F1419] border border-[#2A2E3E] rounded-lg px-4 py-3 mb-4">
-          <Search className="w-5 h-5 text-[#A0A0A0]" />
+      <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 mb-8 shadow-sm">
+        <div className="flex items-center gap-2 bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 mb-4">
+          <Search className="w-5 h-5 text-slate-400" />
           <input
             type="text"
-            placeholder="Search transactions..."
+            placeholder="Search by ID, user, email or details..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 bg-[#0F1419] text-[#FFFFFF] placeholder-[#606060] focus:outline-none"
+            className="flex-1 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none text-sm"
           />
         </div>
 
         <div className="flex gap-4">
-          <select className="px-4 py-2 bg-[#0F1419] border border-[#2A2E3E] rounded-lg text-[#A0A0A0] focus:outline-none focus:border-[#00D9FF]">
+          <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+            className="px-4 py-2 bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl text-slate-700 dark:text-gray-300 focus:outline-none focus:border-violet-500 text-sm"
+          >
             <option>All Types</option>
             <option>Deposit</option>
             <option>Withdrawal</option>
-            <option>Arbitrage</option>
-            <option>Referral</option>
+            <option>Roi</option>
+            <option>Commission</option>
           </select>
-          <select className="px-4 py-2 bg-[#0F1419] border border-[#2A2E3E] rounded-lg text-[#A0A0A0] focus:outline-none focus:border-[#00D9FF]">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-4 py-2 bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl text-slate-700 dark:text-gray-300 focus:outline-none focus:border-violet-500 text-sm"
+          >
             <option>All Status</option>
             <option>Completed</option>
             <option>Pending</option>
@@ -53,51 +100,71 @@ export default function AdminTransactions() {
       </div>
 
       {/* Transactions Table */}
-      <div className="bg-[#1A1F2E] border border-[#2A2E3E] rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-[#2A2E3E] bg-[#0F1419]">
-                <th className="px-6 py-4 text-left text-[#A0A0A0] font-semibold text-sm">TXN ID</th>
-                <th className="px-6 py-4 text-left text-[#A0A0A0] font-semibold text-sm">User</th>
-                <th className="px-6 py-4 text-left text-[#A0A0A0] font-semibold text-sm">Type</th>
-                <th className="px-6 py-4 text-right text-[#A0A0A0] font-semibold text-sm">Amount</th>
-                <th className="px-6 py-4 text-center text-[#A0A0A0] font-semibold text-sm">Method</th>
-                <th className="px-6 py-4 text-center text-[#A0A0A0] font-semibold text-sm">Status</th>
-                <th className="px-6 py-4 text-center text-[#A0A0A0] font-semibold text-sm">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.map((tx) => (
-                <tr key={tx.id} className="border-b border-[#2A2E3E] hover:bg-[#0F1419]/50 transition-colors">
-                  <td className="px-6 py-4 text-[#00D9FF] font-mono text-sm">{tx.id}</td>
-                  <td className="px-6 py-4 text-[#FFFFFF]">{tx.user}</td>
-                  <td className="px-6 py-4">
-                    <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#00D9FF]/10 text-[#00D9FF] border border-[#00D9FF]/30">
-                      {tx.type}
-                    </span>
-                  </td>
-                  <td className={`px-6 py-4 text-right font-bold ${
-                    tx.amount.startsWith('+') ? 'text-[#00FF88]' : tx.amount.startsWith('-') ? 'text-red-500' : 'text-[#FFFFFF]'
-                  }`}>
-                    {tx.amount}
-                  </td>
-                  <td className="px-6 py-4 text-center text-[#A0A0A0] text-sm">{tx.method}</td>
-                  <td className="px-6 py-4 text-center">
-                    <span className={`text-xs font-bold px-3 py-1 rounded-full border ${
-                      tx.status === 'Completed'
-                        ? 'bg-[#00FF88]/10 text-[#00FF88] border-[#00FF88]/30'
-                        : 'bg-[#FFB347]/10 text-[#FFB347] border-[#FFB347]/30'
-                    }`}>
-                      {tx.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center text-[#A0A0A0] text-sm">{tx.date}</td>
+      <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm">
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-violet-600 dark:text-violet-400" />
+          </div>
+        ) : error ? (
+          <div className="p-6 text-center text-red-500 font-mono text-sm">{error}</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/2">
+                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">TXN ID</th>
+                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">User</th>
+                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">Type</th>
+                  <th className="px-6 py-4 text-right text-slate-500 dark:text-gray-400 font-semibold text-sm">Amount</th>
+                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">Details</th>
+                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Status</th>
+                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Date</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {filteredTransactions.map((tx) => (
+                  <tr key={tx.id} className="border-b border-slate-200 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/1 transition-colors">
+                    <td className="px-6 py-4 text-violet-600 dark:text-violet-400 font-mono text-sm">{tx.id.slice(-6)}</td>
+                    <td className="px-6 py-4">
+                      <p className="text-slate-900 dark:text-white font-medium text-sm">{tx.user}</p>
+                      <p className="text-xs text-slate-500 dark:text-gray-400">{tx.email}</p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">
+                        {tx.type}
+                      </span>
+                    </td>
+                    <td className={`px-6 py-4 text-right font-bold text-sm ${
+                      tx.amount.startsWith('+') ? 'text-emerald-600 dark:text-emerald-400' : tx.amount.startsWith('-') ? 'text-red-500' : 'text-slate-900 dark:text-white'
+                    }`}>
+                      {tx.amount}
+                    </td>
+                    <td className="px-6 py-4 text-xs text-slate-500 dark:text-gray-400 max-w-[200px] truncate" title={tx.description}>
+                      {tx.description}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                        tx.status === 'Completed'
+                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                          : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                      }`}>
+                        {tx.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 text-sm">{tx.date}</td>
+                  </tr>
+                ))}
+                {filteredTransactions.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-8 text-center text-slate-400 dark:text-gray-500 text-sm">
+                      No matching transactions found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </AdminLayout>
   );

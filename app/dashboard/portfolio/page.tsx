@@ -1,86 +1,207 @@
 'use client';
 
 import { DashboardLayout } from '@/components/dashboard-layout';
-import { GrowthCard, VerifiedBadge, ProfitBadge } from '@/components/vexta-cards';
+import { TrendingUp, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
-export default function Portfolio() {
-  const holdings = [
-    { symbol: 'BTC', name: 'Bitcoin', amount: 2.5, value: 112500, change: 15.2 },
-    { symbol: 'ETH', name: 'Ethereum', amount: 25.0, value: 42500, change: 12.8 },
-    { symbol: 'USDT', name: 'Tether', amount: 8000, value: 8000, change: 0.1 },
+interface StatsData {
+  stats: {
+    totalInvested: number;
+    totalEarned: number;
+    totalCommissions: number;
+    availableBalance: number;
+    activeInvestments: number;
+    directReferrals: number;
+  };
+  investments: Array<{
+    id: string;
+    plan: string;
+    amount: number;
+    dailyROI: number;
+    duration: number;
+    startDate: string;
+    endDate: string;
+    totalEarned: number;
+    status: string;
+  }>;
+}
+
+export default function PortfolioPage() {
+  const [data, setData] = useState<StatsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [daysActive, setDaysActive] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setError(null);
+      const res = await fetch('/api/dashboard/stats');
+      if (res.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
+      if (!res.ok) {
+        const errorJson = await res.json().catch(() => ({}));
+        throw new Error(errorJson.error || 'Failed to fetch data');
+      }
+      const json = await res.json();
+      setData(json);
+
+      const meRes = await fetch('/api/auth/me');
+      if (meRes.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
+      if (meRes.ok) {
+        const meJson = await meRes.json();
+        if (meJson?.user?.createdAt) {
+          const created = new Date(meJson.user.createdAt);
+          const diffTime = Math.abs(new Date().getTime() - created.getTime());
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+          setDaysActive(diffDays);
+        } else {
+          setDaysActive(1);
+        }
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'An error occurred while loading portfolio');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const stats = [
+    { label: 'Portfolio Value', value: `$${(data?.stats.totalInvested ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: 'Current active contracts' },
+    { label: 'Active Plans',    value: `${data?.stats.activeInvestments ?? 0}`,        change: 'Running contracts' },
+    { label: 'Total ROI Earned',       value: `$${(data?.stats.totalEarned ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,    change: 'ROI payouts' },
+    { label: 'Days Active',     value: `${daysActive}`,       change: 'Since registration' },
   ];
 
   return (
     <DashboardLayout>
+      {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-[#FFFFFF] mb-2">Portfolio</h1>
-        <p className="text-[#A0A0A0]">Your verified investment holdings and performance</p>
+        <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">Investments</p>
+        <h1 className="text-2xl font-bold text-slate-950 dark:text-white tracking-tight">Portfolio</h1>
       </div>
 
-      {/* Portfolio Summary */}
-      <div className="grid md:grid-cols-3 gap-6 mb-8">
-        <GrowthCard
-          title="Total Holdings"
-          value="$163,000"
-          change={14.2}
-          isPositive={true}
-        />
-        <GrowthCard
-          title="24h Change"
-          value="+$2,840"
-          change={1.8}
-          isPositive={true}
-        />
-        <GrowthCard
-          title="Portfolio ROI"
-          value="28.3%"
-          change={2.5}
-          isPositive={true}
-        />
-      </div>
-
-      {/* Holdings Table */}
-      <div className="bg-[#1A1F2E] border border-[#2A2E3E] rounded-lg overflow-hidden mb-8">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-[#2A2E3E]">
-                <th className="px-6 py-4 text-left text-[#A0A0A0] font-semibold text-sm">Asset</th>
-                <th className="px-6 py-4 text-right text-[#A0A0A0] font-semibold text-sm">Amount</th>
-                <th className="px-6 py-4 text-right text-[#A0A0A0] font-semibold text-sm">Value</th>
-                <th className="px-6 py-4 text-right text-[#A0A0A0] font-semibold text-sm">24h Change</th>
-                <th className="px-6 py-4 text-center text-[#A0A0A0] font-semibold text-sm">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {holdings.map((holding) => (
-                <tr key={holding.symbol} className="border-b border-[#2A2E3E] hover:bg-[#0F1419]/50 transition-colors">
-                  <td className="px-6 py-4">
-                    <div>
-                      <p className="text-[#FFFFFF] font-bold">{holding.symbol}</p>
-                      <p className="text-sm text-[#A0A0A0]">{holding.name}</p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-right text-[#FFFFFF]">{holding.amount}</td>
-                  <td className="px-6 py-4 text-right text-[#00FF88] font-bold">${holding.value.toLocaleString()}</td>
-                  <td className="px-6 py-4 text-right text-[#00FF88]">+{holding.change}%</td>
-                  <td className="px-6 py-4 text-center">
-                    <button className="text-[#00D9FF] hover:text-[#00E8FF] text-sm font-medium">Manage</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {loading ? (
+        <div className="min-h-[300px] flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-violet-600 dark:text-violet-400" />
         </div>
-      </div>
+      ) : error ? (
+        <div className="p-6 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl font-mono text-sm max-w-xl mx-auto my-12 text-center">
+          <p className="mb-4">{error}</p>
+          <button onClick={fetchData} className="px-4 py-2 bg-red-500 text-white rounded-xl font-sans font-medium hover:bg-red-600 transition-colors">
+            Retry
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Stats */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            {stats.map(({ label, value, change }) => (
+              <div key={label} className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-5 shadow-sm dark:shadow-none">
+                <p className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase tracking-widest mb-3">{label}</p>
+                <p className="text-xl font-bold text-slate-950 dark:text-white font-mono mb-2">{value}</p>
+                <div className="text-[10px] font-mono text-slate-500 dark:text-gray-400">
+                  {change}
+                </div>
+              </div>
+            ))}
+          </div>
 
-      {/* Add to Portfolio */}
-      <div className="bg-[#1A1F2E] border border-[#2A2E3E] rounded-lg p-6">
-        <h3 className="text-lg font-bold text-[#FFFFFF] mb-4">Add to Portfolio</h3>
-        <button className="w-full py-3 bg-[#00FF88] hover:bg-[#00E070] text-[#0F1419] font-bold rounded-lg transition-colors">
-          Deposit Funds
-        </button>
-      </div>
+          {/* Plans */}
+          <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 text-violet-500 dark:text-violet-400" />
+              </div>
+              <div>
+                <h2 className="text-sm font-semibold text-slate-950 dark:text-white">Investment Plans</h2>
+                <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">Active & completed contracts</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {data && data.investments.length > 0 ? (
+                data.investments.map((plan, idx) => {
+                  const active = plan.status === 'active';
+                  const start = new Date(plan.startDate).getTime();
+                  const end = new Date(plan.endDate).getTime();
+                  const now = new Date().getTime();
+                  const totalDuration = end - start;
+                  const elapsed = now - start;
+                  
+                  let progress = 100;
+                  if (active && totalDuration > 0) {
+                    progress = Math.min(100, Math.max(0, Math.round((elapsed / totalDuration) * 100)));
+                  }
+                  
+                  const daysLeft = active
+                    ? Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)))
+                    : 0;
+
+                  return (
+                    <div key={idx} className="p-5 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-all">
+                      {/* Top row */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${active ? 'bg-violet-500/10 border border-violet-500/20' : 'bg-slate-200/50 dark:bg-white/5 border border-slate-200/50 dark:border-white/5'}`}>
+                            <TrendingUp className={`w-4 h-4 ${active ? 'text-violet-600 dark:text-violet-400' : 'text-slate-400 dark:text-gray-500'}`} />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-slate-900 dark:text-white">{plan.plan}</p>
+                            <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{(plan.dailyROI * 100).toFixed(1)}% daily</p>
+                          </div>
+                        </div>
+                        <span className={`text-[9px] font-mono px-2.5 py-1 rounded-full ${active ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-gray-500'}`}>
+                          {plan.status.toUpperCase()}
+                        </span>
+                      </div>
+
+                      {/* Stats */}
+                      <div className="grid grid-cols-3 gap-4 mb-4">
+                        {[
+                          { label: 'Deposited', value: `$${plan.amount.toLocaleString()}` },
+                          { label: 'Earned',    value: `$${plan.totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, green: true },
+                          { label: 'Days Left', value: active ? `${daysLeft}d` : 'Completed' },
+                        ].map(({ label, value, green }) => (
+                          <div key={label}>
+                            <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono mb-1">{label}</p>
+                            <p className={`text-sm font-bold font-mono ${green ? 'text-green-600 dark:text-green-400' : 'text-slate-900 dark:text-white'}`}>{value}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Progress bar */}
+                      <div>
+                        <div className="flex justify-between mb-1.5">
+                          <span className="text-[10px] text-slate-400 dark:text-gray-500 font-mono">Progress</span>
+                          <span className="text-[10px] text-slate-600 dark:text-gray-400 font-mono">{progress}%</span>
+                        </div>
+                        <div className="h-1.5 bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${active ? 'bg-gradient-to-r from-violet-500 to-blue-500' : 'bg-slate-400 dark:bg-white/20'}`}
+                            style={{ width: `${progress}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-xs text-slate-400 dark:text-gray-500 font-mono py-8 text-center">No investment contracts found. Go to the Overview page to subscribe to a plan.</p>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </DashboardLayout>
   );
 }

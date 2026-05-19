@@ -1,13 +1,15 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { ThemeProvider } from '@/components/theme-provider'
+import { TranslationProvider } from '@/components/translation-provider'
 import './globals.css'
 
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'VEXTA - Verified Growth Platform',
+  title: 'VEXTA',
   description: 'VEXTA: Verified growth through strong market participation. Build wealth with confidence.',
   generator: 'v0.app',
   icons: {
@@ -35,9 +37,13 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-[#0F1419] text-[#FFFFFF] font-sans antialiased">
-        {children}
+    <html lang="en" suppressHydrationWarning>
+      <body className="bg-background text-foreground font-sans antialiased transition-colors duration-250">
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          <TranslationProvider>
+            {children}
+          </TranslationProvider>
+        </ThemeProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>
