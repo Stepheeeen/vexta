@@ -7,7 +7,7 @@ export function ForceLightMode() {
   const { setTheme } = useTheme();
 
   useEffect(() => {
-    setTheme('light');
+    setTheme('dark');
   }, [setTheme]);
 
   return null;

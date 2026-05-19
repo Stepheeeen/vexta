@@ -28,30 +28,30 @@ describe('ROI Engine', () => {
   });
 
   describe('calculateTotalReturn', () => {
-    it('Plan A: $100 at 1.5% for 30 days = $45', () => {
-      expect(calculateTotalReturn(100, 0.015, 30)).toBe(45.00);
+    it('Plan A: $100 at 1.5% for 30 days = $56.31 (compounded)', () => {
+      expect(calculateTotalReturn(100, 0.015, 30)).toBe(56.31);
     });
 
-    it('Plan B: $500 at 2.0% for 45 days = $450', () => {
-      expect(calculateTotalReturn(500, 0.02, 45)).toBe(450.00);
+    it('Plan B: $500 at 2.0% for 45 days = $718.93 (compounded)', () => {
+      expect(calculateTotalReturn(500, 0.02, 45)).toBe(718.93);
     });
 
-    it('Plan C: $2000 at 2.5% for 60 days = $3000', () => {
-      expect(calculateTotalReturn(2000, 0.025, 60)).toBe(3000.00);
+    it('Plan C: $2000 at 2.5% for 60 days = $6799.58 (compounded)', () => {
+      expect(calculateTotalReturn(2000, 0.025, 60)).toBe(6799.58);
     });
   });
 
   describe('calculateTotalROIPercent', () => {
-    it('Plan A: 1.5% x 30 days = 45%', () => {
-      expect(calculateTotalROIPercent(0.015, 30)).toBe(45.0);
+    it('Plan A: 1.5% x 30 days = 56.3% (compounded)', () => {
+      expect(calculateTotalROIPercent(0.015, 30)).toBe(56.3);
     });
 
-    it('Plan B: 2.0% x 45 days = 90%', () => {
-      expect(calculateTotalROIPercent(0.02, 45)).toBe(90.0);
+    it('Plan B: 2.0% x 45 days = 143.8% (compounded)', () => {
+      expect(calculateTotalROIPercent(0.02, 45)).toBe(143.8);
     });
 
-    it('Plan C: 2.5% x 60 days = 150%', () => {
-      expect(calculateTotalROIPercent(0.025, 60)).toBe(150.0);
+    it('Plan C: 2.5% x 60 days = 340% (compounded)', () => {
+      expect(calculateTotalROIPercent(0.025, 60)).toBe(340.0);
     });
   });
 });

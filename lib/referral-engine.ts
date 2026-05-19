@@ -6,14 +6,22 @@
 import { prisma } from './prisma';
 
 export const COMMISSION_RATES: Record<number, number> = {
-  1: 0.10, // 10% — Direct referral
-  2: 0.05, // 5%  — Level 2
-  3: 0.03, // 3%  — Level 3
-  4: 0.02, // 2%  — Level 4
-  5: 0.01, // 1%  — Level 5
+  1: 0.10,  // 10% — Direct referral
+  2: 0.05,  // 5%  — Level 2
+  3: 0.03,  // 3%  — Level 3
+  4: 0.02,  // 2%  — Level 4
+  5: 0.015, // 1.5% — Level 5
+  6: 0.015, // 1.5% — Level 6
+  7: 0.01,  // 1%   — Level 7
+  8: 0.01,  // 1%   — Level 8
+  9: 0.01,  // 1%   — Level 9
+  10: 0.01, // 1%   — Level 10
+  11: 0.01, // 1%   — Level 11
+  12: 0.01, // 1%   — Level 12
+  13: 0.01, // 1%   — Level 13
 };
 
-export const MAX_LEVELS = 5;
+export const MAX_LEVELS = 13;
 
 /**
  * Walk up the referral chain from a given userId and distribute commissions

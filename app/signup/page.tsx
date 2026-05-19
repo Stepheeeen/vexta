@@ -6,6 +6,7 @@ import { VextaLogoText } from '@/components/vexta-logo';
 import { BackgroundPattern } from '@/components/background-pattern';
 import { ArrowRight, Activity, Hexagon, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useTranslation } from '@/components/translation-provider';
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 export default function SignUp() {
   const { t } = useTranslation();
@@ -14,6 +15,8 @@ export default function SignUp() {
     firstName: '',
     lastName: '',
     email: '',
+    country: '',
+    whatsappOrTelegram: '',
     password: '',
     confirmPassword: '',
     referralCode: '',
@@ -42,6 +45,7 @@ export default function SignUp() {
       if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
       if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
       if (!formData.email.includes('@') || !formData.email.includes('.')) newErrors.email = 'Valid email is required';
+      if (!formData.country.trim()) newErrors.country = 'Country is required';
     } else if (currentStep === 2) {
       if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
       if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
@@ -68,6 +72,8 @@ export default function SignUp() {
               firstName: formData.firstName,
               lastName: formData.lastName,
               email: formData.email,
+              country: formData.country,
+              whatsappOrTelegram: formData.whatsappOrTelegram || undefined,
               password: formData.password,
               referralCode: formData.referralCode || undefined,
             }),
@@ -89,6 +95,7 @@ export default function SignUp() {
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-[#0F1419] text-slate-900 dark:text-white flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-250">
       <BackgroundPattern />
+      <LanguageSwitcher />
       
       <div className="w-full max-w-md relative z-10 mt-12 mb-12">
         <div className="mb-8 text-center flex flex-col items-center">
@@ -120,9 +127,9 @@ export default function SignUp() {
 
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-2xl font-light text-slate-900 dark:text-[#FFFFFF] font-sans tracking-tight">
-              {step === 1 && <><span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-[#00D9FF] to-[#00FF88]">{t('signupStep1Title')}</span> Account</>}
-              {step === 2 && <><span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-[#00D9FF] to-[#00FF88]">{t('signupStep2Title')}</span> Account</>}
-              {step === 3 && <><span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-[#00D9FF] to-[#00FF88]">{t('signupStep3Title')}</span> Links</>}
+              {step === 1 && <><span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-[#00D9FF] to-[#00FF88]">{t('signupStep1Title')}</span> {t('signupStep1TitleSuffix')}</>}
+              {step === 2 && <><span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-[#00D9FF] to-[#00FF88]">{t('signupStep2Title')}</span> {t('signupStep2TitleSuffix')}</>}
+              {step === 3 && <><span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-[#00D9FF] to-[#00FF88]">{t('signupStep3Title')}</span> {t('signupStep3TitleSuffix')}</>}
             </h1>
           </div>
           <p className="text-slate-500 dark:text-[#808A9D] text-[10px] mb-8 font-mono tracking-widest uppercase">
@@ -179,6 +186,47 @@ export default function SignUp() {
                     placeholder="you@example.com"
                   />
                   {errors.email && <p className="text-[10px] text-red-500 dark:text-red-400 mt-1 font-mono uppercase tracking-wider">{errors.email}</p>}
+                </div>
+
+                <div className="group/input">
+                  <label className="block text-[10px] font-mono text-slate-400 dark:text-white/50 uppercase tracking-widest mb-2">{t('signupCountryLabel')}</label>
+                  <select
+                    name="country"
+                    value={formData.country}
+                    onChange={(e: any) => {
+                      setFormData(prev => ({ ...prev, country: e.target.value }));
+                      if (errors.country) setErrors(prev => ({ ...prev, country: '' }));
+                    }}
+                    className={`w-full bg-slate-50 dark:bg-white/5 border ${errors.country ? 'border-red-500/50 focus:ring-red-500/50' : 'border-slate-200 dark:border-white/5 focus:border-violet-500/50 dark:focus:border-[#00D9FF]/50 focus:ring-violet-500/50 dark:focus:ring-[#00D9FF]/50'} rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#FFFFFF] focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono text-sm`}
+                  >
+                    <option value="" className="text-slate-400 dark:text-white/30 bg-white dark:bg-[#0F1419]">Select Country</option>
+                    <option value="United States" className="bg-white dark:bg-[#0F1419]">United States</option>
+                    <option value="United Kingdom" className="bg-white dark:bg-[#0F1419]">United Kingdom</option>
+                    <option value="Canada" className="bg-white dark:bg-[#0F1419]">Canada</option>
+                    <option value="Vietnam" className="bg-white dark:bg-[#0F1419]">Vietnam</option>
+                    <option value="Thailand" className="bg-white dark:bg-[#0F1419]">Thailand</option>
+                    <option value="Brazil" className="bg-white dark:bg-[#0F1419]">Brazil</option>
+                    <option value="South Korea" className="bg-white dark:bg-[#0F1419]">South Korea</option>
+                    <option value="France" className="bg-white dark:bg-[#0F1419]">France</option>
+                    <option value="Germany" className="bg-white dark:bg-[#0F1419]">Germany</option>
+                    <option value="Spain" className="bg-white dark:bg-[#0F1419]">Spain</option>
+                    <option value="Australia" className="bg-white dark:bg-[#0F1419]">Australia</option>
+                  </select>
+                  {errors.country && <p className="text-[10px] text-red-500 dark:text-red-400 mt-1 font-mono uppercase tracking-wider">{errors.country}</p>}
+                </div>
+
+                <div className="group/input">
+                  <label className="block text-[10px] font-mono text-slate-400 dark:text-white/50 uppercase tracking-widest mb-2">{t('signupWhatsappOrTelegramLabel')}</label>
+                  <input
+                    type="text"
+                    name="whatsappOrTelegram"
+                    value={formData.whatsappOrTelegram}
+                    onChange={(e: any) => {
+                      setFormData(prev => ({ ...prev, whatsappOrTelegram: e.target.value }));
+                    }}
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 focus:border-violet-500/50 dark:focus:border-[#00D9FF]/50 focus:ring-violet-500/50 dark:focus:ring-[#00D9FF]/50 rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono text-sm"
+                    placeholder="+1234567890 (optional)"
+                  />
                 </div>
               </div>
             )}

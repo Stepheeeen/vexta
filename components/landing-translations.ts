@@ -15,14 +15,14 @@ export const landingTranslations = {
     navMarkRead: 'Mark read',
     navNoNotifications: 'No notifications.',
     navWelcomeToVexta: 'Welcome to VEXTA',
-    navWelcomeMessage: 'Start growing your assets today with our 5-level system.',
+    navWelcomeMessage: 'Start growing your assets today with our 13-level system.',
 
     // Hero
     heroSubtitle: 'Web3 Investment Infrastructure',
     heroTitle1: 'Grow Your Capital with a',
-    heroTitleHighlight: '5-Level Referral',
+    heroTitleHighlight: '13-Level Referral',
     heroTitle2: 'System',
-    heroDescription: 'Earn structured daily returns on your capital and build passive income through a transparent 5-level referral commission network — with prompt withdrawals and full account visibility.',
+    heroDescription: 'Earn structured daily returns on your capital and build passive income through a transparent 13-level referral commission network — with prompt withdrawals and full account visibility.',
     heroStartInvesting: 'Start Investing',
     heroViewPlans: 'View Plans',
     heroSslSecured: 'SSL Secured',
@@ -43,7 +43,7 @@ export const landingTranslations = {
     howItWorksStep2Title: 'Deposit & Activate a Plan',
     howItWorksStep2Desc: 'Choose an investment plan that suits your goals. Fund your account and activate your plan to begin earning structured daily returns.',
     howItWorksStep3Title: 'Earn Daily + Referral Bonuses',
-    howItWorksStep3Desc: 'Your capital generates daily returns for the plan duration. Share your unique referral link to earn commissions across 5 levels.',
+    howItWorksStep3Desc: 'Your capital generates daily returns for the plan duration. Share your unique referral link to earn commissions across 13 levels.',
 
     // Plans
     plansSubtitle: 'Investment Options',
@@ -68,8 +68,8 @@ export const landingTranslations = {
     // Referral
     referralSubtitle: 'Passive Income',
     referralTitle1: 'Earn Across',
-    referralTitleHighlight: '5 Referral Levels',
-    referralDescription: 'Every investor you bring to the platform generates commission not just from their investment, but from the entire network they help build — up to 5 levels deep.',
+    referralTitleHighlight: '13 Referral Levels',
+    referralDescription: 'Every investor you bring to the platform generates commission not just from their investment, but from the entire network they help build — up to 13 levels deep.',
     referralBullet1: 'Commissions credited automatically to your account',
     referralBullet2: 'No cap on referral earnings',
     referralBullet3: 'Track your network activity in real-time',
@@ -159,7 +159,9 @@ export const landingTranslations = {
     footerLinkWhyUs: 'Why Choose Us',
     footerLinkSignUp: 'Sign Up',
     footerLinkDashboard: 'Dashboard',
-    footerLinkForgotPw: 'Forgot Password'
+    footerLinkForgotPw: 'Forgot Password',
+    referralLevel: 'Level',
+    referralDegreesDesc: 'degrees from your network'
   },
   es: {
     // Navbar
@@ -177,14 +179,14 @@ export const landingTranslations = {
     navMarkRead: 'Marcar como leído',
     navNoNotifications: 'No hay notificaciones.',
     navWelcomeToVexta: 'Bienvenido a VEXTA',
-    navWelcomeMessage: 'Comience a hacer crecer sus activos hoy con nuestro sistema de 5 niveles.',
+    navWelcomeMessage: 'Comience a hacer crecer sus activos hoy con nuestro sistema de 13 niveles.',
 
     // Hero
     heroSubtitle: 'Infraestructura de inversión Web3',
     heroTitle1: 'Haga crecer su capital con un',
     heroTitleHighlight: 'Sistema de Referencia',
-    heroTitle2: 'de 5 Niveles',
-    heroDescription: 'Obtenga retornos diarios estructurados sobre su capital y genere ingresos pasivos a través de una red transparente de comisiones de referencia de 5 niveles, con retiros rápidos y visibilidad completa de la cuenta.',
+    heroTitle2: 'de 13 Niveles',
+    heroDescription: 'Obtenga retornos diarios estructurados sobre su capital y genere ingresos pasivos a través de una red transparente de comisiones de referencia de 13 niveles, con retiros rápidos y visibilidad completa de la cuenta.',
     heroStartInvesting: 'Comenzar a invertir',
     heroViewPlans: 'Ver planes',
     heroSslSecured: 'Seguridad SSL',
@@ -205,7 +207,7 @@ export const landingTranslations = {
     howItWorksStep2Title: 'Deposite y active un plan',
     howItWorksStep2Desc: 'Elija un plan de inversión que se adapte a sus objetivos. Financie su cuenta y active su plan para comenzar a obtener retornos diarios estructurados.',
     howItWorksStep3Title: 'Obtenga bonos diarios + referidos',
-    howItWorksStep3Desc: 'Su capital genera retornos diarios durante la duración del plan. Comparta su enlace de referencia único para ganar comisiones en 5 niveles.',
+    howItWorksStep3Desc: 'Su capital genera retornos diarios durante la duración del plan. Comparta su enlace de referencia único para ganar comisiones en 13 niveles.',
 
     // Plans
     plansSubtitle: 'Opciones de inversión',
@@ -230,8 +232,8 @@ export const landingTranslations = {
     // Referral
     referralSubtitle: 'Ingresos pasivos',
     referralTitle1: 'Gane en',
-    referralTitleHighlight: '5 niveles de referencia',
-    referralDescription: 'Cada inversor que traiga a la plataforma genera comisiones no solo de su inversión, sino de toda la red que ayude a construir, hasta 5 niveles de profundidad.',
+    referralTitleHighlight: '13 niveles de referencia',
+    referralDescription: 'Cada inversor que traiga a la plataforma genera comisiones no solo de su inversión, sino de toda la red que ayude a construir, hasta 13 niveles de profundidad.',
     referralBullet1: 'Comisiones acreditadas automáticamente en su cuenta',
     referralBullet2: 'Sin límite en las ganancias de referencia',
     referralBullet3: 'Siga la actividad de su red en tiempo real',
@@ -321,7 +323,9 @@ export const landingTranslations = {
     footerLinkWhyUs: 'Por qué elegirnos',
     footerLinkSignUp: 'Registrarse',
     footerLinkDashboard: 'Panel de control',
-    footerLinkForgotPw: 'Olvidé mi contraseña'
+    footerLinkForgotPw: 'Olvidé mi contraseña',
+    referralLevel: 'Nivel',
+    referralDegreesDesc: 'grados de su red'
   },
   vi: {
     // Navbar
@@ -339,14 +343,14 @@ export const landingTranslations = {
     navMarkRead: 'Đánh dấu đã đọc',
     navNoNotifications: 'Không có thông báo.',
     navWelcomeToVexta: 'Chào mừng đến với VEXTA',
-    navWelcomeMessage: 'Bắt đầu gia tăng tài sản của bạn hôm nay với hệ thống 5 cấp độ của chúng tôi.',
+    navWelcomeMessage: 'Bắt đầu gia tăng tài sản của bạn hôm nay với hệ thống 13 cấp độ của chúng tôi.',
 
     // Hero
     heroSubtitle: 'Cơ sở hạ tầng đầu tư Web3',
     heroTitle1: 'Gia tăng vốn của bạn với',
     heroTitleHighlight: 'Hệ thống giới thiệu',
-    heroTitle2: '5 cấp độ',
-    heroDescription: 'Nhận lợi nhuận hàng ngày có cấu trúc trên số vốn của bạn và xây dựng thu nhập thụ động thông qua mạng lưới hoa hồng giới thiệu 5 cấp minh bạch — rút tiền nhanh chóng và hiển thị tài khoản đầy đủ.',
+    heroTitle2: '13 cấp độ',
+    heroDescription: 'Nhận lợi nhuận hàng ngày có cấu trúc trên số vốn của bạn và xây dựng thu nhập thụ động thông qua mạng lưới hoa hồng giới thiệu 13 cấp minh bạch — rút tiền nhanh chóng và hiển thị tài khoản đầy đủ.',
     heroStartInvesting: 'Bắt đầu đầu tư',
     heroViewPlans: 'Xem các gói',
     heroSslSecured: 'Bảo mật SSL',
@@ -367,7 +371,7 @@ export const landingTranslations = {
     howItWorksStep2Title: 'Nạp tiền và kích hoạt gói',
     howItWorksStep2Desc: 'Chọn gói đầu tư phù hợp với mục tiêu của bạn. Nạp tiền và kích hoạt gói để bắt đầu nhận lợi nhuận hàng ngày.',
     howItWorksStep3Title: 'Nhận thưởng hàng ngày + Hoa hồng',
-    howItWorksStep3Desc: 'Vốn của bạn tạo ra lợi nhuận hàng ngày trong suốt thời gian của gói. Chia sẻ liên kết giới thiệu duy nhất của bạn để kiếm hoa hồng qua 5 cấp.',
+    howItWorksStep3Desc: 'Vốn của bạn tạo ra lợi nhuận hàng ngày trong suốt thời gian của gói. Chia sẻ liên kết giới thiệu duy nhất của bạn để kiếm hoa hồng qua 13 cấp.',
 
     // Plans
     plansSubtitle: 'Lựa chọn đầu tư',
@@ -392,8 +396,8 @@ export const landingTranslations = {
     // Referral
     referralSubtitle: 'Thu nhập thụ động',
     referralTitle1: 'Kiếm tiền qua',
-    referralTitleHighlight: '5 cấp độ giới thiệu',
-    referralDescription: 'Mỗi nhà đầu tư bạn giới thiệu sẽ mang lại hoa hồng cho bạn không chỉ từ khoản đầu tư của họ, mà còn từ toàn bộ mạng lưới mà họ xây dựng — sâu đến 5 cấp.',
+    referralTitleHighlight: '13 cấp độ giới thiệu',
+    referralDescription: 'Mỗi nhà đầu tư bạn giới thiệu sẽ mang lại hoa hồng cho bạn không chỉ từ khoản đầu tư của họ, mà còn từ toàn bộ mạng lưới mà họ xây dựng — sâu đến 13 cấp.',
     referralBullet1: 'Hoa hồng tự động cộng vào tài khoản của bạn',
     referralBullet2: 'Không giới hạn thu nhập giới thiệu',
     referralBullet3: 'Theo dõi hoạt động mạng lưới theo thời gian thực',
@@ -483,7 +487,9 @@ export const landingTranslations = {
     footerLinkWhyUs: 'Tại sao chọn chúng tôi',
     footerLinkSignUp: 'Đăng ký',
     footerLinkDashboard: 'Bảng điều khiển',
-    footerLinkForgotPw: 'Quên mật khẩu'
+    footerLinkForgotPw: 'Quên mật khẩu',
+    referralLevel: 'Cấp',
+    referralDegreesDesc: 'cấp cách mạng lưới'
   },
   th: {
     // Navbar
@@ -501,14 +507,14 @@ export const landingTranslations = {
     navMarkRead: 'ทำเครื่องหมายว่าอ่านแล้ว',
     navNoNotifications: 'ไม่มีการแจ้งเตือน',
     navWelcomeToVexta: 'ยินดีต้อนรับสู่ VEXTA',
-    navWelcomeMessage: 'เริ่มสร้างการเติบโตให้สินทรัพย์ของคุณตั้งแต่วันนี้ด้วยระบบ 5 ระดับของเรา',
+    navWelcomeMessage: 'เริ่มสร้างการเติบโตให้สินทรัพย์ของคุณตั้งแต่วันนี้ด้วยระบบ 13 ระดับของเรา',
 
     // Hero
     heroSubtitle: 'โครงสร้างพื้นฐานการลงทุน Web3',
     heroTitle1: 'เพิ่มพูนเงินทุนของคุณด้วย',
-    heroTitleHighlight: 'ระบบแนะนำ 5 ระดับ',
+    heroTitleHighlight: 'ระบบแนะนำ 13 ระดับ',
     heroTitle2: 'ที่โปร่งใส',
-    heroDescription: 'รับผลตอบแทนรายวันที่มีโครงสร้างชัดเจน และสร้างรายได้แบบพาสซีฟผ่านเครือข่ายค่าคอมมิชชั่นการแนะนำ 5 ระดับที่โปร่งใส พร้อมระบบถอนเงินที่รวดเร็วและการมองเห็นบัญชีที่ครอบคลุม',
+    heroDescription: 'รับผลตอบแทนรายวันที่มีโครงสร้างชัดเจน และสร้างรายได้แบบพาสซีฟผ่านเครือข่ายค่าคอมมิชชั่นการแนะนำ 13 ระดับที่โปร่งใส พร้อมระบบถอนเงินที่รวดเร็วและการมองเห็นบัญชีที่ครอบคลุม',
     heroStartInvesting: 'เริ่มลงทุน',
     heroViewPlans: 'ดูแผนการลงทุน',
     heroSslSecured: 'ปลอดภัยด้วย SSL',
@@ -529,7 +535,7 @@ export const landingTranslations = {
     howItWorksStep2Title: 'ฝากเงินและเปิดใช้งานแผน',
     howItWorksStep2Desc: 'เลือกแผนการลงทุนที่ตรงกับเป้าหมายของคุณ ฝากเงินเข้าระบบเพื่อเปิดใช้งานแผนและเริ่มรับผลตอบแทนรายวัน',
     howItWorksStep3Title: 'รับผลตอบแทนรายวัน + โบนัสการแนะนำ',
-    howItWorksStep3Desc: 'เงินทุนของคุณจะสร้างผลตอบแทนรายวันตามระยะเวลาของแผนการลงทุน แชร์ลิงก์แนะนำเฉพาะตัวของคุณเพื่อรับค่าคอมมิชชั่นลึกถึง 5 ระดับ',
+    howItWorksStep3Desc: 'เงินทุนของคุณจะสร้างผลตอบแทนรายวันตามระยะเวลาของแผนการลงทุน แชร์ลิงก์แนะนำเฉพาะตัวของคุณเพื่อรับค่าคอมมิชชั่นลึกถึง 13 ระดับ',
 
     // Plans
     plansSubtitle: 'ตัวเลือกการลงทุน',
@@ -554,8 +560,8 @@ export const landingTranslations = {
     // Referral
     referralSubtitle: 'รายได้พาสซีฟ',
     referralTitle1: 'สร้างรายได้ลึกถึง',
-    referralTitleHighlight: 'ระบบแนะนำ 5 ระดับ',
-    referralDescription: 'ทุกๆ นักลงทุนที่คุณแนะนำเข้ามายังแพลตฟอร์ม จะสร้างค่าคอมมิชชั่นให้คุณ ไม่ใช่แค่จากการลงทุนของพวกเขาเท่านั้น แต่รวมถึงเครือข่ายทั้งหมดที่พวกเขาช่วยสร้าง สูงสุดถึง 5 ระดับขั้น',
+    referralTitleHighlight: 'ระบบแนะนำ 13 ระดับ',
+    referralDescription: 'ทุกๆ นักลงทุนที่คุณแนะนำเข้ามายังแพลตฟอร์ม จะสร้างค่าคอมมิชชั่นให้คุณ ไม่ใช่แค่จากการลงทุน củaพวกเขาเท่านั้น แต่รวมถึงเครือข่ายทั้งหมดที่พวกเขาช่วยสร้าง สูงสุดถึง 13 ระดับขั้น',
     referralBullet1: 'ค่าคอมมิชชั่นจะถูกโอนเข้าบัญชีของคุณโดยอัตโนมัติ',
     referralBullet2: 'ไม่มีขีดจำกัดสำหรับรายได้จากการแนะนำ',
     referralBullet3: 'ติดตามกิจกรรมเครือข่ายของคุณได้แบบเรียลไทม์',
@@ -645,7 +651,9 @@ export const landingTranslations = {
     footerLinkWhyUs: 'ทำไมต้องเลือกเรา',
     footerLinkSignUp: 'สมัครสมาชิก',
     footerLinkDashboard: 'แดชบอร์ด',
-    footerLinkForgotPw: 'ลืมรหัสผ่าน'
+    footerLinkForgotPw: 'ลืมรหัสผ่าน',
+    referralLevel: 'ระดับ',
+    referralDegreesDesc: 'ระดับจากเครือข่าย'
   },
   pt: {
     // Navbar
@@ -663,14 +671,14 @@ export const landingTranslations = {
     navMarkRead: 'Marcar lida',
     navNoNotifications: 'Nenhuma notificação.',
     navWelcomeToVexta: 'Bem-vindo à VEXTA',
-    navWelcomeMessage: 'Comece a expandir seus ativos hoje com o nosso sistema de 5 níveis.',
+    navWelcomeMessage: 'Comece a expandir seus ativos hoje com o nosso sistema de 13 níveis.',
 
     // Hero
     heroSubtitle: 'Infraestrutura de investimento Web3',
     heroTitle1: 'Aumente o seu capital com um',
     heroTitleHighlight: 'Sistema de recomendação',
-    heroTitle2: 'de 5 níveis',
-    heroDescription: 'Ganhe retornos diários estruturados em seu capital e crie renda passiva por meio de uma rede de comissão de referência transparente de 5 níveis — com saques rápidos e visibilidade total da conta.',
+    heroTitle2: 'de 13 níveis',
+    heroDescription: 'Ganhe retornos diários estruturados em seu capital e crie renda passiva por meio de uma rede de comissão de referência transparente de 13 níveis — com saques rápidos e visibilidade total da conta.',
     heroStartInvesting: 'Começar a investir',
     heroViewPlans: 'Ver planos',
     heroSslSecured: 'Segurança SSL',
@@ -691,7 +699,7 @@ export const landingTranslations = {
     howItWorksStep2Title: 'Deposite e ative um plano',
     howItWorksStep2Desc: 'Escolha um plano de investimento adequado aos seus objetivos. Financie sua conta e ative o plano para começar a receber retornos diários.',
     howItWorksStep3Title: 'Receba bônus diários + indicações',
-    howItWorksStep3Desc: 'Seu capital gera retornos diários durante a duração do plano. Compartilhe o seu link de referência exclusivo para ganhar comissões em até 5 níveis.',
+    howItWorksStep3Desc: 'Seu capital gera retornos diários durante a duração do plano. Compartilhe o seu link de referência exclusivo para ganhar comissões em até 13 níveis.',
 
     // Plans
     plansSubtitle: 'Opções de investimento',
@@ -716,24 +724,40 @@ export const landingTranslations = {
     // Referral
     referralSubtitle: 'Renda passiva',
     referralTitle1: 'Ganhe em até',
-    referralTitleHighlight: '5 níveis de indicação',
-    referralDescription: 'Cada investidor que você traz para a plataforma gera comissões não apenas pelo investimento dele, mas por toda a rede que ele ajuda a construir — com até 5 níveis de profundidade.',
+    referralTitleHighlight: '13 níveis de indicação',
+    referralDescription: 'Cada investidor que você traz para a plataforma gera comissões não apenas pelo investimento dele, mas por toda a rede que ele ajuda a construir — com até 13 níveis de profundidade.',
     referralBullet1: 'Comissões creditadas automaticamente na sua conta',
     referralBullet2: 'Sem limite para os ganhos de recomendação',
     referralBullet3: 'Acompanhe a atividade de sua rede em tempo real',
     referralBullet4: 'Saque seus ganhos de recomendação de forma independente',
     referralStartBuilding: 'Comece a construir sua rede',
     referralBreakdown: 'Estrutura das comissões',
-    referralLvl1Label: 'Indicações diretas',
-    referralLvl1Desc: 'Pessoas que você convida pessoalmente',
-    referralLvl2Label: 'Rede das suas indicações',
-    referralLvl2Desc: 'Investidores trazidos por seus indicados',
-    referralLvl3Label: 'Terceira geração',
-    referralLvl3Desc: 'Três graus de distância da sua rede',
-    referralLvl4Label: 'Quarta geração',
-    referralLvl4Desc: 'Quatro graus de distância da sua rede',
-    referralLvl5Label: 'Quinta geração',
-    referralLvl5Desc: 'Cinco graus de distância da sua rede',
+    referralLvl1Label: 'Nível 1',
+    referralLvl1Desc: 'Grau de distância da rede',
+    referralLvl2Label: 'Nível 2',
+    referralLvl2Desc: 'Grau de distância da rede',
+    referralLvl3Label: 'Nível 3',
+    referralLvl3Desc: 'Grau de distância da rede',
+    referralLvl4Label: 'Nível 4',
+    referralLvl4Desc: 'Grau de distância da rede',
+    referralLvl5Label: 'Nível 5',
+    referralLvl5Desc: 'Grau de distância da rede',
+    referralLvl6Label: 'Nível 6',
+    referralLvl6Desc: 'Grau de distância da rede',
+    referralLvl7Label: 'Nível 7',
+    referralLvl7Desc: 'Grau de distância da rede',
+    referralLvl8Label: 'Nível 8',
+    referralLvl8Desc: 'Grau de distância da rede',
+    referralLvl9Label: 'Nível 9',
+    referralLvl9Desc: 'Grau de distância da rede',
+    referralLvl10Label: 'Nível 10',
+    referralLvl10Desc: 'Grau de distância da rede',
+    referralLvl11Label: 'Nível 11',
+    referralLvl11Desc: 'Grau de distância da rede',
+    referralLvl12Label: 'Nível 12',
+    referralLvl12Desc: 'Grau de distância da rede',
+    referralLvl13Label: 'Nível 13',
+    referralLvl13Desc: 'Grau de distância da rede',
     referralTotalComm: 'Comissão total potencial',
 
     // Why Us
@@ -807,7 +831,9 @@ export const landingTranslations = {
     footerLinkWhyUs: 'Por que nos escolher',
     footerLinkSignUp: 'Cadastrar',
     footerLinkDashboard: 'Painel',
-    footerLinkForgotPw: 'Esqueci a senha'
+    footerLinkForgotPw: 'Esqueci a senha',
+    referralLevel: 'Nível',
+    referralDegreesDesc: 'graus de distância da rede'
   },
   ko: {
     // Navbar
@@ -825,14 +851,14 @@ export const landingTranslations = {
     navMarkRead: '읽음 표시',
     navNoNotifications: '알림이 없습니다.',
     navWelcomeToVexta: 'VEXTA에 오신 것을 환영합니다',
-    navWelcomeMessage: '5단계 추천인 시스템을 통해 오늘부터 자산을 증식해보세요.',
+    navWelcomeMessage: '13단계 추천인 시스템을 통해 오늘부터 자산을 증식해보세요.',
 
     // Hero
     heroSubtitle: 'Web3 투자 인프라',
     heroTitle1: '자산을 키워보세요,',
-    heroTitleHighlight: '5단계 추천인',
+    heroTitleHighlight: '13단계 추천인',
     heroTitle2: '시스템과 함께',
-    heroDescription: '체계적인 일일 투자 수익을 얻고 투명한 5단계 추천 수수료 네트워크를 통해 패시브 인컴을 구축하세요. 신속한 출금과 완벽한 계정 투명성을 보장합니다.',
+    heroDescription: '체계적인 일일 투자 수익을 얻고 투명한 13단계 추천 수수료 네트워크를 통해 패시브 인컴을 구축하세요. 신속한 출금과 완벽한 계정 투명성을 보장합니다.',
     heroStartInvesting: '투자 시작하기',
     heroViewPlans: '플랜 보기',
     heroSslSecured: 'SSL 보안 적용',
@@ -853,7 +879,7 @@ export const landingTranslations = {
     howItWorksStep2Title: '입금 및 플랜 활성화',
     howItWorksStep2Desc: '자신의 목표에 맞는 투자 플랜을 선택하세요. 자금을 입금하고 플랜을 활성화하여 체계적인 일일 수익을 얻기 시작합니다.',
     howItWorksStep3Title: '일일 수익 + 추천 보너스 획득',
-    howItWorksStep3Desc: '투자금은 플랜 기간 동안 매일 수익을 창출합니다. 고유 추천인 링크를 공유하여 5단계에 걸친 수수료를 획득해 보세요.',
+    howItWorksStep3Desc: '투자금은 플랜 기간 동안 매일 수익을 창출합니다. 고유 추천인 링크를 공유하여 13단계에 걸친 수수료를 획득해 보세요.',
 
     // Plans
     plansSubtitle: '투자 옵션',
@@ -878,8 +904,8 @@ export const landingTranslations = {
     // Referral
     referralSubtitle: '패시브 인컴',
     referralTitle1: '최대',
-    referralTitleHighlight: '5단계 추천 보상',
-    referralDescription: '플랫폼에 직접 초대한 투자자의 투자금뿐만 아니라, 그들이 구축해나가는 네트워크 하위 단계(최대 5레벨 깊이)의 전체 투자에 대해 수수료를 받습니다.',
+    referralTitleHighlight: '13단계 추천 보상',
+    referralDescription: '플랫폼에 직접 초대한 투자자의 투자금뿐만 아니라, 그들이 구축해나가는 네트워크 하위 단계(최대 13레벨 깊이)의 전체 투자에 대해 수수료를 받습니다.',
     referralBullet1: '계정 대시보드로 수수료 자동 적립',
     referralBullet2: '추천 수수료 획득 한도 없음',
     referralBullet3: '실시간으로 네트워크 하위 회원 활동 추적',
@@ -969,7 +995,9 @@ export const landingTranslations = {
     footerLinkWhyUs: '왜 Vexta인가',
     footerLinkSignUp: '회원가입',
     footerLinkDashboard: '대시보드',
-    footerLinkForgotPw: '비밀번호 찾기'
+    footerLinkForgotPw: '비밀번호 찾기',
+    referralLevel: '단계',
+    referralDegreesDesc: '단계 아래의 회원'
   },
   fr: {
     // Navbar
@@ -1015,7 +1043,7 @@ export const landingTranslations = {
     howItWorksStep2Title: 'Déposez et activez un plan',
     howItWorksStep2Desc: 'Choisissez le plan d’investissement qui correspond à vos objectifs. Financez votre compte et activez votre plan pour commencer à générer des gains quotidiens.',
     howItWorksStep3Title: 'Gagnez des rendements + bonus de parrainage',
-    howItWorksStep3Desc: 'Votre capital génère des gains quotidiens pendant toute la durée du plan. Partagez votre lien de parrainage unique pour gagner des commissions sur 5 niveaux.',
+    howItWorksStep3Desc: 'Votre capital génère des gains quotidiens pendant toute la durée du plan. Partagez votre lien de parrainage unique pour gagner des commissions sur 13 niveaux.',
 
     // Plans
     plansSubtitle: 'Options d’investissement',
@@ -1131,6 +1159,8 @@ export const landingTranslations = {
     footerLinkWhyUs: 'Pourquoi nous choisir',
     footerLinkSignUp: 'S\'inscrire',
     footerLinkDashboard: 'Tableau de bord',
-    footerLinkForgotPw: 'Mot de passe oublié'
+    footerLinkForgotPw: 'Mot de passe oublié',
+    referralLevel: 'Niveau',
+    referralDegreesDesc: 'degrés de votre réseau'
   }
 };

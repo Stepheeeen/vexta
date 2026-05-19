@@ -63,7 +63,7 @@ export default function ReferralsPage() {
   const stats = [
     { label: t('referralsStat1'), value: `${data?.totals.level1Count ?? 0}`,        sub: t('referralsStat1Sub') },
     { label: t('referralsStat2'),     value: `${data?.totals.totalNetworkCount ?? 0}`,       sub: t('referralsStat2Sub') },
-    { label: t('referralsStat3'),   value: 'Level 1–5',       sub: '10%, 5%, 3%, 2%, 1%' },
+    { label: t('referralsStat3'),   value: t('referralsCommMatrixVal'),       sub: t('referralsCommMatrixSub') },
     { label: t('referralsStat4'),        value: `$${(data?.totals.totalEarned ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,   sub: t('referralsStat4Sub') },
   ];
 
@@ -73,6 +73,14 @@ export default function ReferralsPage() {
     3: t('referralsLvl3'),
     4: t('referralsLvl4'),
     5: t('referralsLvl5'),
+    6: t('referralsLvl6'),
+    7: t('referralsLvl7'),
+    8: t('referralsLvl8'),
+    9: t('referralsLvl9'),
+    10: t('referralsLvl10'),
+    11: t('referralsLvl11'),
+    12: t('referralsLvl12'),
+    13: t('referralsLvl13'),
   };
 
   const levelRates: Record<number, string> = {
@@ -80,7 +88,15 @@ export default function ReferralsPage() {
     2: '5%',
     3: '3%',
     4: '2%',
-    5: '1%',
+    5: '1.5%',
+    6: '1.5%',
+    7: '1%',
+    8: '1%',
+    9: '1%',
+    10: '1%',
+    11: '1%',
+    12: '1%',
+    13: '1%',
   };
 
   return (
@@ -185,7 +201,7 @@ export default function ReferralsPage() {
               </div>
               <div className="mt-4 pt-4 border-t border-slate-200/60 dark:border-white/5 flex justify-between">
                 <span className="text-xs text-slate-400 dark:text-gray-500 font-mono">{t('referralsTotalPayout')}</span>
-                <span className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400 font-mono">21%</span>
+                <span className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400 font-mono">30%</span>
               </div>
             </div>
           </div>

@@ -262,7 +262,7 @@ export default function SettingsPage() {
               <div className="space-y-3">
                 <Row
                   label={t('themeMode')}
-                  desc={`Toggle light/dark appearance preference. Currently: ${theme === 'dark' ? 'Dark Mode' : 'Light Mode'}`}
+                  desc={`${t('settingsThemeModeDesc')} ${theme === 'dark' ? t('settingsDarkMode') : t('settingsLightMode')}`}
                   action={
                     <Toggle
                       value={theme === 'dark'}
@@ -274,7 +274,7 @@ export default function SettingsPage() {
                 <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-100 dark:border-white/5 font-sans">
                   <div className="min-w-0 mr-4">
                     <p className="text-xs font-medium text-slate-900 dark:text-white">Language / Idioma / ภาษา / 언어 / Langue</p>
-                    <p className="text-[10px] text-slate-500 dark:text-gray-500 mt-0.5">Select your preferred user interface language</p>
+                    <p className="text-[10px] text-slate-500 dark:text-gray-500 mt-0.5">{t('settingsLanguageDesc')}</p>
                   </div>
                   <select
                     value={language}
@@ -301,16 +301,16 @@ export default function SettingsPage() {
               <h2 className="text-sm font-semibold text-slate-900 dark:text-white">{t('security')}</h2>
             </div>
             <div className="space-y-3">
-              <Row label={t('changePassword')} desc="Update your credentials" action={
+              <Row label={t('changePassword')} desc={t('settingsChangePasswordDesc')} action={
                 <button
                   type="button"
                   onClick={() => router.push('/forgot-password')}
                   className="text-[10px] font-mono text-violet-600 dark:text-violet-400 border border-violet-500/30 hover:bg-violet-500/10 px-3 py-1.5 rounded-lg transition-all flex-shrink-0"
                 >
-                  Reset <ChevronRight className="inline w-3 h-3 -mt-0.5" />
+                  {t('settingsResetBtn')} <ChevronRight className="inline w-3 h-3 -mt-0.5" />
                 </button>
               } />
-              <Row label={t('twoFactor')} desc="Extra layer of login security (simulated)" action={
+              <Row label={t('twoFactor')} desc={t('settingsTwoFactorDesc')} action={
                 <Toggle value={twoFA} onChange={() => setTwoFA(!twoFA)} />
               } />
             </div>
@@ -325,8 +325,8 @@ export default function SettingsPage() {
               <h2 className="text-sm font-semibold text-slate-900 dark:text-white">{t('notifications')}</h2>
             </div>
             <div className="space-y-3">
-              <Row label={t('emailNotifications')} desc="Receive updates and alerts via email" action={<Toggle value={emailNotif} onChange={() => setEmailNotif(!emailNotif)} />} />
-              <Row label={t('marketAlerts')} desc="Get notified on significant price movements" action={<Toggle value={alerts} onChange={() => setAlerts(!alerts)} />} />
+              <Row label={t('emailNotifications')} desc={t('settingsEmailNotificationsDesc')} action={<Toggle value={emailNotif} onChange={() => setEmailNotif(!emailNotif)} />} />
+              <Row label={t('marketAlerts')} desc={t('settingsMarketAlertsDesc')} action={<Toggle value={alerts} onChange={() => setAlerts(!alerts)} />} />
             </div>
           </div>
 
@@ -339,7 +339,7 @@ export default function SettingsPage() {
               <h2 className="text-sm font-semibold text-slate-900 dark:text-white">{t('privacy')}</h2>
             </div>
             <div className="space-y-3">
-              <Row label={t('publicProfile')} desc="Allow other members to view your profile" action={<Toggle value={pub} onChange={() => setPub(!pub)} />} />
+              <Row label={t('publicProfile')} desc={t('settingsPublicProfileDesc')} action={<Toggle value={pub} onChange={() => setPub(!pub)} />} />
             </div>
           </div>
 
@@ -352,7 +352,7 @@ export default function SettingsPage() {
               <h2 className="text-sm font-semibold text-red-500 dark:text-red-400">{t('dangerZone')}</h2>
             </div>
             <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono mb-4">
-              Deleting your account is permanent. All data, plans, and referral history will be erased.
+              {t('settingsDangerZoneDesc')}
             </p>
             <button
               onClick={handleDeleteAccount}

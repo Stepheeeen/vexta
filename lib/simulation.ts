@@ -38,6 +38,8 @@ export async function runSimulation(days = 30): Promise<{ message: string; stats
         lastName: u.lastName,
         referralCode: code,
         isVerified: true,
+        country: 'United States',
+        whatsappOrTelegram: '+1234567890',
       },
     });
     createdUsers.push({ id: user.id, referralCode: user.referralCode });
@@ -64,17 +66,17 @@ export async function runSimulation(days = 30): Promise<{ message: string; stats
   if (!plans.length) throw new Error('No plans found. Run upsertPlans() first.');
 
   // 4. Create investments for each user
-  const planA = plans.find((p) => p.name === 'Plan A')!;
-  const planB = plans.find((p) => p.name === 'Plan B')!;
-  const planC = plans.find((p) => p.name === 'Plan C')!;
+  const planA = plans.find((p) => p.name === 'Starter Plan')!;
+  const planB = plans.find((p) => p.name === 'Prime Plan')!;
+  const planC = plans.find((p) => p.name === 'Ultra Plan')!;
 
   const investmentConfig = [
-    { userId: createdUsers[0].id, plan: planC, amount: 20000 }, // John — Plan C
-    { userId: createdUsers[1].id, plan: planB, amount: 5000 },  // Marcus — Plan B
-    { userId: createdUsers[2].id, plan: planB, amount: 2000 },  // Fatima — Plan B
-    { userId: createdUsers[3].id, plan: planA, amount: 500 },   // Liam — Plan A
-    { userId: createdUsers[4].id, plan: planA, amount: 200 },   // Amira — Plan A
-    { userId: createdUsers[5].id, plan: planA, amount: 100 },   // Carlos — Plan A
+    { userId: createdUsers[0].id, plan: planC, amount: 20000 }, // John — Ultra Plan
+    { userId: createdUsers[1].id, plan: planB, amount: 5000 },  // Marcus — Prime Plan
+    { userId: createdUsers[2].id, plan: planB, amount: 2000 },  // Fatima — Prime Plan
+    { userId: createdUsers[3].id, plan: planA, amount: 500 },   // Liam — Starter Plan
+    { userId: createdUsers[4].id, plan: planA, amount: 200 },   // Amira — Starter Plan
+    { userId: createdUsers[5].id, plan: planA, amount: 100 },   // Carlos — Starter Plan
   ];
 
   let investmentsCreated = 0;
@@ -89,11 +91,19 @@ export async function runSimulation(days = 30): Promise<{ message: string; stats
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + cfg.plan.duration);
 
+    let bonusAmount = 0;
+    if (cfg.amount >= 3000) {
+      bonusAmount = cfg.amount * 0.30;
+    } else if (cfg.amount >= 1000) {
+      bonusAmount = cfg.amount * 0.10;
+    }
+
     const investment = await prisma.investment.create({
       data: {
         userId: cfg.userId,
         planId: cfg.plan.id,
         amount: cfg.amount,
+        bonusAmount,
         startDate,
         endDate,
         status: new Date() > endDate ? 'completed' : 'active',

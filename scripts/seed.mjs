@@ -10,9 +10,9 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 const plans = [
-  { name: 'Plan A', tag: 'Starter',  minDeposit: 100,  dailyROI: 0.015, duration: 30 },
-  { name: 'Plan B', tag: 'Popular',  minDeposit: 500,  dailyROI: 0.020, duration: 45 },
-  { name: 'Plan C', tag: 'Advanced', minDeposit: 2000, dailyROI: 0.025, duration: 60 },
+  { name: 'Starter Plan', tag: 'Starter',  minDeposit: 10,   dailyROI: 0.010, duration: 30 },
+  { name: 'Prime Plan',   tag: 'Popular',  minDeposit: 1000, dailyROI: 0.010, duration: 45 },
+  { name: 'Ultra Plan',   tag: 'Advanced', minDeposit: 3000, dailyROI: 0.010, duration: 60 },
 ];
 
 async function seed() {
@@ -42,6 +42,8 @@ async function seed() {
       referralCode: 'VXT_VA_ADMIN',
       isVerified: true,
       role: 'admin',
+      country: 'United States',
+      whatsappOrTelegram: '+1234567890',
     },
   });
   console.log('  ✓ Admin: admin@vexta.app  /  Admin@1234!');
@@ -57,13 +59,15 @@ async function seed() {
       lastName: 'Doe',
       referralCode: 'VXT_JD_DEMO1',
       isVerified: true,
+      country: 'United States',
+      whatsappOrTelegram: '+19876543210',
     },
   });
   console.log('  ✓ Demo:  john@vexta.demo  /  Demo@1234');
 
   // ── Demo investments for John ─────────────────────────────────────────────
-  const planB = seededPlans.find(p => p.name === 'Plan B');
-  const planC = seededPlans.find(p => p.name === 'Plan C');
+  const planB = seededPlans.find(p => p.name === 'Prime Plan');
+  const planC = seededPlans.find(p => p.name === 'Ultra Plan');
 
   if (john && planB && planC) {
     const existing = await prisma.investment.findFirst({ where: { userId: john.id } });
@@ -71,18 +75,18 @@ async function seed() {
       const startB = new Date(); startB.setDate(startB.getDate() - 15);
       const endB   = new Date(startB); endB.setDate(endB.getDate() + planB.duration);
       const invB = await prisma.investment.create({
-        data: { userId: john.id, planId: planB.id, amount: 5000, startDate: startB, endDate: endB, status: 'active', totalEarned: 1500 },
+        data: { userId: john.id, planId: planB.id, amount: 5000, bonusAmount: 500, startDate: startB, endDate: endB, status: 'active', totalEarned: 1500 },
       });
-      await prisma.transaction.create({ data: { userId: john.id, type: 'deposit', amount: 5000, status: 'completed', description: 'Investment — Plan B', reference: invB.id } });
-      await prisma.transaction.create({ data: { userId: john.id, type: 'roi',     amount: 1500, status: 'completed', description: 'Accumulated ROI — Plan B', reference: invB.id } });
+      await prisma.transaction.create({ data: { userId: john.id, type: 'deposit', amount: 5000, status: 'completed', description: 'Investment — Prime Plan', reference: invB.id } });
+      await prisma.transaction.create({ data: { userId: john.id, type: 'roi',     amount: 1500, status: 'completed', description: 'Accumulated ROI — Prime Plan', reference: invB.id } });
 
       const startC = new Date(); startC.setDate(startC.getDate() - 8);
       const endC   = new Date(startC); endC.setDate(endC.getDate() + planC.duration);
       const invC = await prisma.investment.create({
-        data: { userId: john.id, planId: planC.id, amount: 20000, startDate: startC, endDate: endC, status: 'active', totalEarned: 4000 },
+        data: { userId: john.id, planId: planC.id, amount: 20000, bonusAmount: 6000, startDate: startC, endDate: endC, status: 'active', totalEarned: 4000 },
       });
-      await prisma.transaction.create({ data: { userId: john.id, type: 'deposit', amount: 20000, status: 'completed', description: 'Investment — Plan C', reference: invC.id } });
-      await prisma.transaction.create({ data: { userId: john.id, type: 'roi',     amount: 4000,  status: 'completed', description: 'Accumulated ROI — Plan C', reference: invC.id } });
+      await prisma.transaction.create({ data: { userId: john.id, type: 'deposit', amount: 20000, status: 'completed', description: 'Investment — Ultra Plan', reference: invC.id } });
+      await prisma.transaction.create({ data: { userId: john.id, type: 'roi',     amount: 4000,  status: 'completed', description: 'Accumulated ROI — Ultra Plan', reference: invC.id } });
 
       // Simulated referral commission
       await prisma.transaction.create({ data: { userId: john.id, type: 'commission', amount: 1320, status: 'completed', description: 'Level 1 referral commission' } });

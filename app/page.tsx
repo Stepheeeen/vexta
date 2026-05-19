@@ -13,14 +13,14 @@ import { ForceLightMode } from '@/components/landing/force-light-mode';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://vexta.app'),
-  title: 'Vexta — 5-Level Referral Investment Platform',
+  title: 'Vexta — 13-Level Referral Investment Platform',
   description:
-    'Grow your capital with Vexta\'s structured 5-level referral investment system. Earn daily returns, build a referral network, and withdraw with transparency.',
+    'Grow your capital with Vexta\'s structured 13-level referral investment system. Earn daily returns, build a referral network, and withdraw with transparency.',
   keywords: ['investment platform', 'MLM investment', 'referral system', 'passive income', 'daily returns', 'vexta'],
   openGraph: {
-    title: 'Vexta — 5-Level Referral Investment Platform',
+    title: 'Vexta — 13-Level Referral Investment Platform',
     description:
-      'Earn daily returns and passive referral commissions on Vexta. 5-level referral depth, transparent dashboard, prompt withdrawals.',
+      'Earn daily returns and passive referral commissions on Vexta. 13-level referral depth, transparent dashboard, prompt withdrawals.',
     type: 'website',
     url: 'https://vexta.app',
     siteName: 'Vexta',
@@ -35,8 +35,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Vexta — 5-Level Referral Investment Platform',
-    description: 'Structured daily returns + 5-level referral commissions. Transparent, secure, and prompt withdrawals.',
+    title: 'Vexta — 13-Level Referral Investment Platform',
+    description: 'Structured daily returns + 13-level referral commissions. Transparent, secure, and prompt withdrawals.',
     images: ['/og-image.png'],
   },
   robots: {
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white text-slate-900 font-sans antialiased">
+    <div className="min-h-screen bg-white dark:bg-[#0F1419] text-slate-900 dark:text-white font-sans antialiased">
       <ForceLightMode />
       <Navbar />
       <main>

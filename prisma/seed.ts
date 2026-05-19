@@ -30,6 +30,8 @@ async function main() {
         lastName: 'Admin',
         referralCode: generateReferralCode('Vexta', 'Admin'),
         isVerified: true,
+        country: 'United States',
+        whatsappOrTelegram: '+1234567890',
       },
     });
     console.log('  ✓ Admin user created — admin@vexta.app / Admin@1234!');

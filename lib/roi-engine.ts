@@ -7,9 +7,9 @@
 import { prisma } from './prisma';
 
 export const PLAN_RATES = {
-  PLAN_A: { dailyROI: 0.015, duration: 30, minDeposit: 100,  name: 'Plan A', tag: 'Starter'  },
-  PLAN_B: { dailyROI: 0.020, duration: 45, minDeposit: 500,  name: 'Plan B', tag: 'Popular'  },
-  PLAN_C: { dailyROI: 0.025, duration: 60, minDeposit: 2000, name: 'Plan C', tag: 'Advanced' },
+  STARTER: { dailyROI: 0.010, duration: 30, minDeposit: 10,  name: 'Starter Plan', tag: 'Starter'  },
+  PRIME:   { dailyROI: 0.010, duration: 45, minDeposit: 1000, name: 'Prime Plan',   tag: 'Popular'  },
+  ULTRA:   { dailyROI: 0.010, duration: 60, minDeposit: 3000, name: 'Ultra Plan',   tag: 'Advanced' },
 } as const;
 
 /** Calculate daily ROI amount for a given principal */
@@ -17,14 +17,14 @@ export function calculateDailyROI(principal: number, dailyRate: number): number 
   return +(principal * dailyRate).toFixed(2);
 }
 
-/** Calculate total return over the full plan duration */
+/** Calculate total return over the full plan duration (with daily compounding) */
 export function calculateTotalReturn(principal: number, dailyRate: number, days: number): number {
-  return +(principal * dailyRate * days).toFixed(2);
+  return +(principal * (Math.pow(1 + dailyRate, days) - 1)).toFixed(2);
 }
 
-/** Calculate total return as a percentage */
+/** Calculate total return as a percentage (with daily compounding) */
 export function calculateTotalROIPercent(dailyRate: number, days: number): number {
-  return +(dailyRate * days * 100).toFixed(1);
+  return +((Math.pow(1 + dailyRate, days) - 1) * 100).toFixed(1);
 }
 
 /**
@@ -57,7 +57,9 @@ export async function processDailyROI(): Promise<{ processed: number; totalPaid:
     });
     if (todayEntry) continue;
 
-    const dailyAmount = calculateDailyROI(inv.amount, inv.plan.dailyROI);
+    // Compound interest: calculate daily ROI based on (amount + bonusAmount + totalEarned)
+    const compoundedBase = inv.amount + (inv.bonusAmount || 0) + inv.totalEarned;
+    const dailyAmount = calculateDailyROI(compoundedBase, inv.plan.dailyROI);
 
     // Record the daily ROI entry
     await prisma.dailyROIEntry.create({

@@ -173,3 +173,75 @@
   opacity: 0;
   animation: fadeInUp 0.6s ease-out forwards;
 }
+
+/* Landing Page Dark Mode Overrides */
+.dark {
+  /* Override background styles */
+  & .bg-white {
+    background-color: #0F1419 !important;
+  }
+  & .bg-slate-50 {
+    background-color: #0A0F14 !important;
+  }
+  & .bg-slate-100\/50 {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+  }
+  & .bg-white\/90 {
+    background-color: rgba(10, 15, 20, 0.6) !important;
+  }
+  & .bg-white\/95 {
+    background-color: rgba(15, 20, 25, 0.8) !important;
+  }
+  & .bg-slate-50\/80 {
+    background-color: rgba(10, 15, 20, 0.8) !important;
+  }
+  & .bg-violet-50 {
+    background-color: rgba(124, 58, 237, 0.1) !important;
+  }
+
+  /* Override text colors */
+  & .text-slate-900 {
+    color: #ffffff !important;
+  }
+  & .text-slate-800 {
+    color: #f8fafc !important;
+  }
+  & .text-slate-700 {
+    color: #cbd5e1 !important;
+  }
+  & .text-slate-600 {
+    color: #94a3b8 !important;
+  }
+  & .text-slate-500 {
+    color: #64748b !important;
+  }
+  & .text-slate-400 {
+    color: #475569 !important;
+  }
+
+  /* Override border colors */
+  & .border-slate-100, & .border-slate-200, & .border-slate-200\/80, & .border-slate-200\/60, & .border-slate-200\/50, & .border-slate-300 {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+  }
+
+  /* Override shadow & gradients */
+  & .shadow-sm, & .shadow-md, & .shadow-lg, & .shadow-xl {
+    box-shadow: none !important;
+  }
+  & .shadow-slate-200\/50 {
+    box-shadow: none !important;
+  }
+  & .from-white {
+    --tw-gradient-from: #0F1419 !important;
+    --tw-gradient-to: rgba(15, 20, 25, 0) !important;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+  }
+  & .to-white {
+    --tw-gradient-to: #0F1419 !important;
+  }
+
+  /* Adjust illustrations in dark mode */
+  & img[src*="illustrations"] {
+    filter: brightness(0.95) contrast(1.05) hue-rotate(10deg);
+  }
+}

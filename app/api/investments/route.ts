@@ -97,11 +97,19 @@ export async function POST(req: NextRequest) {
     const endDate = new Date();
     endDate.setDate(endDate.getDate() + plan.duration);
 
+    let bonusAmount = 0;
+    if (amount >= 3000) {
+      bonusAmount = amount * 0.30;
+    } else if (amount >= 1000) {
+      bonusAmount = amount * 0.10;
+    }
+
     const investment = await prisma.investment.create({
       data: {
         userId: payload.userId,
         planId,
         amount,
+        bonusAmount,
         startDate,
         endDate,
         status: 'active',

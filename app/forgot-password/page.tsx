@@ -4,8 +4,11 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { BackgroundPattern } from "@/components/background-pattern";
+import { useTranslation } from '@/components/translation-provider';
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 export default function ForgotPasswordPage() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [error, setError] = useState('');
@@ -13,7 +16,7 @@ export default function ForgotPasswordPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.includes('@') || !email.includes('.')) {
-      setError('Please enter a valid email address.');
+      setError(t('forgotPasswordInvalidEmail'));
       return;
     }
     setError('');
@@ -23,6 +26,7 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0F1419] text-slate-900 dark:text-white flex flex-col items-center justify-center relative p-4 transition-colors duration-250">
       <BackgroundPattern />
+      <LanguageSwitcher />
 
       {/* Header/Logo */}
       <div className="absolute top-8 left-8 z-10 flex flex-col items-center gap-4 w-full md:w-auto md:left-1/2 md:-translate-x-1/2">
@@ -44,10 +48,10 @@ export default function ForgotPasswordPage() {
           {!isSubmitted ? (
             <>
               <h1 className="text-3xl font-light text-slate-900 dark:text-[#FFFFFF] mb-2 font-sans tracking-tight">
-                Reset <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-[#00D9FF] to-[#00FF88]">Password</span>
+                {t('forgotPasswordTitle')}
               </h1>
               <p className="text-slate-500 dark:text-[#808A9D] text-sm mb-8 font-mono">
-                Enter your email to receive a password reset link.
+                {t('forgotPasswordSubtitle')}
               </p>
 
               {error && (
@@ -59,7 +63,7 @@ export default function ForgotPasswordPage() {
               <form onSubmit={handleSubmit}>
                 <div className="group/input mb-8">
                   <label className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-[#FFFFFF] mb-2 font-mono uppercase tracking-widest text-[10px] dark:text-white/50">
-                    Email Address
+                    {t('forgotPasswordEmailLabel')}
                   </label>
                   <div className="relative">
                     <input
@@ -79,7 +83,7 @@ export default function ForgotPasswordPage() {
                   type="submit"
                   className="w-full px-4 py-4 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-gray-100 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group/btn relative overflow-hidden"
                 >
-                  <span className="relative z-10 font-mono tracking-widest text-sm uppercase">Send Reset Link</span>
+                  <span className="relative z-10 font-mono tracking-widest text-sm uppercase">{t('forgotPasswordSendBtn')}</span>
                   <ArrowRight className="w-4 h-4 relative z-10 group-hover/btn:translate-x-1 transition-transform" />
                 </button>
               </form>
@@ -92,16 +96,16 @@ export default function ForgotPasswordPage() {
                 </svg>
               </div>
               <h2 className="text-2xl font-light text-slate-900 dark:text-[#FFFFFF] mb-2 font-sans tracking-tight">
-                Email <span className="font-semibold text-emerald-600 dark:text-[#00FF88]">Sent</span>
+                {t('forgotPasswordSentTitle')}
               </h2>
               <p className="text-slate-500 dark:text-[#808A9D] text-xs leading-relaxed font-mono mt-4 mb-8">
-                If an account exists with that email, we've sent instructions to reset your password. Please check your inbox.
+                {t('forgotPasswordSentDesc')}
               </p>
               <button
                 onClick={() => setIsSubmitted(false)}
                 className="w-full px-4 py-3 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-[#FFFFFF] hover:bg-slate-100 dark:hover:bg-white/5 font-mono text-sm tracking-widest rounded-xl transition-all uppercase"
               >
-                Try Another Email
+                {t('forgotPasswordTryAnother')}
               </button>
             </div>
           )}
@@ -109,7 +113,7 @@ export default function ForgotPasswordPage() {
           <div className="mt-8 text-center pt-6 border-t border-slate-100 dark:border-white/5">
             <Link href="/login" className="inline-flex items-center justify-center gap-2 text-slate-500 dark:text-[#808A9D] text-[10px] font-mono uppercase tracking-widest hover:text-slate-900 dark:hover:text-white transition-colors group/link">
               <ArrowLeft className="w-3 h-3 group-hover/link:-translate-x-1 transition-transform" />
-              Back to Sign In
+              {t('forgotPasswordBackToSignIn')}
             </Link>
           </div>
         </div>

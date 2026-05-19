@@ -275,7 +275,7 @@ export default function Dashboard() {
                         const pRes = await fetch('/api/plans');
                         if (!pRes.ok) throw new Error('Could not fetch plans. Please try again.');
                         const plansData = await pRes.json();
-                        const planC = plansData.plans.find((p: any) => p.name === 'Plan C') || plansData.plans[0];
+                        const planC = plansData.plans.find((p: any) => p.name === 'Ultra Plan') || plansData.plans[0];
                         if (!planC) throw new Error('No plans found. Seeding first...');
                         
                         const invRes = await fetch('/api/investments', {
@@ -285,7 +285,7 @@ export default function Dashboard() {
                         });
                         const invJson = await invRes.json();
                         if (!invRes.ok) throw new Error(invJson.error || 'Failed to start investment');
-                        setSimSuccess(`Successfully started 45-day simulated Plan C ($5,000)!`);
+                        setSimSuccess(`Successfully started 60-day simulated Ultra Plan ($5,000)!`);
                         await fetchDashboardData();
                       } catch (err: any) {
                         setSimError(err.message || 'Investment failed');
@@ -415,7 +415,7 @@ export default function Dashboard() {
               <div className="space-y-3 mb-5">
                 {[
                   { label: t('referralsStat1'),  value: `${data?.stats.directReferrals ?? 0}`, color: 'text-green-600 dark:text-green-400' },
-                  { label: t('overviewCommRate'),    value: 'Level 1-5 (10% - 1%)', color: 'text-violet-600 dark:text-violet-400' },
+                  { label: t('overviewCommRate'),    value: 'Level 1-13 (10% - 1%)', color: 'text-violet-600 dark:text-violet-400' },
                   { label: t('overviewTotalComm'),  value: `$${(data?.stats.totalCommissions ?? 0).toFixed(2)}`, color: 'text-green-600 dark:text-green-400' },
                 ].map(({ label, value, color }) => (
                   <div key={label} className="flex justify-between items-center text-xs">

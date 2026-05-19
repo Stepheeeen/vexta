@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     }),
   ]);
 
-  const byLevel = [1, 2, 3, 4, 5].map((level) => {
+  const byLevel = Array.from({ length: 13 }, (_, i) => i + 1).map((level) => {
     const levelCommissions = commissions.filter((c) => c.level === level);
     const earned = levelCommissions.reduce((s, c) => s + c.amount, 0);
     const count = tree.find((t) => t.level === level)?.users.length ?? 0;

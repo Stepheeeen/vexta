@@ -4,8 +4,11 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Lock, Eye, EyeOff } from 'lucide-react';
 import { BackgroundPattern } from "@/components/background-pattern";
+import { useTranslation } from '@/components/translation-provider';
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 export default function ResetPasswordPage() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     password: '',
     confirmPassword: ''
@@ -23,11 +26,11 @@ export default function ResetPasswordPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters long.");
+      setError(t('resetPasswordLengthError'));
       return;
     }
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match.");
+      setError(t('resetPasswordMismatchError'));
       return;
     }
     setError('');
@@ -37,6 +40,7 @@ export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0F1419] text-slate-900 dark:text-white flex flex-col items-center justify-center relative p-4 transition-colors duration-250">
       <BackgroundPattern />
+      <LanguageSwitcher />
 
       {/* Header/Logo */}
       <div className="absolute top-8 left-8 z-10 flex flex-col items-center gap-4 w-full md:w-auto md:left-1/2 md:-translate-x-1/2">
@@ -58,10 +62,10 @@ export default function ResetPasswordPage() {
           {!isSubmitted ? (
             <>
               <h1 className="text-3xl font-light text-slate-900 dark:text-[#FFFFFF] mb-2 font-sans tracking-tight">
-                New <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-[#00D9FF] to-[#00FF88]">Password</span>
+                {t('resetPasswordTitle')}
               </h1>
               <p className="text-slate-500 dark:text-[#808A9D] text-sm mb-8 font-mono">
-                Enter a new secure password to protect your account.
+                {t('resetPasswordSubtitle')}
               </p>
 
               {error && (
@@ -73,7 +77,7 @@ export default function ResetPasswordPage() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="group/input">
                   <label className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-[#FFFFFF] mb-2 font-mono uppercase tracking-widest text-[10px] dark:text-white/50">
-                    New Password
+                    {t('resetPasswordNewLabel')}
                   </label>
                   <div className="relative">
                     <input
@@ -94,13 +98,13 @@ export default function ResetPasswordPage() {
                     </button>
                   </div>
                   <p className="text-[10px] text-slate-500 dark:text-[#808A9D] mt-2 font-mono uppercase tracking-wider">
-                    Min. 8 chars / Numbers / Symbols
+                    {t('resetPasswordHint')}
                   </p>
                 </div>
 
                 <div className="group/input">
                   <label className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-[#FFFFFF] mb-2 font-mono uppercase tracking-widest text-[10px] dark:text-white/50">
-                    Confirm Password
+                    {t('resetPasswordConfirmLabel')}
                   </label>
                   <div className="relative">
                     <input
@@ -126,7 +130,7 @@ export default function ResetPasswordPage() {
                   type="submit"
                   className="w-full mt-4 px-4 py-4 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-gray-100 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group/btn relative overflow-hidden"
                 >
-                  <span className="relative z-10 font-mono tracking-widest text-sm uppercase">Update Password</span>
+                  <span className="relative z-10 font-mono tracking-widest text-sm uppercase">{t('resetPasswordUpdateBtn')}</span>
                   <ArrowRight className="w-4 h-4 relative z-10 group-hover/btn:translate-x-1 transition-transform" />
                 </button>
               </form>
@@ -137,13 +141,13 @@ export default function ResetPasswordPage() {
                 <Lock className="w-8 h-8 text-[#00FF88]" />
               </div>
               <h2 className="text-2xl font-light text-slate-900 dark:text-[#FFFFFF] mb-2 font-sans tracking-tight">
-                Password <span className="font-semibold text-[#00FF88]">Updated</span>
+                {t('resetPasswordSuccessTitle')}
               </h2>
               <p className="text-slate-500 dark:text-[#808A9D] text-xs leading-relaxed font-mono mt-4 mb-8 uppercase tracking-wider">
-                Your password has been successfully reset. You can now sign in.
+                {t('resetPasswordSuccessDesc')}
               </p>
               <Link href="/login" className="w-full flex items-center justify-center px-4 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-gray-100 font-semibold rounded-xl transition-all duration-300 group/btn">
-                <span className="relative z-10 font-mono tracking-widest text-sm uppercase">Sign In</span>
+                <span className="relative z-10 font-mono tracking-widest text-sm uppercase">{t('loginSignInBtn')}</span>
                 <ArrowRight className="w-4 h-4 ml-2 relative z-10 group-hover/btn:translate-x-1 transition-transform" />
               </Link>
             </div>

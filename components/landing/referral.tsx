@@ -11,10 +11,18 @@ export function ReferralSystem() {
 
   const levels = [
     { level: 1, commission: '10%', labelKey: 'referralLvl1Label', descKey: 'referralLvl1Desc', width: 'w-full', color: 'bg-violet-500', textColor: 'text-violet-600' },
-    { level: 2, commission: '5%', labelKey: 'referralLvl2Label', descKey: 'referralLvl2Desc', width: 'w-5/6', color: 'bg-violet-400', textColor: 'text-violet-500' },
-    { level: 3, commission: '3%', labelKey: 'referralLvl3Label', descKey: 'referralLvl3Desc', width: 'w-4/6', color: 'bg-blue-500', textColor: 'text-blue-600' },
-    { level: 4, commission: '2%', labelKey: 'referralLvl4Label', descKey: 'referralLvl4Desc', width: 'w-3/6', color: 'bg-blue-400', textColor: 'text-blue-500' },
-    { level: 5, commission: '1%', labelKey: 'referralLvl5Label', descKey: 'referralLvl5Desc', width: 'w-2/6', color: 'bg-indigo-400', textColor: 'text-indigo-600' },
+    { level: 2, commission: '5%', labelKey: 'referralLvl2Label', descKey: 'referralLvl2Desc', width: 'w-[90%]', color: 'bg-violet-400', textColor: 'text-violet-500' },
+    { level: 3, commission: '3%', labelKey: 'referralLvl3Label', descKey: 'referralLvl3Desc', width: 'w-[80%]', color: 'bg-blue-500', textColor: 'text-blue-600' },
+    { level: 4, commission: '2%', labelKey: 'referralLvl4Label', descKey: 'referralLvl4Desc', width: 'w-[70%]', color: 'bg-blue-400', textColor: 'text-blue-500' },
+    { level: 5, commission: '1.5%', labelKey: 'referralLvl5Label', descKey: 'referralLvl5Desc', width: 'w-[60%]', color: 'bg-indigo-400', textColor: 'text-indigo-600' },
+    { level: 6, commission: '1.5%', labelKey: 'referralLvl6Label', descKey: 'referralLvl6Desc', width: 'w-[55%]', color: 'bg-indigo-400', textColor: 'text-indigo-600' },
+    { level: 7, commission: '1%', labelKey: 'referralLvl7Label', descKey: 'referralLvl7Desc', width: 'w-[50%]', color: 'bg-indigo-400', textColor: 'text-indigo-600' },
+    { level: 8, commission: '1%', labelKey: 'referralLvl8Label', descKey: 'referralLvl8Desc', width: 'w-[45%]', color: 'bg-indigo-400', textColor: 'text-indigo-600' },
+    { level: 9, commission: '1%', labelKey: 'referralLvl9Label', descKey: 'referralLvl9Desc', width: 'w-[40%]', color: 'bg-indigo-400', textColor: 'text-indigo-600' },
+    { level: 10, commission: '1%', labelKey: 'referralLvl10Label', descKey: 'referralLvl10Desc', width: 'w-[35%]', color: 'bg-indigo-400', textColor: 'text-indigo-600' },
+    { level: 11, commission: '1%', labelKey: 'referralLvl11Label', descKey: 'referralLvl11Desc', width: 'w-[30%]', color: 'bg-indigo-400', textColor: 'text-indigo-600' },
+    { level: 12, commission: '1%', labelKey: 'referralLvl12Label', descKey: 'referralLvl12Desc', width: 'w-[25%]', color: 'bg-indigo-400', textColor: 'text-indigo-600' },
+    { level: 13, commission: '1%', labelKey: 'referralLvl13Label', descKey: 'referralLvl13Desc', width: 'w-[20%]', color: 'bg-indigo-400', textColor: 'text-indigo-600' },
   ];
   return (
     <section id="referral" className="py-24 bg-slate-50 relative">
@@ -75,15 +83,23 @@ export function ReferralSystem() {
               />
             </div>
             <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-widest mb-6">{t('referralBreakdown')}</h3>
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
               {levels.map(({ level, commission, labelKey, descKey, width, color, textColor }) => (
                 <div key={level} className="group/row">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                       <span className="text-xs font-bold text-slate-400 w-12">LVL {level}</span>
                       <div>
-                        <span className="text-sm font-medium text-slate-800 block">{t(labelKey)}</span>
-                        <span className="text-xs text-slate-400">{t(descKey)}</span>
+                        <span className="text-sm font-medium text-slate-800 block">
+                          {t(labelKey).startsWith('referralLvl')
+                            ? `${t('referralLevel')} ${level}`
+                            : t(labelKey)}
+                        </span>
+                        <span className="text-xs text-slate-400">
+                          {t(descKey).startsWith('referralLvl')
+                            ? `${level} ${t('referralDegreesDesc')}`
+                            : t(descKey)}
+                        </span>
                       </div>
                     </div>
                     <span className={`text-lg font-bold ${textColor}`}>{commission}</span>
@@ -98,7 +114,7 @@ export function ReferralSystem() {
             {/* Total */}
             <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
               <span className="text-sm text-slate-500">{t('referralTotalComm')}</span>
-              <span className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600">21%</span>
+              <span className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600">30%</span>
             </div>
           </div>
         </div>

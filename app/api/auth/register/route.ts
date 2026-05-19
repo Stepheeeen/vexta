@@ -7,6 +7,8 @@ const schema = z.object({
   firstName: z.string().min(1, 'First name is required').max(50),
   lastName:  z.string().min(1, 'Last name is required').max(50),
   email:     z.string().email('Invalid email address'),
+  country:   z.string().min(1, 'Country is required'),
+  whatsappOrTelegram: z.string().optional(),
   password:  z.string().min(8, 'Password must be at least 8 characters'),
   referralCode: z.string().optional(),
 });
@@ -23,7 +25,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { firstName, lastName, email, password, referralCode } = parsed.data;
+    const { firstName, lastName, email, country, whatsappOrTelegram, password, referralCode } = parsed.data;
 
     // Check duplicate email
     const existing = await prisma.user.findUnique({ where: { email } });
@@ -51,6 +53,8 @@ export async function POST(req: NextRequest) {
         firstName,
         lastName,
         email,
+        country,
+        whatsappOrTelegram,
         passwordHash: await hashPassword(password),
         referralCode: generateReferralCode(firstName, lastName),
         referredById,

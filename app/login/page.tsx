@@ -6,6 +6,7 @@ import { VextaLogoText } from '@/components/vexta-logo';
 import { BackgroundPattern } from '@/components/background-pattern';
 import { ArrowRight, Activity, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useTranslation } from '@/components/translation-provider';
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 export default function Login() {
   const { t } = useTranslation();
@@ -72,6 +73,7 @@ export default function Login() {
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-[#0F1419] text-slate-900 dark:text-white flex items-center justify-center p-4 relative overflow-hidden transition-colors duration-250">
       <BackgroundPattern />
+      <LanguageSwitcher />
 
       <div className="w-full max-w-md relative z-10 mt-12 mb-12">
         <div className="mb-8 text-center flex flex-col items-center">

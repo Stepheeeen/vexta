@@ -13,7 +13,7 @@ export function Hero() {
   const stats = [
     { value: '$2.4M+', label: t('heroTotalInvested') },
     { value: '12,800+', label: t('heroActiveMembers') },
-    { value: '5 Levels', label: t('heroReferralDepth') },
+    { value: `13 ${t('referralLevel') || 'Levels'}`, label: t('heroReferralDepth') },
   ];
 
   const badges = [
@@ -42,7 +42,7 @@ export function Hero() {
             </p>
 
             <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-slate-900 tracking-tight leading-[1.1] mb-5 animate-fade-in-up" style={{ animationDelay: '80ms' }}>
-              {t('heroTitle1')}<br className="hidden sm:block" /> with a{' '}
+              {t('heroTitle1')}<br className="hidden sm:block" />{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600">
                 {t('heroTitleHighlight')}
               </span>{' '}

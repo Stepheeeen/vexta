@@ -20,6 +20,8 @@ model User {
   lastName     String
   referralCode String   @unique
   referredById String?  @db.ObjectId
+  country      String   @default("Unknown")
+  whatsappOrTelegram String?
 
   isVerified Boolean @default(false)
   isActive   Boolean @default(true)
@@ -61,6 +63,7 @@ model Investment {
   userId      String   @db.ObjectId
   planId      String   @db.ObjectId
   amount      Float
+  bonusAmount Float    @default(0)
   startDate   DateTime @default(now())
   endDate     DateTime
   status      String   @default("active") // active | completed | cancelled

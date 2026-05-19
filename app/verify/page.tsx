@@ -4,8 +4,11 @@ import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowRight, ShieldCheck, Loader2 } from 'lucide-react';
 import { BackgroundPattern } from "@/components/background-pattern";
+import { useTranslation } from '@/components/translation-provider';
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 export default function VerifyPage() {
+  const { t } = useTranslation();
   const [code, setCode] = useState(['', '', '', '', '', '']);
   const [isVerified, setIsVerified] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -98,6 +101,7 @@ export default function VerifyPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0F1419] text-slate-900 dark:text-white flex flex-col items-center justify-center relative p-4 transition-colors duration-250">
       <BackgroundPattern />
+      <LanguageSwitcher />
 
       {/* Header/Logo */}
       <div className="absolute top-8 left-8 z-10 flex flex-col items-center gap-4 w-full md:w-auto md:left-1/2 md:-translate-x-1/2">
@@ -119,10 +123,10 @@ export default function VerifyPage() {
           {!isVerified ? (
             <>
               <h1 className="text-3xl font-light text-slate-900 dark:text-[#FFFFFF] mb-2 font-sans tracking-tight">
-                Verify <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-[#00D9FF] to-[#00FF88]">Email</span>
+                {t('verifyTitle')}
               </h1>
               <p className="text-slate-500 dark:text-[#808A9D] text-sm mb-6 font-mono">
-                Enter the 6-digit code we sent to your email address.
+                {t('verifySubtitle')}
               </p>
 
               {error && (
@@ -133,7 +137,7 @@ export default function VerifyPage() {
 
               {resendSuccess && (
                 <div className="mb-6 p-3.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-mono">
-                  Verification code has been resent to your email.
+                  {t('verifySuccessMsg')}
                 </div>
               )}
 
@@ -164,7 +168,7 @@ export default function VerifyPage() {
                     <Loader2 className="w-4 h-4 animate-spin text-white dark:text-black" />
                   ) : (
                     <>
-                      <span className="relative z-10 font-mono tracking-widest text-sm uppercase">Verify Code</span>
+                      <span className="relative z-10 font-mono tracking-widest text-sm uppercase">{t('verifySubmitBtn')}</span>
                       <ArrowRight className="w-4 h-4 relative z-10 group-hover/btn:translate-x-1 transition-transform" />
                     </>
                   )}
@@ -173,13 +177,13 @@ export default function VerifyPage() {
 
               <div className="mt-8 text-center pt-6 border-t border-slate-100 dark:border-white/5">
                 <p className="text-slate-500 dark:text-[#808A9D] text-[10px] font-mono uppercase tracking-widest">
-                  Didn't receive a code?{' '}
+                  {t('verifyNoCode')}{' '}
                   <button
                     onClick={handleResend}
                     disabled={resending}
                     className="text-slate-950 dark:text-white hover:text-violet-600 dark:hover:text-[#00D9FF] font-semibold tracking-wider underline decoration-slate-300 dark:decoration-white/30 underline-offset-4 ml-1 transition-colors disabled:opacity-50"
                   >
-                    {resending ? 'Sending...' : 'Resend Code'}
+                    {resending ? t('verifySending') : t('verifyResendBtn')}
                   </button>
                 </p>
               </div>
@@ -190,13 +194,13 @@ export default function VerifyPage() {
                 <ShieldCheck className="w-8 h-8 text-violet-600 dark:text-[#00D9FF]" />
               </div>
               <h2 className="text-2xl font-light text-slate-900 dark:text-[#FFFFFF] mb-2 font-sans tracking-tight">
-                Email <span className="font-semibold text-violet-600 dark:text-[#00D9FF]">Verified</span>
+                {t('verifySuccessTitle')}
               </h2>
               <p className="text-slate-500 dark:text-[#808A9D] text-xs leading-relaxed font-mono mt-4 mb-8 uppercase tracking-wider">
-                Your email has been successfully verified. Welcome to Vexta.
+                {t('verifySuccessDesc')}
               </p>
               <Link href="/dashboard" className="w-full flex items-center justify-center px-4 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-gray-100 font-semibold rounded-xl transition-all duration-300 group/btn">
-                <span className="relative z-10 font-mono tracking-widest text-sm uppercase">Go to Dashboard</span>
+                <span className="relative z-10 font-mono tracking-widest text-sm uppercase">{t('verifyGoToDashboard')}</span>
                 <ArrowRight className="w-4 h-4 ml-2 relative z-10 group-hover/btn:translate-x-1 transition-transform" />
               </Link>
             </div>
