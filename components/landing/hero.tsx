@@ -5,19 +5,22 @@ import Link from 'next/link';
 import { ArrowRight, ShieldCheck, Clock, BadgeCheck } from 'lucide-react';
 import { BackgroundPattern } from '@/components/background-pattern';
 
-const stats = [
-  { value: '$2.4M+', label: 'Total Invested' },
-  { value: '12,800+', label: 'Active Members' },
-  { value: '5 Levels', label: 'Referral Depth' },
-];
-
-const badges = [
-  { icon: ShieldCheck, label: 'SSL Secured' },
-  { icon: Clock, label: '24/7 Support' },
-  { icon: BadgeCheck, label: 'Manual Verification' },
-];
+import { useTranslation } from '@/components/translation-provider';
 
 export function Hero() {
+  const { t } = useTranslation();
+
+  const stats = [
+    { value: '$2.4M+', label: t('heroTotalInvested') },
+    { value: '12,800+', label: t('heroActiveMembers') },
+    { value: '5 Levels', label: t('heroReferralDepth') },
+  ];
+
+  const badges = [
+    { icon: ShieldCheck, label: t('heroSslSecured') },
+    { icon: Clock, label: t('heroSupport') },
+    { icon: BadgeCheck, label: t('heroVerification') },
+  ];
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 bg-white">
       {/* Auth-style topological mesh background */}
@@ -35,19 +38,19 @@ export function Hero() {
 
             {/* Mono label */}
             <p className="text-[11px] font-mono text-violet-600 uppercase tracking-[0.2em] mb-5 animate-fade-in-up">
-              Web3 Investment Infrastructure
+              {t('heroSubtitle')}
             </p>
 
             <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-bold text-slate-900 tracking-tight leading-[1.1] mb-5 animate-fade-in-up" style={{ animationDelay: '80ms' }}>
-              Grow Your Capital<br className="hidden sm:block" /> with a{' '}
+              {t('heroTitle1')}<br className="hidden sm:block" /> with a{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600">
-                5-Level Referral
+                {t('heroTitleHighlight')}
               </span>{' '}
-              System
+              {t('heroTitle2')}
             </h1>
 
             <p className="text-base text-slate-600 max-w-lg mx-auto lg:mx-0 mb-8 leading-relaxed animate-fade-in-up" style={{ animationDelay: '150ms' }}>
-              Earn structured daily returns on your capital and build passive income through a transparent 5-level referral commission network — with prompt withdrawals and full account visibility.
+              {t('heroDescription')}
             </p>
 
             {/* CTAs — no glow, clean */}
@@ -56,7 +59,7 @@ export function Hero() {
                 href="/signup"
                 className="group inline-flex items-center gap-2 px-7 py-3.5 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 rounded-xl transition-all duration-200 shadow-md shadow-violet-500/10"
               >
-                Start Investing
+                {t('heroStartInvesting')}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </Link>
               <a
@@ -65,9 +68,9 @@ export function Hero() {
                   e.preventDefault();
                   document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-semibold text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-xl transition-all duration-200"
+                className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-semibold text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-350 hover:bg-slate-50 rounded-xl transition-all duration-200"
               >
-                View Plans
+                {t('heroViewPlans')}
               </a>
             </div>
 
@@ -130,7 +133,7 @@ export function Hero() {
                 <svg viewBox="0 0 16 16" fill="none" className="w-3 h-3"><path d="M8 2v12M4 6l4-4 4 4" stroke="#16a34a" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
               </div>
               <div>
-                <div className="text-[10px] text-slate-400 font-mono">Daily Return</div>
+                <div className="text-[10px] text-slate-400 font-mono">{t('heroDailyReturn')}</div>
                 <div className="text-xs font-bold text-green-600">+$248.00</div>
               </div>
             </div>
@@ -141,7 +144,7 @@ export function Hero() {
                 <svg viewBox="0 0 16 16" fill="none" className="w-3 h-3"><circle cx="8" cy="6" r="2.5" stroke="#7c3aed" strokeWidth="1.5"/><path d="M3 13c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="#7c3aed" strokeWidth="1.5" strokeLinecap="round"/></svg>
               </div>
               <div>
-                <div className="text-[10px] text-slate-400 font-mono">Referral Earned</div>
+                <div className="text-[10px] text-slate-400 font-mono">{t('heroReferralEarned')}</div>
                 <div className="text-xs font-bold text-violet-600">$1,320</div>
               </div>
             </div>

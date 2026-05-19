@@ -3,31 +3,19 @@
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
-const faqs = [
-  {
-    q: 'What is the minimum deposit amount?',
-    a: 'The minimum deposit varies by plan. Plan A starts at $100, Plan B at $500, and Plan C at $2,000. You can deposit in supported cryptocurrencies or local payment methods where available.',
-  },
-  {
-    q: 'How are withdrawals processed?',
-    a: 'Withdrawal requests are reviewed and processed within 24 hours on business days. Funds are sent directly to your registered wallet or account. There is no minimum withdrawal threshold once your plan has matured.',
-  },
-  {
-    q: 'Are there any fees on deposits or withdrawals?',
-    a: 'Vexta does not charge platform fees on deposits. A small network fee may apply on cryptocurrency withdrawals depending on the blockchain used. This fee is disclosed at the time of withdrawal.',
-  },
-  {
-    q: 'When and how are referral commissions paid out?',
-    a: 'Referral commissions are credited to your account automatically each time someone in your network completes a qualifying deposit. Commissions can be withdrawn independently of your investment plans at any time.',
-  },
-  {
-    q: 'What are the risks of investing on this platform?',
-    a: 'All investments carry risk, and past performance does not guarantee future results. Returns are projected based on plan structure and are not guaranteed. You should only invest capital you can afford to lose. We recommend reading our full risk disclosure before proceeding.',
-  },
-];
+import { useTranslation } from '@/components/translation-provider';
 
 export function FAQ() {
+  const { t } = useTranslation();
   const [open, setOpen] = useState<number | null>(null);
+
+  const faqs = [
+    { q: t('faqQ1'), a: t('faqA1') },
+    { q: t('faqQ2'), a: t('faqA2') },
+    { q: t('faqQ3'), a: t('faqA3') },
+    { q: t('faqQ4'), a: t('faqA4') },
+    { q: t('faqQ5'), a: t('faqA5') },
+  ];
 
   return (
     <section id="faq" className="py-24 bg-white relative">
@@ -36,10 +24,10 @@ export function FAQ() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <p className="text-sm font-semibold text-violet-600 uppercase tracking-widest mb-3">Common Questions</p>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">Frequently Asked Questions</h2>
+          <p className="text-sm font-semibold text-violet-600 uppercase tracking-widest mb-3">{t('faqSubtitle')}</p>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">{t('faqTitle')}</h2>
           <p className="text-slate-600 text-lg">
-            Everything you need to know before getting started.
+            {t('faqDescription')}
           </p>
         </div>
 

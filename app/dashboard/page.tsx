@@ -3,6 +3,7 @@
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { TrendingUp, Eye, EyeOff, Copy, ArrowUpRight, ArrowDownRight, Zap, RefreshCw, Plus, Minus, Settings, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useTranslation } from '@/components/translation-provider';
 
 interface StatsData {
   stats: {
@@ -18,6 +19,7 @@ interface StatsData {
 }
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   const [show, setShow] = useState(true);
   const [data, setData] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -140,10 +142,10 @@ export default function Dashboard() {
   };
 
   const metrics = [
-    { label: 'Total Balance', value: `$${(data?.stats.availableBalance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: data?.recentTransactions.length ? 'Live Ledger' : 'Fresh Account' },
-    { label: 'Total Invested', value: `$${(data?.stats.totalInvested ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: `${data?.stats.activeInvestments ?? 0} active plans` },
-    { label: 'Total Earned (ROI)', value: `$${(data?.stats.totalEarned ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: 'Daily payouts' },
-    { label: 'Referral Earnings', value: `$${(data?.stats.totalCommissions ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: `${data?.stats.directReferrals ?? 0} referrals` },
+    { label: t('overviewBalance'), value: `$${(data?.stats.availableBalance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: data?.recentTransactions.length ? t('overviewLedger') : t('overviewFreshAccount') },
+    { label: t('overviewInvested'), value: `$${(data?.stats.totalInvested ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: `${data?.stats.activeInvestments ?? 0} ${t('overviewActivePlans')}` },
+    { label: t('overviewEarned'), value: `$${(data?.stats.totalEarned ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: t('overviewDailyPayouts') },
+    { label: t('overviewReferralEarnings'), value: `$${(data?.stats.totalCommissions ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: `${data?.stats.directReferrals ?? 0} ${t('overviewReferralsCount')}` },
   ];
 
   return (
@@ -151,8 +153,8 @@ export default function Dashboard() {
       {/* Page header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">Overview</p>
-          <h1 className="text-2xl font-bold text-slate-950 dark:text-white tracking-tight">Welcome back, {userFirstName}</h1>
+          <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">{t('overview')}</p>
+          <h1 className="text-2xl font-bold text-slate-950 dark:text-white tracking-tight">{t('overviewWelcome')}, {userFirstName}</h1>
         </div>
         <div className="flex gap-2">
           <button
@@ -160,7 +162,7 @@ export default function Dashboard() {
             className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-100 dark:bg-white/3 border border-slate-200 dark:border-white/8 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white text-xs font-mono transition-all"
           >
             {show ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-            {show ? 'Hide' : 'Show'} Balance
+            {show ? t('overviewHideBalance') : t('overviewShowBalance')} {t('overviewBalanceSuffix')}
           </button>
           <button
             onClick={fetchDashboardData}
@@ -212,8 +214,8 @@ export default function Dashboard() {
                 <Settings className="w-4 h-4 text-[#00D9FF] animate-spin" style={{ animationDuration: '6s' }} />
               </div>
               <div>
-                <h2 className="text-sm font-semibold text-slate-950 dark:text-white">Simulation Controls</h2>
-                <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">Simulate activities with virtual currency</p>
+                <h2 className="text-sm font-semibold text-slate-950 dark:text-white">{t('overviewSimControls')}</h2>
+                <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{t('overviewSimControlsSub')}</p>
               </div>
             </div>
 
@@ -232,8 +234,8 @@ export default function Dashboard() {
               {/* Deposit Card */}
               <div className="bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl p-4 flex flex-col justify-between">
                 <div>
-                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white font-mono uppercase mb-1">1. Add virtual funds</h3>
-                  <p className="text-[10px] text-slate-500 dark:text-gray-500 mb-3 leading-relaxed">Deposit simulated USD instantly to your virtual balance.</p>
+                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white font-mono uppercase mb-1">{t('overviewSimStep1')}</h3>
+                  <p className="text-[10px] text-slate-500 dark:text-gray-500 mb-3 leading-relaxed">{t('overviewSimStep1Sub')}</p>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -256,8 +258,8 @@ export default function Dashboard() {
               {/* Investment Card */}
               <div className="bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl p-4 flex flex-col justify-between">
                 <div>
-                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white font-mono uppercase mb-1">2. Buy Plan</h3>
-                  <p className="text-[10px] text-slate-500 dark:text-gray-500 mb-3 leading-relaxed">Deduct virtual balance to purchase an arbitrage contract.</p>
+                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white font-mono uppercase mb-1">{t('overviewSimStep2')}</h3>
+                  <p className="text-[10px] text-slate-500 dark:text-gray-500 mb-3 leading-relaxed">{t('overviewSimStep2Sub')}</p>
                 </div>
                 <div className="flex flex-col gap-2">
                   <button
@@ -294,7 +296,7 @@ export default function Dashboard() {
                     disabled={simulating !== null}
                     className="w-full py-2 bg-[#00D9FF]/10 hover:bg-[#00D9FF]/20 border border-[#00D9FF]/20 text-[#00A3C4] dark:text-[#00D9FF] rounded-lg text-xs font-mono transition-all disabled:opacity-50"
                   >
-                    Invest $5k (Plan C)
+                    {t('overviewSimInvestBtn')}
                   </button>
                 </div>
               </div>
@@ -302,8 +304,8 @@ export default function Dashboard() {
               {/* ROI Yield Card */}
               <div className="bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl p-4 flex flex-col justify-between">
                 <div>
-                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white font-mono uppercase mb-1">3. Trigger Daily Yield</h3>
-                  <p className="text-[10px] text-slate-500 dark:text-gray-500 mb-3 leading-relaxed">Simulate a daily timer cycle. Calculates ROI and distributes commissions.</p>
+                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white font-mono uppercase mb-1">{t('overviewSimStep3')}</h3>
+                  <p className="text-[10px] text-slate-500 dark:text-gray-500 mb-3 leading-relaxed">{t('overviewSimStep3Sub')}</p>
                 </div>
                 <button
                   onClick={() => handleSimulateAction('roi')}
@@ -315,7 +317,7 @@ export default function Dashboard() {
                   ) : (
                     <>
                       <Zap className="w-3.5 h-3.5" />
-                      Trigger ROI Payout
+                      {t('overviewSimTriggerRoi')}
                     </>
                   )}
                 </button>
@@ -324,8 +326,8 @@ export default function Dashboard() {
               {/* Reset/Clean Card */}
               <div className="bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl p-4 flex flex-col justify-between">
                 <div>
-                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white font-mono uppercase mb-1">4. Reset Simulation</h3>
-                  <p className="text-[10px] text-slate-500 dark:text-gray-500 mb-3 leading-relaxed">Clear all simulated history and starts fresh at 0.</p>
+                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white font-mono uppercase mb-1">{t('overviewSimStep4')}</h3>
+                  <p className="text-[10px] text-slate-500 dark:text-gray-500 mb-3 leading-relaxed">{t('overviewSimStep4Sub')}</p>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -333,14 +335,14 @@ export default function Dashboard() {
                     disabled={simulating !== null}
                     className="flex-1 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-amber-600 dark:text-amber-400 rounded-lg text-xs font-mono transition-all disabled:opacity-50"
                   >
-                    Withdraw $500
+                    {t('overviewSimWithdrawBtn')}
                   </button>
                   <button
                     onClick={() => handleSimulateAction('reset')}
                     disabled={simulating !== null}
                     className="flex-1 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 dark:text-red-400 rounded-lg text-xs font-mono transition-all disabled:opacity-50"
                   >
-                    Reset All
+                    {t('overviewSimResetBtn')}
                   </button>
                 </div>
               </div>
@@ -356,8 +358,8 @@ export default function Dashboard() {
                   <TrendingUp className="w-4 h-4 text-green-500 dark:text-green-400" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-semibold text-slate-950 dark:text-white">Active Positions</h2>
-                  <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">Arbitrage contracts</p>
+                  <h2 className="text-sm font-semibold text-slate-950 dark:text-white">{t('overviewActivePositions')}</h2>
+                  <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{t('overviewArbitrageContracts')}</p>
                 </div>
                 <div className="ml-auto flex items-center gap-1.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
@@ -380,7 +382,7 @@ export default function Dashboard() {
                     </div>
                   ))
                 ) : (
-                  <p className="text-xs text-slate-500 dark:text-gray-500 font-mono py-4 text-center">No active yield positions. Subscribe to a plan above.</p>
+                  <p className="text-xs text-slate-500 dark:text-gray-500 font-mono py-4 text-center">{t('overviewNoActive')}</p>
                 )}
               </div>
             </div>
@@ -392,8 +394,8 @@ export default function Dashboard() {
                   <Zap className="w-4 h-4 text-violet-500 dark:text-violet-400" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-semibold text-slate-950 dark:text-white">Your Referral Code</h2>
-                  <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">5-level commission</p>
+                  <h2 className="text-sm font-semibold text-slate-950 dark:text-white">{t('overviewReferralCode')}</h2>
+                  <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{t('overviewReferralSub')}</p>
                 </div>
               </div>
 
@@ -412,9 +414,9 @@ export default function Dashboard() {
 
               <div className="space-y-3 mb-5">
                 {[
-                  { label: 'Direct Referrals',  value: `${data?.stats.directReferrals ?? 0}`, color: 'text-green-600 dark:text-green-400' },
-                  { label: 'Commission Rate',    value: 'Level 1-5 (10% - 1%)', color: 'text-violet-600 dark:text-violet-400' },
-                  { label: 'Total Commissions',  value: `$${(data?.stats.totalCommissions ?? 0).toFixed(2)}`, color: 'text-green-600 dark:text-green-400' },
+                  { label: t('referralsStat1'),  value: `${data?.stats.directReferrals ?? 0}`, color: 'text-green-600 dark:text-green-400' },
+                  { label: t('overviewCommRate'),    value: 'Level 1-5 (10% - 1%)', color: 'text-violet-600 dark:text-violet-400' },
+                  { label: t('overviewTotalComm'),  value: `$${(data?.stats.totalCommissions ?? 0).toFixed(2)}`, color: 'text-green-600 dark:text-green-400' },
                 ].map(({ label, value, color }) => (
                   <div key={label} className="flex justify-between items-center text-xs">
                     <span className="text-slate-500 dark:text-gray-500 font-mono">{label}</span>
@@ -427,7 +429,7 @@ export default function Dashboard() {
 
           {/* Recent Activity */}
           <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none">
-            <h2 className="text-sm font-semibold text-slate-950 dark:text-white mb-5">Recent Activity</h2>
+            <h2 className="text-sm font-semibold text-slate-950 dark:text-white mb-5">{t('overviewRecentActivity')}</h2>
             <div className="space-y-3">
               {data && data.recentTransactions.length > 0 ? (
                 data.recentTransactions.map((tx, idx) => {
@@ -459,7 +461,7 @@ export default function Dashboard() {
                   );
                 })
               ) : (
-                <p className="text-xs text-slate-500 dark:text-gray-500 font-mono py-6 text-center">No transaction history. Perform deposit or simulation actions above.</p>
+                <p className="text-xs text-slate-500 dark:text-gray-500 font-mono py-6 text-center">{t('overviewNoActivity')}</p>
               )}
             </div>
           </div>

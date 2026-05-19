@@ -3,53 +3,49 @@
 import Link from 'next/link';
 import { ArrowRight, Star } from 'lucide-react';
 
-const plans = [
-  {
-    name: 'Plan A',
-    tag: 'Starter',
-    minDeposit: '$100',
-    dailyROI: '1.5%',
-    duration: '30 days',
-    totalReturn: '45%',
-    featured: false,
-    color: 'border-slate-200/80 hover:border-violet-500/30 hover:shadow-lg hover:shadow-slate-100/50',
-    badgeColor: 'bg-slate-100 text-slate-600',
-    description: 'Ideal for new investors exploring structured returns.',
-  },
-  {
-    name: 'Plan B',
-    tag: 'Popular',
-    minDeposit: '$500',
-    dailyROI: '2.0%',
-    duration: '45 days',
-    totalReturn: '90%',
-    featured: true,
-    color: 'border-violet-500/30 hover:border-violet-500/60 hover:shadow-lg hover:shadow-violet-500/5',
-    badgeColor: 'bg-violet-100 text-violet-600',
-    description: 'Balanced risk-return profile suited for intermediate investors.',
-  },
-  {
-    name: 'Plan C',
-    tag: 'Advanced',
-    minDeposit: '$2,000',
-    dailyROI: '2.5%',
-    duration: '60 days',
-    totalReturn: '150%',
-    featured: false,
-    color: 'border-slate-200/80 hover:border-blue-500/30 hover:shadow-lg hover:shadow-slate-100/50',
-    badgeColor: 'bg-blue-50 text-blue-600',
-    description: 'Higher capital deployment for experienced investors.',
-  },
-];
-
-const stat = (label: string, value: string) => (
-  <div key={label} className="flex flex-col">
-    <span className="text-xs text-slate-400 uppercase tracking-wider mb-1">{label}</span>
-    <span className="text-lg font-bold text-slate-800">{value}</span>
-  </div>
-);
+import { useTranslation } from '@/components/translation-provider';
 
 export function InvestmentPlans() {
+  const { t } = useTranslation();
+
+  const plans = [
+    {
+      name: 'Plan A',
+      tag: t('planAStarter'),
+      minDeposit: '$100',
+      dailyROI: '1.5%',
+      duration: t('plansDuration30'),
+      totalReturn: '45%',
+      featured: false,
+      color: 'border-slate-200/80 hover:border-violet-500/30 hover:shadow-lg hover:shadow-slate-100/50',
+      badgeColor: 'bg-slate-100 text-slate-600',
+      descriptionKey: 'planADesc',
+    },
+    {
+      name: 'Plan B',
+      tag: t('planBPopular'),
+      minDeposit: '$500',
+      dailyROI: '2.0%',
+      duration: t('plansDuration45'),
+      totalReturn: '90%',
+      featured: true,
+      color: 'border-violet-500/30 hover:border-violet-500/60 hover:shadow-lg hover:shadow-violet-500/5',
+      badgeColor: 'bg-violet-100 text-violet-600',
+      descriptionKey: 'planBDesc',
+    },
+    {
+      name: 'Plan C',
+      tag: t('planCAdvanced'),
+      minDeposit: '$2,000',
+      dailyROI: '2.5%',
+      duration: t('plansDuration60'),
+      totalReturn: '150%',
+      featured: false,
+      color: 'border-slate-200/80 hover:border-blue-500/30 hover:shadow-lg hover:shadow-slate-100/50',
+      badgeColor: 'bg-blue-50 text-blue-600',
+      descriptionKey: 'planCDesc',
+    },
+  ];
   return (
     <section id="plans" className="py-24 bg-white relative">
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200/50 to-transparent" />
@@ -57,10 +53,10 @@ export function InvestmentPlans() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <p className="text-sm font-semibold text-violet-600 uppercase tracking-widest mb-3">Investment Options</p>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">Choose Your Plan</h2>
+          <p className="text-sm font-semibold text-violet-600 uppercase tracking-widest mb-3">{t('plansSubtitle')}</p>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">{t('plansTitle')}</h2>
           <p className="text-slate-600 text-lg max-w-xl mx-auto">
-            Three structured tiers to match your capital and risk appetite. All plans include referral commission eligibility.
+            {t('plansDescription')}
           </p>
         </div>
 
@@ -82,7 +78,7 @@ export function InvestmentPlans() {
               <div className="flex items-start justify-between mb-6">
                 <div>
                   <h3 className="text-xl font-bold text-slate-800">{plan.name}</h3>
-                  <p className="text-sm text-slate-500 mt-1">{plan.description}</p>
+                  <p className="text-sm text-slate-500 mt-1">{t(plan.descriptionKey)}</p>
                 </div>
                 <span className={`flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full ${plan.badgeColor}`}>
                   {plan.featured && <Star className="w-3 h-3" />}
@@ -92,10 +88,22 @@ export function InvestmentPlans() {
 
               {/* Stats grid */}
               <div className="grid grid-cols-2 gap-4 mb-8 p-4 bg-slate-50 rounded-xl border border-slate-100">
-                {stat('Min. Deposit', plan.minDeposit)}
-                {stat('Daily ROI', plan.dailyROI)}
-                {stat('Duration', plan.duration)}
-                {stat('Total Return', plan.totalReturn)}
+                <div className="flex flex-col">
+                  <span className="text-xs text-slate-400 uppercase tracking-wider mb-1">{t('plansMinDeposit')}</span>
+                  <span className="text-lg font-bold text-slate-800">{plan.minDeposit}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs text-slate-400 uppercase tracking-wider mb-1">{t('plansDailyRoi')}</span>
+                  <span className="text-lg font-bold text-slate-800">{plan.dailyROI}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs text-slate-400 uppercase tracking-wider mb-1">{t('plansDuration')}</span>
+                  <span className="text-lg font-bold text-slate-800">{plan.duration}</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xs text-slate-400 uppercase tracking-wider mb-1">{t('plansTotalReturn')}</span>
+                  <span className="text-lg font-bold text-slate-800">{plan.totalReturn}</span>
+                </div>
               </div>
 
               {/* CTA */}
@@ -108,7 +116,7 @@ export function InvestmentPlans() {
                       : 'border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-350'
                   }`}
                 >
-                  Invest Now
+                  {t('plansInvestNow')}
                   <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                 </Link>
               </div>
@@ -117,7 +125,7 @@ export function InvestmentPlans() {
         </div>
 
         <p className="text-center text-xs text-slate-400 mt-8 max-w-lg mx-auto">
-          * Returns are projections based on plan structure, not guarantees. All investments carry risk. See disclaimer below.
+          {t('plansDisclaimer')}
         </p>
       </div>
     </section>

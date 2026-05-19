@@ -140,7 +140,7 @@ export default function WithdrawPage() {
     <DashboardLayout>
       {/* Header */}
       <div className="mb-8">
-        <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">Transfer</p>
+        <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">{t('withdraw')}</p>
         <h1 className="text-2xl font-bold text-slate-950 dark:text-white tracking-tight">{t('withdraw')}</h1>
       </div>
 
@@ -152,7 +152,7 @@ export default function WithdrawPage() {
         <div className="p-6 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl font-mono text-sm max-w-xl mx-auto my-12 text-center">
           <p className="mb-4">{pageError}</p>
           <button onClick={fetchWithdrawalData} className="px-4 py-2 bg-red-500 text-white rounded-xl font-sans font-medium hover:bg-red-600 transition-colors">
-            Retry
+            {t('withdrawRetry')}
           </button>
         </div>
       ) : (
@@ -163,7 +163,7 @@ export default function WithdrawPage() {
             <div className="bg-gradient-to-br from-violet-600/15 via-blue-600/5 to-transparent border border-violet-500/20 rounded-2xl p-6 relative overflow-hidden group shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-mono text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-1">Available Funds</p>
+                  <p className="text-[10px] font-mono text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-1">{t('withdrawAvailFunds')}</p>
                   <p className="text-3xl font-bold text-slate-950 dark:text-white font-mono tracking-tight">
                     ${balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
@@ -176,7 +176,7 @@ export default function WithdrawPage() {
             <form onSubmit={handleSubmit} className={sectionClass}>
               <div className="flex items-center gap-3 mb-6">
                 <ArrowLeftRight className="w-5 h-5 text-violet-500 dark:text-violet-400 flex-shrink-0" />
-                <h2 className="text-sm font-semibold text-slate-950 dark:text-white">Request Withdrawal</h2>
+                <h2 className="text-sm font-semibold text-slate-950 dark:text-white">{t('withdrawRequestTitle')}</h2>
               </div>
 
               {success && (
@@ -195,7 +195,7 @@ export default function WithdrawPage() {
 
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2">Network Protocol</label>
+                  <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2">{t('withdrawNetworkLabel')}</label>
                   <select
                     value={network}
                     onChange={(e) => setNetwork(e.target.value)}
@@ -208,7 +208,7 @@ export default function WithdrawPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2">Amount to Withdraw (USD)</label>
+                  <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2">{t('withdrawAmountLabel')}</label>
                   <input
                     type="number"
                     step="any"
@@ -222,18 +222,18 @@ export default function WithdrawPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2">Destination Wallet Address</label>
+                  <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2">{t('withdrawWalletLabel')}</label>
                   <input
                     type="text"
                     value={walletAddress}
                     onChange={(e) => setWalletAddress(e.target.value)}
-                    placeholder="Enter recipient address"
+                    placeholder={t('withdrawAddressPlaceholder')}
                     className={inputClass}
                     required
                     disabled={submitting}
                   />
                   <span className="block text-[9px] text-slate-400 dark:text-gray-500 font-mono mt-1.5 leading-relaxed">
-                    Please double-check address details. Network transfer fees apply and will be deducted from your virtual transaction.
+                    {t('withdrawWalletHint')}
                   </span>
                 </div>
               </div>
@@ -246,10 +246,10 @@ export default function WithdrawPage() {
                 {submitting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Processing withdrawal...</span>
+                    <span>{t('withdrawProcessing')}</span>
                   </>
                 ) : (
-                  <span>Request Virtual Withdrawal</span>
+                  <span>{t('withdrawSubmitBtn')}</span>
                 )}
               </button>
             </form>
@@ -258,7 +258,7 @@ export default function WithdrawPage() {
           {/* Right sidebar: Recent history */}
           <div className="space-y-4">
             <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">Past Withdrawals</h3>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">{t('withdrawHistory')}</h3>
               
               <div className="space-y-3.5">
                 {withdrawals.length > 0 ? (
@@ -274,7 +274,7 @@ export default function WithdrawPage() {
                       </div>
                       <div className="flex justify-between items-baseline">
                         <span className="text-xs text-slate-700 dark:text-gray-300 font-medium">
-                          {item.network} Address
+                          {item.network} {t('withdrawNetworkAddress')}
                         </span>
                         <span className="text-sm font-bold font-mono text-slate-900 dark:text-white">
                           -${item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -287,7 +287,7 @@ export default function WithdrawPage() {
                   ))
                 ) : (
                   <div className="py-6 text-center text-xs text-slate-400 dark:text-gray-500 font-mono">
-                    No past requests.
+                    {t('withdrawNoPast')}
                   </div>
                 )}
               </div>

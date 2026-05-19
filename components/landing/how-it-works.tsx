@@ -3,31 +3,34 @@
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 
-const steps = [
-  {
-    step: '01',
-    src: '/illustrations/savings.svg',
-    alt: 'Create account illustration',
-    title: 'Create Your Account',
-    description: 'Register in minutes with your email. Our manual verification process ensures a secure and trusted community of investors.',
-  },
-  {
-    step: '02',
-    src: '/illustrations/wallet.svg',
-    alt: 'Deposit and activate plan illustration',
-    title: 'Deposit & Activate a Plan',
-    description: 'Choose an investment plan that suits your goals. Fund your account and activate your plan to begin earning structured daily returns.',
-  },
-  {
-    step: '03',
-    src: '/illustrations/analytics.svg',
-    alt: 'Earn daily and referral bonuses illustration',
-    title: 'Earn Daily + Referral Bonuses',
-    description: 'Your capital generates daily returns for the plan duration. Share your unique referral link to earn commissions across 5 levels.',
-  },
-];
+import { useTranslation } from '@/components/translation-provider';
 
 export function HowItWorks() {
+  const { t } = useTranslation();
+
+  const steps = [
+    {
+      step: '01',
+      src: '/illustrations/savings.svg',
+      alt: 'Create account illustration',
+      title: t('howItWorksStep1Title'),
+      description: t('howItWorksStep1Desc'),
+    },
+    {
+      step: '02',
+      src: '/illustrations/wallet.svg',
+      alt: 'Deposit and activate plan illustration',
+      title: t('howItWorksStep2Title'),
+      description: t('howItWorksStep2Desc'),
+    },
+    {
+      step: '03',
+      src: '/illustrations/analytics.svg',
+      alt: 'Earn daily and referral bonuses illustration',
+      title: t('howItWorksStep3Title'),
+      description: t('howItWorksStep3Desc'),
+    },
+  ];
   return (
     <section id="how-it-works" className="py-24 bg-slate-50 relative">
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200/50 to-transparent" />
@@ -35,10 +38,10 @@ export function HowItWorks() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
-          <p className="text-sm font-semibold text-violet-600 uppercase tracking-widest mb-3">Simple Process</p>
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">How It Works</h2>
+          <p className="text-sm font-semibold text-violet-600 uppercase tracking-widest mb-3">{t('howItWorksSubtitle')}</p>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">{t('howItWorksTitle')}</h2>
           <p className="text-slate-600 text-lg max-w-xl mx-auto">
-            Get started in three straightforward steps and begin building your portfolio.
+            {t('howItWorksDescription')}
           </p>
         </div>
 

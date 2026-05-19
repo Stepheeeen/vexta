@@ -3,8 +3,11 @@
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { VextaLogo } from '@/components/vexta-logo';
+import { useTranslation } from '@/components/translation-provider';
 
 export function CTABanner() {
+  const { t } = useTranslation();
+
   return (
     <section className="py-24 bg-slate-50 relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200/50 to-transparent" />
@@ -20,10 +23,10 @@ export function CTABanner() {
           </div>
 
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-4 tracking-tight">
-            Ready to Start Growing?
+            {t('ctaSubtitle')}
           </h2>
           <p className="text-slate-600 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
-            Join thousands of investors building structured passive income through the Vexta referral investment network.
+            {t('ctaDescription')}
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -31,7 +34,7 @@ export function CTABanner() {
               href="/signup"
               className="group inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 rounded-xl transition-all hover:-translate-y-0.5 duration-200 shadow-md shadow-violet-500/10"
             >
-              Create Free Account
+              {t('ctaBtnCreate')}
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
             <a
@@ -42,13 +45,13 @@ export function CTABanner() {
               }}
               className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-350 hover:bg-slate-50 rounded-xl transition-all duration-200"
             >
-              Explore Plans
+              {t('ctaBtnExplore')}
             </a>
           </div>
 
           {/* Trust text */}
           <p className="mt-8 text-xs text-slate-400">
-            No commitment required. Invest at your own pace.
+            {t('ctaTrustText')}
           </p>
         </div>
       </div>

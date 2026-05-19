@@ -3,6 +3,7 @@
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { TrendingUp, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useTranslation } from '@/components/translation-provider';
 
 interface StatsData {
   stats: {
@@ -27,6 +28,7 @@ interface StatsData {
 }
 
 export default function PortfolioPage() {
+  const { t } = useTranslation();
   const [data, setData] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [daysActive, setDaysActive] = useState(0);
@@ -76,18 +78,18 @@ export default function PortfolioPage() {
   }, []);
 
   const stats = [
-    { label: 'Portfolio Value', value: `$${(data?.stats.totalInvested ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: 'Current active contracts' },
-    { label: 'Active Plans',    value: `${data?.stats.activeInvestments ?? 0}`,        change: 'Running contracts' },
-    { label: 'Total ROI Earned',       value: `$${(data?.stats.totalEarned ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,    change: 'ROI payouts' },
-    { label: 'Days Active',     value: `${daysActive}`,       change: 'Since registration' },
+    { label: t('portfolioStat1'), value: `$${(data?.stats.totalInvested ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: t('portfolioStat1Sub') },
+    { label: t('portfolioStat2'),    value: `${data?.stats.activeInvestments ?? 0}`,        change: t('portfolioStat2Sub') },
+    { label: t('portfolioStat3'),       value: `$${(data?.stats.totalEarned ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,    change: t('portfolioStat3Sub') },
+    { label: t('portfolioStat4'),     value: `${daysActive}`,       change: t('portfolioStat4Sub') },
   ];
 
   return (
     <DashboardLayout>
       {/* Header */}
       <div className="mb-8">
-        <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">Investments</p>
-        <h1 className="text-2xl font-bold text-slate-950 dark:text-white tracking-tight">Portfolio</h1>
+        <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">{t('portfolio')}</p>
+        <h1 className="text-2xl font-bold text-slate-950 dark:text-white tracking-tight">{t('portfolio')}</h1>
       </div>
 
       {loading ? (
@@ -98,7 +100,7 @@ export default function PortfolioPage() {
         <div className="p-6 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl font-mono text-sm max-w-xl mx-auto my-12 text-center">
           <p className="mb-4">{error}</p>
           <button onClick={fetchData} className="px-4 py-2 bg-red-500 text-white rounded-xl font-sans font-medium hover:bg-red-600 transition-colors">
-            Retry
+            {t('retry')}
           </button>
         </div>
       ) : (
@@ -123,8 +125,8 @@ export default function PortfolioPage() {
                 <TrendingUp className="w-4 h-4 text-violet-500 dark:text-violet-400" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold text-slate-950 dark:text-white">Investment Plans</h2>
-                <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">Active & completed contracts</p>
+                <h2 className="text-sm font-semibold text-slate-950 dark:text-white">{t('portfolioPlansTitle')}</h2>
+                <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{t('portfolioPlansSubtitle')}</p>
               </div>
             </div>
 
@@ -152,7 +154,7 @@ export default function PortfolioPage() {
                       {/* Top row */}
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
-                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${active ? 'bg-violet-500/10 border border-violet-500/20' : 'bg-slate-200/50 dark:bg-white/5 border border-slate-200/50 dark:border-white/5'}`}>
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${active ? 'bg-violet-500/10 border border-violet-500/20' : 'bg-slate-200 dark:bg-white/5 border border-slate-200/50 dark:border-white/5'}`}>
                             <TrendingUp className={`w-4 h-4 ${active ? 'text-violet-600 dark:text-violet-400' : 'text-slate-400 dark:text-gray-500'}`} />
                           </div>
                           <div>
@@ -168,9 +170,9 @@ export default function PortfolioPage() {
                       {/* Stats */}
                       <div className="grid grid-cols-3 gap-4 mb-4">
                         {[
-                          { label: 'Deposited', value: `$${plan.amount.toLocaleString()}` },
-                          { label: 'Earned',    value: `$${plan.totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, green: true },
-                          { label: 'Days Left', value: active ? `${daysLeft}d` : 'Completed' },
+                          { label: t('portfolioDeposited'), value: `$${plan.amount.toLocaleString()}` },
+                          { label: t('portfolioEarned'),    value: `$${plan.totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, green: true },
+                          { label: t('portfolioDaysLeft'), value: active ? `${daysLeft}d` : t('portfolioCompleted') },
                         ].map(({ label, value, green }) => (
                           <div key={label}>
                             <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono mb-1">{label}</p>
@@ -182,7 +184,7 @@ export default function PortfolioPage() {
                       {/* Progress bar */}
                       <div>
                         <div className="flex justify-between mb-1.5">
-                          <span className="text-[10px] text-slate-400 dark:text-gray-500 font-mono">Progress</span>
+                          <span className="text-[10px] text-slate-400 dark:text-gray-500 font-mono">{t('portfolioProgress')}</span>
                           <span className="text-[10px] text-slate-600 dark:text-gray-400 font-mono">{progress}%</span>
                         </div>
                         <div className="h-1.5 bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
@@ -196,7 +198,7 @@ export default function PortfolioPage() {
                   );
                 })
               ) : (
-                <p className="text-xs text-slate-400 dark:text-gray-500 font-mono py-8 text-center">No investment contracts found. Go to the Overview page to subscribe to a plan.</p>
+                <p className="text-xs text-slate-400 dark:text-gray-500 font-mono py-8 text-center">{t('portfolioEmpty')}</p>
               )}
             </div>
           </div>

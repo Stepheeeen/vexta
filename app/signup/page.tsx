@@ -5,8 +5,10 @@ import { useState } from 'react';
 import { VextaLogoText } from '@/components/vexta-logo';
 import { BackgroundPattern } from '@/components/background-pattern';
 import { ArrowRight, Activity, Hexagon, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useTranslation } from '@/components/translation-provider';
 
 export default function SignUp() {
+  const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     firstName: '',
@@ -118,15 +120,15 @@ export default function SignUp() {
 
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-2xl font-light text-slate-900 dark:text-[#FFFFFF] font-sans tracking-tight">
-              {step === 1 && <><span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-[#00D9FF] to-[#00FF88]">Create</span> Account</>}
-              {step === 2 && <><span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-[#00D9FF] to-[#00FF88]">Secure</span> Account</>}
-              {step === 3 && <><span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-[#00D9FF] to-[#00FF88]">Referral</span> Links</>}
+              {step === 1 && <><span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-[#00D9FF] to-[#00FF88]">{t('signupStep1Title')}</span> Account</>}
+              {step === 2 && <><span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-[#00D9FF] to-[#00FF88]">{t('signupStep2Title')}</span> Account</>}
+              {step === 3 && <><span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-[#00D9FF] to-[#00FF88]">{t('signupStep3Title')}</span> Links</>}
             </h1>
           </div>
           <p className="text-slate-500 dark:text-[#808A9D] text-[10px] mb-8 font-mono tracking-widest uppercase">
-            {step === 1 && 'Step 1: Personal Details'}
-            {step === 2 && 'Step 2: Password Setup'}
-            {step === 3 && 'Step 3: Optional Referral'}
+            {step === 1 && t('signupStep1Sub')}
+            {step === 2 && t('signupStep2Sub')}
+            {step === 3 && t('signupStep3Sub')}
           </p>
 
           {submitError && (
@@ -141,7 +143,7 @@ export default function SignUp() {
               <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="group/input">
-                    <label className="block text-[10px] font-mono text-slate-400 dark:text-white/50 uppercase tracking-widest mb-2">First Name</label>
+                    <label className="block text-[10px] font-mono text-slate-400 dark:text-white/50 uppercase tracking-widest mb-2">{t('signupFirstName')}</label>
                     <input
                       type="text"
                       name="firstName"
@@ -153,7 +155,7 @@ export default function SignUp() {
                     {errors.firstName && <p className="text-[10px] text-red-500 dark:text-red-400 mt-1 font-mono uppercase tracking-wider">{errors.firstName}</p>}
                   </div>
                   <div className="group/input">
-                    <label className="block text-[10px] font-mono text-slate-400 dark:text-white/50 uppercase tracking-widest mb-2">Last Name</label>
+                    <label className="block text-[10px] font-mono text-slate-400 dark:text-white/50 uppercase tracking-widest mb-2">{t('signupLastName')}</label>
                     <input
                       type="text"
                       name="lastName"
@@ -167,7 +169,7 @@ export default function SignUp() {
                 </div>
 
                 <div className="group/input">
-                  <label className="block text-[10px] font-mono text-slate-400 dark:text-white/50 uppercase tracking-widest mb-2">Email Address</label>
+                  <label className="block text-[10px] font-mono text-slate-400 dark:text-white/50 uppercase tracking-widest mb-2">{t('signupEmailLabel')}</label>
                   <input
                     type="email"
                     name="email"
@@ -185,7 +187,7 @@ export default function SignUp() {
             {step === 2 && (
               <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
                 <div className="group/input">
-                  <label className="block text-[10px] font-mono text-slate-400 dark:text-white/50 uppercase tracking-widest mb-2">Password</label>
+                  <label className="block text-[10px] font-mono text-slate-400 dark:text-white/50 uppercase tracking-widest mb-2">{t('signupPasswordLabel')}</label>
                   <div className="relative">
                     <input
                       type={showPassword ? "text" : "password"}
@@ -204,13 +206,13 @@ export default function SignUp() {
                     </button>
                   </div>
                   <p className="text-[10px] text-slate-500 dark:text-[#808A9D] mt-2 font-mono uppercase tracking-wider">
-                    Min. 8 chars / Numbers / Symbols required
+                    {t('signupPasswordHint')}
                   </p>
                   {errors.password && <p className="text-[10px] text-red-500 dark:text-red-400 mt-1 font-mono uppercase tracking-wider">{errors.password}</p>}
                 </div>
 
                 <div className="group/input">
-                  <label className="block text-[10px] font-mono text-slate-400 dark:text-white/50 uppercase tracking-widest mb-2">Confirm Password</label>
+                  <label className="block text-[10px] font-mono text-slate-400 dark:text-white/50 uppercase tracking-widest mb-2">{t('signupConfirmPasswordLabel')}</label>
                   <div className="relative">
                     <input
                       type={showConfirmPassword ? "text" : "password"}
@@ -237,7 +239,7 @@ export default function SignUp() {
             {step === 3 && (
               <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
                 <div className="group/input">
-                  <label className="block text-[10px] font-mono text-slate-400 dark:text-white/50 uppercase tracking-widest mb-2">Referral Code (Optional)</label>
+                  <label className="block text-[10px] font-mono text-slate-400 dark:text-white/50 uppercase tracking-widest mb-2">{t('signupReferralLabel')}</label>
                   <input
                     type="text"
                     name="referralCode"
@@ -251,9 +253,9 @@ export default function SignUp() {
 
                 <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 relative overflow-hidden">
                   <Hexagon className="absolute -right-4 -bottom-4 w-24 h-24 text-slate-900/5 dark:text-white/5" />
-                  <p className="text-[10px] text-slate-400 dark:text-white/50 font-mono tracking-widest uppercase mb-2">Your Referral Link</p>
+                  <p className="text-[10px] text-slate-400 dark:text-white/50 font-mono tracking-widest uppercase mb-2">{t('signupYourLink')}</p>
                   <p className="text-xl font-light text-slate-900 dark:text-[#FFFFFF] font-mono tracking-wider">vexta.app/ref/N8K2L9</p>
-                  <p className="text-[10px] text-slate-500 dark:text-[#808A9D] mt-2 font-mono uppercase">Share this link to earn rewards</p>
+                  <p className="text-[10px] text-slate-500 dark:text-[#808A9D] mt-2 font-mono uppercase">{t('signupShareHint')}</p>
                 </div>
 
                 <label className="flex items-start gap-3 cursor-pointer group mt-4">
@@ -274,7 +276,7 @@ export default function SignUp() {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-[10px] text-slate-500 dark:text-[#808A9D] font-mono leading-relaxed uppercase tracking-wider">
-                      I agree to the <span className="text-slate-900 dark:text-white">Terms of Service</span> and Privacy Policy.
+                      {t('signupTerms')}
                     </span>
                     {errors.acceptTerms && <span className="text-[10px] text-red-500 dark:text-red-400 mt-1 font-mono uppercase tracking-wider">{errors.acceptTerms}</span>}
                   </div>
@@ -291,7 +293,7 @@ export default function SignUp() {
                 disabled={loading}
                 className="flex-1 px-4 py-3.5 border border-slate-200 dark:border-white/10 text-slate-400 dark:text-white/50 hover:text-slate-900 dark:hover:text-[#FFFFFF] hover:bg-slate-100 dark:hover:bg-white/5 font-mono text-sm tracking-widest rounded-xl transition-all uppercase disabled:opacity-50"
               >
-                Back
+                {t('signupBack')}
               </button>
             )}
             <button
@@ -304,7 +306,7 @@ export default function SignUp() {
               ) : (
                 <>
                   <span className="relative z-10 font-mono tracking-widest text-sm uppercase">
-                    {step === 3 ? 'Create Account' : 'Continue'}
+                    {step === 3 ? t('signupCreateBtn') : t('signupContinue')}
                   </span>
                   <ArrowRight className="w-4 h-4 relative z-10 group-hover/btn:translate-x-1 transition-transform" />
                 </>
@@ -314,9 +316,9 @@ export default function SignUp() {
 
           <div className="mt-8 text-center">
             <p className="text-slate-500 dark:text-[#808A9D] text-[10px] font-mono uppercase tracking-widest">
-              Already have an account?{' '}
+              {t('signupHaveAccount')}{' '}
               <Link href="/login" className="text-slate-900 dark:text-white hover:text-slate-700 dark:hover:text-white/80 font-semibold tracking-wider underline decoration-slate-300 dark:decoration-white/30 underline-offset-4">
-                Sign In
+                {t('signupSignInLink')}
               </Link>
             </p>
           </div>

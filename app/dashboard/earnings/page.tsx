@@ -3,6 +3,7 @@
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { Wallet, ArrowUpRight, ArrowDownRight, Calendar, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useTranslation } from '@/components/translation-provider';
 
 interface StatsData {
   stats: {
@@ -37,6 +38,7 @@ const typeColor: Record<string, string> = {
 };
 
 export default function EarningsPage() {
+  const { t } = useTranslation();
   const [statsData, setStatsData] = useState<StatsData | null>(null);
   const [earningsData, setEarningsData] = useState<EarningsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -88,18 +90,18 @@ export default function EarningsPage() {
   );
 
   const stats = [
-    { label: 'Total Accumulated', value: `$${totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: 'ROI & Commissions' },
-    { label: 'ROI Yield Income', value: `$${roiIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,  change: 'Plan contracts' },
-    { label: 'Referral Income',  value: `$${referralIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: 'Multi-tier commissions' },
-    { label: 'Withdrawn Funds',  value: `$${totalWithdrawn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: 'Virtual payouts' },
+    { label: t('earningsStat1'), value: `$${totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: t('earningsStat1Sub') },
+    { label: t('earningsStat2'), value: `$${roiIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,  change: t('earningsStat2Sub') },
+    { label: t('earningsStat3'),  value: `$${referralIncome.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: t('earningsStat3Sub') },
+    { label: t('earningsStat4'),  value: `$${totalWithdrawn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: t('earningsStat4Sub') },
   ];
 
   return (
     <DashboardLayout>
       {/* Header */}
       <div className="mb-8">
-        <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">Finance</p>
-        <h1 className="text-2xl font-bold text-slate-950 dark:text-white tracking-tight">Earnings</h1>
+        <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">{t('earnings')}</p>
+        <h1 className="text-2xl font-bold text-slate-950 dark:text-white tracking-tight">{t('earnings')}</h1>
       </div>
 
       {loading ? (
@@ -110,7 +112,7 @@ export default function EarningsPage() {
         <div className="p-6 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl font-mono text-sm max-w-xl mx-auto my-12 text-center">
           <p className="mb-4">{error}</p>
           <button onClick={fetchData} className="px-4 py-2 bg-red-500 text-white rounded-xl font-sans font-medium hover:bg-red-600 transition-colors">
-            Retry
+            {t('retry')}
           </button>
         </div>
       ) : (
@@ -133,8 +135,8 @@ export default function EarningsPage() {
             <div className="flex items-center gap-3 mb-6">
               <Wallet className="w-5 h-5 text-violet-500 dark:text-violet-400" />
               <div>
-                <h2 className="text-sm font-semibold text-slate-950 dark:text-white">Earnings History</h2>
-                <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">All simulated income sources</p>
+                <h2 className="text-sm font-semibold text-slate-950 dark:text-white">{t('earningsHistory')}</h2>
+                <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{t('earningsHistorySubtitle')}</p>
               </div>
             </div>
 
@@ -178,7 +180,7 @@ export default function EarningsPage() {
                   );
                 })
               ) : (
-                <p className="text-xs text-slate-400 dark:text-gray-500 font-mono py-8 text-center">No transaction history. Complete mock simulation cycles or deposit to start earning.</p>
+                <p className="text-xs text-slate-400 dark:text-gray-500 font-mono py-8 text-center">{t('earningsEmpty')}</p>
               )}
             </div>
           </div>
@@ -187,3 +189,4 @@ export default function EarningsPage() {
     </DashboardLayout>
   );
 }
+

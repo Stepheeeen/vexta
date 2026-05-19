@@ -5,8 +5,10 @@ import { useState } from 'react';
 import { VextaLogoText } from '@/components/vexta-logo';
 import { BackgroundPattern } from '@/components/background-pattern';
 import { ArrowRight, Activity, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { useTranslation } from '@/components/translation-provider';
 
 export default function Login() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -84,10 +86,13 @@ export default function Login() {
 
         <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-3xl border border-slate-200 dark:border-white/5 rounded-2xl p-10 shadow-sm dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] relative overflow-hidden group">
           <h1 className="text-3xl font-light text-slate-900 dark:text-[#FFFFFF] mb-2 font-sans tracking-tight">
-            Welcome <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-[#00D9FF] to-[#00FF88]">Back</span>
+            {t('loginWelcome')}{' '}
+            <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-[#00D9FF] to-[#00FF88]">
+              {t('loginWelcomeHighlight')}
+            </span>
           </h1>
           <p className="text-slate-500 dark:text-[#808A9D] text-sm mb-8 font-mono">
-            Sign in to access your account
+            {t('loginSubtitle')}
           </p>
 
           {error && (
@@ -99,7 +104,7 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="group/input">
               <label className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-[#FFFFFF] mb-2 font-mono uppercase tracking-widest text-[10px] dark:text-white/50">
-                Email Address
+                {t('loginEmailLabel')}
               </label>
               <div className="relative">
                 <input
@@ -118,10 +123,10 @@ export default function Login() {
             <div className="group/input">
               <div className="flex justify-between items-center mb-2">
                 <label className="flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-[#FFFFFF] font-mono uppercase tracking-widest text-[10px] dark:text-white/50">
-                  Password
+                  {t('loginPasswordLabel')}
                 </label>
                 <Link href="/forgot-password" className="text-[10px] text-slate-400 dark:text-white/40 hover:text-violet-600 dark:hover:text-[#00D9FF] transition-colors font-mono uppercase tracking-wider">
-                  Forgot Password?
+                  {t('loginForgotPassword')}
                 </Link>
               </div>
               <div className="relative">
@@ -154,7 +159,7 @@ export default function Login() {
                 <Loader2 className="w-4 h-4 animate-spin text-white dark:text-black" />
               ) : (
                 <>
-                  <span className="relative z-10 font-mono tracking-widest text-sm uppercase">Sign In</span>
+                  <span className="relative z-10 font-mono tracking-widest text-sm uppercase">{t('loginSignInBtn')}</span>
                   <ArrowRight className="w-4 h-4 relative z-10 group-hover/btn:translate-x-1 transition-transform" />
                 </>
               )}
@@ -163,9 +168,9 @@ export default function Login() {
 
           <div className="mt-8 text-center pt-6 border-t border-slate-100 dark:border-white/5">
             <p className="text-slate-500 dark:text-[#808A9D] text-xs font-mono uppercase tracking-widest">
-              Don't have an account?{' '}
+              {t('loginNoAccount')}{' '}
               <Link href="/signup" className="text-slate-900 dark:text-white hover:text-slate-700 dark:hover:text-white/80 font-semibold tracking-wider underline decoration-slate-300 dark:decoration-white/30 underline-offset-4">
-                Sign Up
+                {t('loginSignUpLink')}
               </Link>
             </p>
           </div>

@@ -3,6 +3,7 @@
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { Users, Copy, ChevronRight, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useTranslation } from '@/components/translation-provider';
 
 interface ReferralData {
   referralCode: string;
@@ -25,6 +26,7 @@ interface ReferralData {
 }
 
 export default function ReferralsPage() {
+  const { t } = useTranslation();
   const [data, setData] = useState<ReferralData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,18 +61,18 @@ export default function ReferralsPage() {
   const referralLink = typeof window !== 'undefined' ? `${window.location.origin}/signup?ref=${referralCode}` : `https://vexta.app/signup?ref=${referralCode}`;
 
   const stats = [
-    { label: 'Direct Referrals', value: `${data?.totals.level1Count ?? 0}`,        sub: 'Level 1 network' },
-    { label: 'Total Network',     value: `${data?.totals.totalNetworkCount ?? 0}`,       sub: 'Levels 1–5 total' },
-    { label: 'Commission Matrix',   value: 'Level 1–5',       sub: '10%, 5%, 3%, 2%, 1%' },
-    { label: 'Commissions Earned',        value: `$${(data?.totals.totalEarned ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,   sub: 'All level credits' },
+    { label: t('referralsStat1'), value: `${data?.totals.level1Count ?? 0}`,        sub: t('referralsStat1Sub') },
+    { label: t('referralsStat2'),     value: `${data?.totals.totalNetworkCount ?? 0}`,       sub: t('referralsStat2Sub') },
+    { label: t('referralsStat3'),   value: 'Level 1–5',       sub: '10%, 5%, 3%, 2%, 1%' },
+    { label: t('referralsStat4'),        value: `$${(data?.totals.totalEarned ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,   sub: t('referralsStat4Sub') },
   ];
 
   const levelLabels: Record<number, string> = {
-    1: 'Direct Referrals',
-    2: 'Second Generation',
-    3: 'Third Generation',
-    4: 'Fourth Generation',
-    5: 'Fifth Generation',
+    1: t('referralsLvl1'),
+    2: t('referralsLvl2'),
+    3: t('referralsLvl3'),
+    4: t('referralsLvl4'),
+    5: t('referralsLvl5'),
   };
 
   const levelRates: Record<number, string> = {
@@ -85,8 +87,8 @@ export default function ReferralsPage() {
     <DashboardLayout>
       {/* Header */}
       <div className="mb-8">
-        <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">Network</p>
-        <h1 className="text-2xl font-bold text-slate-950 dark:text-white tracking-tight">Referrals</h1>
+        <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">{t('referrals')}</p>
+        <h1 className="text-2xl font-bold text-slate-950 dark:text-white tracking-tight">{t('referrals')}</h1>
       </div>
 
       {loading ? (
@@ -97,7 +99,7 @@ export default function ReferralsPage() {
         <div className="p-6 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl font-mono text-sm max-w-xl mx-auto my-12 text-center">
           <p className="mb-4">{error}</p>
           <button onClick={fetchData} className="px-4 py-2 bg-red-500 text-white rounded-xl font-sans font-medium hover:bg-red-600 transition-colors">
-            Retry
+            {t('retry')}
           </button>
         </div>
       ) : (
@@ -121,7 +123,7 @@ export default function ReferralsPage() {
                 <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
                   <Users className="w-4 h-4 text-violet-500 dark:text-violet-400" />
                 </div>
-                <h2 className="text-sm font-semibold text-slate-950 dark:text-white">Your Referral Link</h2>
+                <h2 className="text-sm font-semibold text-slate-950 dark:text-white">{t('referralsYourLink')}</h2>
               </div>
 
               {/* Code */}
@@ -155,13 +157,13 @@ export default function ReferralsPage() {
                 }}
                 className="w-full py-2.5 text-xs font-mono font-semibold text-white bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 rounded-xl transition-all"
               >
-                Copy & Share Link
+                {t('referralsCopyShare')}
               </button>
             </div>
 
             {/* Commission levels */}
             <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none">
-              <h2 className="text-sm font-semibold text-slate-950 dark:text-white mb-5">Commission Breakdown</h2>
+              <h2 className="text-sm font-semibold text-slate-950 dark:text-white mb-5">{t('referralsCommBreakdown')}</h2>
               <div className="space-y-3">
                 {(data?.byLevel || []).map(({ level, count, earned }) => (
                   <div key={level} className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5">
@@ -171,7 +173,7 @@ export default function ReferralsPage() {
                       </div>
                       <div>
                         <p className="text-xs font-medium text-slate-900 dark:text-white">{levelLabels[level] || `Level ${level}`}</p>
-                        <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{count} members</p>
+                        <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{count} {t('referralsMembers')}</p>
                       </div>
                     </div>
                     <div className="text-right">
@@ -182,7 +184,7 @@ export default function ReferralsPage() {
                 ))}
               </div>
               <div className="mt-4 pt-4 border-t border-slate-200/60 dark:border-white/5 flex justify-between">
-                <span className="text-xs text-slate-400 dark:text-gray-500 font-mono">Total multi-tier payout</span>
+                <span className="text-xs text-slate-400 dark:text-gray-500 font-mono">{t('referralsTotalPayout')}</span>
                 <span className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400 font-mono">21%</span>
               </div>
             </div>
@@ -190,7 +192,7 @@ export default function ReferralsPage() {
 
           {/* Recent referrals */}
           <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none">
-            <h2 className="text-sm font-semibold text-slate-950 dark:text-white mb-5">Recent Commissions</h2>
+            <h2 className="text-sm font-semibold text-slate-950 dark:text-white mb-5">{t('referralsRecentComm')}</h2>
             <div className="space-y-3">
               {data && data.recentCommissions.length > 0 ? (
                 data.recentCommissions.map((commission, idx) => (
@@ -200,9 +202,9 @@ export default function ReferralsPage() {
                         L{commission.level}
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-slate-900 dark:text-white">Commission Received</p>
+                        <p className="text-xs font-medium text-slate-900 dark:text-white">{t('referralsCommReceived')}</p>
                         <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">
-                          {new Date(commission.createdAt).toLocaleDateString()} · Level {commission.level} Network member
+                          {new Date(commission.createdAt).toLocaleDateString()} · L{commission.level} {t('referralsNetworkMember')}
                         </p>
                       </div>
                     </div>
@@ -213,7 +215,7 @@ export default function ReferralsPage() {
                   </div>
                 ))
               ) : (
-                <p className="text-xs text-slate-400 dark:text-gray-500 font-mono py-8 text-center">No recent referral commissions yet.</p>
+                <p className="text-xs text-slate-400 dark:text-gray-500 font-mono py-8 text-center">{t('referralsNoComm')}</p>
               )}
             </div>
           </div>

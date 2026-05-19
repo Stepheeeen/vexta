@@ -3,6 +3,7 @@
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { BarChart3, TrendingUp, Clock, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useTranslation } from '@/components/translation-provider';
 
 interface StatsData {
   stats: {
@@ -27,6 +28,7 @@ interface StatsData {
 }
 
 export default function ArbitragePage() {
+  const { t } = useTranslation();
   const [data, setData] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,18 +71,18 @@ export default function ArbitragePage() {
   }
 
   const stats = [
-    { label: 'Active Positions', value: `${activeCount}`,       sub: activeCount > 0 ? 'Live yield contracts' : 'No active contracts' },
-    { label: 'Total ROI (PnL)',   value: `$${totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, sub: 'Accumulated earnings' },
-    { label: 'Arbitrage Win Rate', value: winRate,               sub: 'Guaranteed spread matching' },
-    { label: 'Avg Contract Yield', value: avgSpread,             sub: 'Daily contract average' },
+    { label: t('arbitrageStat1'), value: `${activeCount}`,       sub: activeCount > 0 ? t('arbitrageStat1Active') : t('arbitrageStat1Empty') },
+    { label: t('arbitrageStat2'),   value: `$${totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, sub: t('arbitrageStat2Sub') },
+    { label: t('arbitrageStat3'), value: winRate,               sub: t('arbitrageStat3Sub') },
+    { label: t('arbitrageStat4'), value: avgSpread,             sub: t('arbitrageStat4Sub') },
   ];
 
   return (
     <DashboardLayout>
       {/* Header */}
       <div className="mb-8">
-        <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">Trading</p>
-        <h1 className="text-2xl font-bold text-slate-950 dark:text-white tracking-tight">Arbitrage</h1>
+        <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">{t('arbitrage')}</p>
+        <h1 className="text-2xl font-bold text-slate-950 dark:text-white tracking-tight">{t('arbitrage')}</h1>
       </div>
 
       {loading ? (
@@ -91,7 +93,7 @@ export default function ArbitragePage() {
         <div className="p-6 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl font-mono text-sm max-w-xl mx-auto my-12 text-center">
           <p className="mb-4">{error}</p>
           <button onClick={fetchData} className="px-4 py-2 bg-red-500 text-white rounded-xl font-sans font-medium hover:bg-red-600 transition-colors">
-            Retry
+            {t('retry')}
           </button>
         </div>
       ) : (
@@ -114,8 +116,8 @@ export default function ArbitragePage() {
                 <BarChart3 className="w-4 h-4 text-green-500 dark:text-green-400" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold text-slate-950 dark:text-white">All Positions</h2>
-                <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">Arbitrage yield contracts</p>
+                <h2 className="text-sm font-semibold text-slate-950 dark:text-white">{t('arbitrageAllPositions')}</h2>
+                <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{t('arbitrageContracts')}</p>
               </div>
               <div className="ml-auto flex items-center gap-1.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
@@ -139,7 +141,7 @@ export default function ArbitragePage() {
                   let durationStr = 'Completed';
                   if (active) {
                     const daysLeft = Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
-                    durationStr = `${daysLeft} days left`;
+                    durationStr = `${daysLeft} ${t('daysLeft')}`;
                   }
 
                   return (
@@ -159,15 +161,15 @@ export default function ArbitragePage() {
 
                       <div className="flex items-center gap-6 flex-shrink-0">
                         <div className="text-right hidden sm:block">
-                          <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono mb-0.5">Deposit Volume</p>
+                          <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono mb-0.5">{t('arbitrageDepositVol')}</p>
                           <p className="text-xs font-mono text-slate-900 dark:text-white">${plan.amount.toLocaleString()}</p>
                         </div>
                         <div className="text-right hidden sm:block">
-                          <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono mb-0.5">Daily Spread</p>
+                          <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono mb-0.5">{t('arbitrageDailySpread')}</p>
                           <p className={`text-xs font-mono font-bold text-green-600 dark:text-green-400`}>+{(plan.dailyROI * 100).toFixed(1)}%</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono mb-0.5">PnL Earned</p>
+                          <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono mb-0.5">{t('arbitragePnL')}</p>
                           <p className={`text-sm font-bold font-mono text-green-600 dark:text-green-400`}>+${plan.totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                         </div>
                         <span className={`text-[9px] font-mono px-2.5 py-1 rounded-full ${active ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-gray-500'}`}>
@@ -178,7 +180,7 @@ export default function ArbitragePage() {
                   );
                 })
               ) : (
-                <p className="text-xs text-slate-400 dark:text-gray-500 font-mono py-8 text-center">No arbitrage positions. Subscribe to a contract on the Overview page.</p>
+                <p className="text-xs text-slate-400 dark:text-gray-500 font-mono py-8 text-center">{t('arbitrageEmpty')}</p>
               )}
             </div>
           </div>
