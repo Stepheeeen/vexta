@@ -31,7 +31,6 @@ export function Footer() {
       links: [
         { labelKey: 'footerLinkTerms', href: '#' },
         { labelKey: 'footerLinkPrivacy', href: '#' },
-        { labelKey: 'footerLinkRisk', href: '#' },
         { labelKey: 'footerLinkAml', href: '#' },
       ],
     },
@@ -75,17 +74,10 @@ export function Footer() {
           ))}
         </div>
 
-        {/* Disclaimer */}
+        {/* Footer Bottom */}
         <div className="border-t border-slate-200/80 pt-8">
-          <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-4 mb-6">
-            <p className="text-xs text-yellow-800 leading-relaxed">
-              <span className="font-semibold text-yellow-750">{t('footerRiskDisclaimerTitle')} </span>
-              {t('footerRiskDisclaimerText')}
-            </p>
-          </div>
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
             <p>&copy; {new Date().getFullYear()} Vexta. {t('footerRightsReserved')}</p>
-            <p>{t('footerNotRegulated')}</p>
           </div>
         </div>
       </div>

@@ -4,7 +4,7 @@ import { getUserFromRequest } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 
 const schema = z.object({
-  amount:        z.number().positive().min(10, 'Minimum withdrawal is $10'),
+  amount:        z.number().positive().min(5, 'Minimum withdrawal is $5'),
   walletAddress: z.string().min(10, 'Invalid wallet address'),
   network:       z.enum(['TRC20', 'BEP20', 'ERC20']).default('TRC20'),
 });
@@ -61,8 +61,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const fee = Number((amount * 0.06).toFixed(2));
+    const netAmount = Number((amount - fee).toFixed(2));
+
+    // Decrement user's persisted balance field immediately to avoid double-spend
+    await prisma.user.update({
+      where: { id: payload.userId },
+      data: { balance: { decrement: amount } }
+    });
+
     const withdrawal = await prisma.withdrawal.create({
-      data: { userId: payload.userId, amount, walletAddress, network, status: 'pending' },
+      data: { 
+        userId: payload.userId, 
+        amount, 
+        walletAddress, 
+        network, 
+        status: 'pending',
+        note: `6% fee: $${fee.toFixed(2)} | Net payout: $${netAmount.toFixed(2)}`
+      },
     });
 
     // Record outgoing transaction
@@ -72,7 +88,7 @@ export async function POST(req: NextRequest) {
         type: 'withdrawal',
         amount: -amount,
         status: 'pending',
-        description: `Withdrawal request — ${network}`,
+        description: `Withdrawal request — ${network} (Net: $${netAmount.toFixed(2)}, Fee: $${fee.toFixed(2)})`,
         reference: withdrawal.id,
       },
     });

@@ -33,7 +33,16 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  activeDeposit   Float    @default(0)
+  planRate        Float    @default(0)
+  totalEarned     Float    @default(0)
+  totalCommission Float    @default(0)
+  balance         Float    @default(0)
+  uplineId        String?  @db.ObjectId
+
   // Relations
+  upline                User?    @relation("UplineChain", fields: [uplineId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  downline              User[]   @relation("UplineChain")
   investments           Investment[]
   transactions          Transaction[]
   withdrawals           Withdrawal[]
@@ -122,6 +131,8 @@ model Transaction {
   description String?
   reference   String?
   metadata    String?  // JSON string
+  fromUserId  String?  @db.ObjectId
+  level       Int?
   createdAt   DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -142,3 +153,9 @@ model Withdrawal {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+model Settings {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  lastDailyRun DateTime?
+}
+

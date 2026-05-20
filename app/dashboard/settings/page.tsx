@@ -270,6 +270,24 @@ export default function SettingsPage() {
                     />
                   }
                 />
+
+                <Row
+                  label={language === 'vi' ? 'Hướng dẫn Chào mừng' : language === 'es' ? 'Guía de Bienvenida' : 'Onboarding Tour'}
+                  desc={language === 'vi' ? 'Chạy lại trình hướng dẫn chào mừng tương tác để xem lại các tính năng.' : language === 'es' ? 'Reproduzca el recorrido interactivo de bienvenida para revisar las características.' : 'Replay the interactive welcome tour to review platform features.'}
+                  action={
+                    <button
+                      type="button"
+                      onClick={() => {
+                        localStorage.setItem('vexta_tour_replay_trigger', 'true');
+                        localStorage.removeItem('vexta_tour_completed');
+                        router.push('/dashboard');
+                      }}
+                      className="text-[10px] font-mono text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/10 px-3 py-1.5 rounded-lg transition-all flex-shrink-0"
+                    >
+                      {language === 'vi' ? 'Bắt đầu' : language === 'es' ? 'Comenzar' : 'Start Tour'}
+                    </button>
+                  }
+                />
                 
                 <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-100 dark:border-white/5 font-sans">
                   <div className="min-w-0 mr-4">

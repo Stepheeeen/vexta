@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { distributeUnilevelCommission } from '@/server/services/commission.service';
 
 const schema = z.object({
-  amount: z.number().positive().min(1, 'Minimum deposit is $1'),
+  amount: z.number().positive().min(10, 'Minimum deposit is $10'),
 });
 
 export async function POST(req: NextRequest) {
@@ -31,9 +32,22 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    // Update depositing user's balance and activeDeposit
+    await prisma.user.update({
+      where: { id: payload.userId },
+      data: {
+        balance: { increment: amount },
+        activeDeposit: { increment: amount }
+      }
+    });
+
+    // Distribute unilevel commission up to 5 levels
+    await distributeUnilevelCommission(payload.userId, amount);
+
     return NextResponse.json({ message: 'Simulated deposit successful', transaction: txn }, { status: 201 });
   } catch (err) {
     console.error('[deposit/POST]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+

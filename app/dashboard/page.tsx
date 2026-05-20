@@ -4,6 +4,7 @@ import { DashboardLayout } from '@/components/dashboard-layout';
 import { TrendingUp, Eye, EyeOff, Copy, ArrowUpRight, ArrowDownRight, Zap, RefreshCw, Plus, Minus, Settings, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from '@/components/translation-provider';
+import { WelcomeTour } from '../components/WelcomeTour';
 
 interface StatsData {
   stats: {
@@ -150,6 +151,7 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
+      <WelcomeTour />
       {/* Page header */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -189,7 +191,7 @@ export default function Dashboard() {
       ) : (
         <>
           {/* Metric cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div id="tour-metrics" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {metrics.map(({ label, value, change }) => (
               <div
                 key={label}
@@ -207,7 +209,7 @@ export default function Dashboard() {
           </div>
 
           {/* Simulation Controls Panel */}
-          <div className="bg-white dark:bg-[#0A0F14]/80 backdrop-blur-xl border border-dashed border-[#00D9FF]/40 dark:border-[#00D9FF]/20 rounded-2xl p-6 mb-8 relative overflow-hidden group shadow-sm dark:shadow-[0_0_20px_rgba(0,217,255,0.02)]">
+          <div id="tour-simulation" className="bg-white dark:bg-[#0A0F14]/80 backdrop-blur-xl border border-dashed border-[#00D9FF]/40 dark:border-[#00D9FF]/20 rounded-2xl p-6 mb-8 relative overflow-hidden group shadow-sm dark:shadow-[0_0_20px_rgba(0,217,255,0.02)]">
             <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-48 h-48 bg-[#00D9FF]/5 rounded-full blur-3xl pointer-events-none" />
             <div className="flex items-center gap-3 mb-5">
               <div className="w-8 h-8 rounded-lg bg-[#00D9FF]/10 border border-[#00D9FF]/20 flex items-center justify-center">
@@ -352,7 +354,7 @@ export default function Dashboard() {
           {/* Two-col section */}
           <div className="grid md:grid-cols-2 gap-5 mb-5">
             {/* Active Arbitrage */}
-            <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none">
+            <div id="tour-positions" className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none">
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
                   <TrendingUp className="w-4 h-4 text-green-500 dark:text-green-400" />
@@ -388,7 +390,7 @@ export default function Dashboard() {
             </div>
 
             {/* Referral Code */}
-            <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none">
+            <div id="tour-referrals" className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none">
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
                   <Zap className="w-4 h-4 text-violet-500 dark:text-violet-400" />

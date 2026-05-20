@@ -90,6 +90,9 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === 'approve') {
+      const netAmount = Number((withdrawal.amount * 0.94).toFixed(2));
+      const fee = Number((withdrawal.amount * 0.06).toFixed(2));
+
       // 1. Mark withdrawal as approved
       await prisma.withdrawal.update({
         where: { id },
@@ -99,15 +102,12 @@ export async function POST(req: NextRequest) {
         }
       });
 
-      // 2. Create the negative transaction to reflect in user balance
-      await prisma.transaction.create({
+      // 2. Update existing pending transaction to completed
+      await prisma.transaction.updateMany({
+        where: { reference: withdrawal.id },
         data: {
-          userId: withdrawal.userId,
-          type: 'withdrawal',
-          amount: -Math.abs(withdrawal.amount),
           status: 'completed',
-          description: `Withdrawal request processed (${withdrawal.network})`,
-          reference: withdrawal.id,
+          description: `Withdrawal request processed (${withdrawal.network}) (Net: $${netAmount.toFixed(2)}, Fee: $${fee.toFixed(2)})`
         }
       });
 
@@ -115,12 +115,27 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === 'reject') {
-      // Mark as rejected
+      // 1. Refund the user's balance immediately
+      await prisma.user.update({
+        where: { id: withdrawal.userId },
+        data: { balance: { increment: withdrawal.amount } }
+      });
+
+      // 2. Mark withdrawal as rejected
       await prisma.withdrawal.update({
         where: { id },
         data: {
           status: 'rejected',
           processedAt: new Date(),
+        }
+      });
+
+      // 3. Mark transaction as failed
+      await prisma.transaction.updateMany({
+        where: { reference: withdrawal.id },
+        data: {
+          status: 'failed',
+          description: `Withdrawal request rejected (${withdrawal.network})`
         }
       });
 
