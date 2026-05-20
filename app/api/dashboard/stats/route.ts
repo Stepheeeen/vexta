@@ -6,6 +6,12 @@ export async function GET(req: NextRequest) {
   const payload = getUserFromRequest(req);
   if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
+  // Check maintenance mode
+  const settings = await prisma.settings.findFirst();
+  if (settings?.maintenanceMode && payload.role !== 'admin') {
+    return NextResponse.json({ error: 'Maintenance', maintenanceMode: true }, { status: 503 });
+  }
+
   const userId = payload.userId;
 
   // Investments

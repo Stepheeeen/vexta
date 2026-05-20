@@ -14,6 +14,9 @@ export async function GET(req: NextRequest) {
     const pendingWithdrawalsCount = await prisma.withdrawal.count({
       where: { status: 'pending' }
     });
+    const pendingDepositsCount = await prisma.transaction.count({
+      where: { type: 'deposit', status: 'pending' }
+    });
 
     // 2. Fetch all transaction data to calculate total volume
     // We sum absolute transaction values to get total volume, or sum deposits
@@ -99,15 +102,40 @@ export async function GET(req: NextRequest) {
       status: w.status === 'pending' ? 'Pending' : w.status === 'approved' ? 'Approved' : 'Rejected'
     }));
 
+    // 6. Recent pending deposits (last 5)
+    const rawPendingDeposits = await prisma.transaction.findMany({
+      where: { type: 'deposit', status: 'pending' },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true
+          }
+        }
+      }
+    });
+
+    const pendingDeposits = rawPendingDeposits.map(d => ({
+      id: d.id,
+      user: `${d.user.firstName} ${d.user.lastName}`,
+      amount: `$${d.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+      date: d.createdAt.toISOString().split('T')[0],
+      status: 'Pending'
+    }));
+
     return NextResponse.json({
       stats: {
         totalUsers,
         totalVolume,
         pendingWithdrawalsCount,
+        pendingDepositsCount,
         platformROI: avgDailyROI
       },
       recentUsers,
-      pendingWithdrawals
+      pendingWithdrawals,
+      pendingDeposits
     });
   } catch (err) {
     console.error('[admin-stats]', err);

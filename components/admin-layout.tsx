@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutGrid, Users, CreditCard, BarChart3, Settings, LogOut, Bell, X, Check } from 'lucide-react';
+import { LayoutGrid, Users, CreditCard, BarChart3, Settings, LogOut, Bell, X, Check, ArrowDownRight } from 'lucide-react';
 import { BackgroundPattern } from '@/components/background-pattern';
 import { VextaLogo } from '@/components/vexta-logo';
 import { useTranslation } from '@/components/translation-provider';
@@ -32,6 +32,7 @@ const adminTranslations = {
   en: {
     dashboard: 'Dashboard',
     users: 'Users',
+    deposits: 'Deposits',
     transactions: 'Transactions',
     withdrawals: 'Withdrawals',
     analytics: 'Analytics',
@@ -40,6 +41,7 @@ const adminTranslations = {
   es: {
     dashboard: 'Tablero',
     users: 'Usuarios',
+    deposits: 'Depósitos',
     transactions: 'Transacciones',
     withdrawals: 'Retiros',
     analytics: 'Analítica',
@@ -48,6 +50,7 @@ const adminTranslations = {
   vi: {
     dashboard: 'Bảng điều khiển',
     users: 'Người dùng',
+    deposits: 'Nạp tiền',
     transactions: 'Giao dịch',
     withdrawals: 'Rút tiền',
     analytics: 'Phân tích',
@@ -56,6 +59,7 @@ const adminTranslations = {
   th: {
     dashboard: 'แดชบอร์ด',
     users: 'ผู้ใช้งาน',
+    deposits: 'เงินฝาก',
     transactions: 'ธุรกรรม',
     withdrawals: 'การถอนเงิน',
     analytics: 'การวิเคราะห์',
@@ -64,6 +68,7 @@ const adminTranslations = {
   pt: {
     dashboard: 'Painel',
     users: 'Usuários',
+    deposits: 'Depósitos',
     transactions: 'Transações',
     withdrawals: 'Saques',
     analytics: 'Análise',
@@ -72,6 +77,7 @@ const adminTranslations = {
   ko: {
     dashboard: '대시보드',
     users: '사용자 관리',
+    deposits: '입금 관리',
     transactions: '거래 관리',
     withdrawals: '출금 관리',
     analytics: '통계 분석',
@@ -80,6 +86,7 @@ const adminTranslations = {
   fr: {
     dashboard: 'Tableau de bord',
     users: 'Utilisateurs',
+    deposits: 'Dépôts',
     transactions: 'Transactions',
     withdrawals: 'Retraits',
     analytics: 'Analyses',
@@ -109,12 +116,13 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   };
 
   const navItems = [
-    { href: '/admin',             icon: LayoutGrid,   labelKey: 'dashboard' as const,   exact: true },
-    { href: '/admin/users',        icon: Users,        labelKey: 'users' as const },
-    { href: '/admin/transactions', icon: CreditCard,   labelKey: 'transactions' as const },
-    { href: '/admin/withdrawals',  icon: BarChart3,    labelKey: 'withdrawals' as const },
-    { href: '/admin/analytics',    icon: BarChart3,    labelKey: 'analytics' as const },
-    { href: '/admin/settings',     icon: Settings,     labelKey: 'settings' as const },
+    { href: '/admin',             icon: LayoutGrid,     labelKey: 'dashboard' as const,   exact: true },
+    { href: '/admin/users',        icon: Users,          labelKey: 'users' as const },
+    { href: '/admin/deposits',     icon: ArrowDownRight, labelKey: 'deposits' as const },
+    { href: '/admin/transactions', icon: CreditCard,     labelKey: 'transactions' as const },
+    { href: '/admin/withdrawals',  icon: BarChart3,      labelKey: 'withdrawals' as const },
+    { href: '/admin/analytics',    icon: BarChart3,      labelKey: 'analytics' as const },
+    { href: '/admin/settings',     icon: Settings,       labelKey: 'settings' as const },
   ];
 
   // Close dropdown on click outside

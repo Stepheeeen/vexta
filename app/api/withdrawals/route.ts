@@ -36,6 +36,15 @@ export async function POST(req: NextRequest) {
 
     const { amount, walletAddress, network } = parsed.data;
 
+    // Check system settings
+    const settings = await prisma.settings.findFirst();
+    if (settings?.maintenanceMode && payload.role !== 'admin') {
+      return NextResponse.json(
+        { error: 'System is currently undergoing maintenance. Withdrawals are temporarily disabled.' },
+        { status: 503 }
+      );
+    }
+
     // Calculate available balance
     const earnedResult = await prisma.investment.aggregate({
       where: { userId: payload.userId },
@@ -61,7 +70,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const fee = Number((amount * 0.06).toFixed(2));
+    const feeRate = settings ? settings.withdrawalFee / 100 : 0.06;
+    const fee = Number((amount * feeRate).toFixed(2));
     const netAmount = Number((amount - fee).toFixed(2));
 
     // Decrement user's persisted balance field immediately to avoid double-spend
@@ -77,7 +87,7 @@ export async function POST(req: NextRequest) {
         walletAddress, 
         network, 
         status: 'pending',
-        note: `6% fee: $${fee.toFixed(2)} | Net payout: $${netAmount.toFixed(2)}`
+        note: `${(feeRate * 100).toFixed(0)}% fee: $${fee.toFixed(2)} | Net payout: $${netAmount.toFixed(2)}`
       },
     });
 

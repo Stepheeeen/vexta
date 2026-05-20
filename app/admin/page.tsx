@@ -9,6 +9,7 @@ interface Stats {
   totalUsers: number;
   totalVolume: number;
   pendingWithdrawalsCount: number;
+  pendingDepositsCount: number;
   platformROI: number;
 }
 
@@ -30,10 +31,19 @@ interface Withdrawal {
   status: string;
 }
 
+interface Deposit {
+  id: string;
+  user: string;
+  amount: string;
+  date: string;
+  status: string;
+}
+
 export default function AdminDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentUsers, setRecentUsers] = useState<User[]>([]);
   const [pendingWithdrawals, setPendingWithdrawals] = useState<Withdrawal[]>([]);
+  const [pendingDeposits, setPendingDeposits] = useState<Deposit[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,6 +56,7 @@ export default function AdminDashboard() {
       setStats(data.stats);
       setRecentUsers(data.recentUsers);
       setPendingWithdrawals(data.pendingWithdrawals);
+      setPendingDeposits(data.pendingDeposits || []);
     } catch (err: any) {
       setError(err.message || 'An error occurred');
     } finally {
@@ -57,7 +68,7 @@ export default function AdminDashboard() {
     fetchDashboardData();
   }, []);
 
-  const handleApprove = async (id: string) => {
+  const handleApproveWithdrawal = async (id: string) => {
     try {
       const res = await fetch('/api/admin/withdrawals', {
         method: 'POST',
@@ -65,7 +76,6 @@ export default function AdminDashboard() {
         body: JSON.stringify({ id, action: 'approve' }),
       });
       if (!res.ok) throw new Error('Approval failed');
-      // Refresh
       fetchDashboardData();
     } catch (err: any) {
       alert(err.message || 'Action failed');
@@ -95,6 +105,7 @@ export default function AdminDashboard() {
   const systemStats = [
     { label: 'Total Users', value: stats?.totalUsers.toString() || '0', icon: Users, change: 'All users' },
     { label: 'Total Volume', value: `$${stats?.totalVolume.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` || '$0.00', icon: DollarSign, change: 'Lifetime deposits' },
+    { label: 'Pending Deposits', value: stats?.pendingDepositsCount?.toString() || '0', icon: AlertTriangle, change: 'Awaiting verification' },
     { label: 'Pending Withdrawals', value: stats?.pendingWithdrawalsCount.toString() || '0', icon: AlertTriangle, change: 'Awaiting approval' },
     { label: 'Platform ROI Avg', value: `${((stats?.platformROI ?? 0) * 100).toFixed(1)}%` || '0.0%', icon: TrendingUp, change: 'Standard yield' },
   ];
@@ -107,21 +118,21 @@ export default function AdminDashboard() {
       </div>
 
       {/* System Metrics */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         {systemStats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <div key={stat.label} className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
-              <div className="flex items-start justify-between mb-4">
+            <div key={stat.label} className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-5 shadow-sm">
+              <div className="flex items-start justify-between mb-3">
                 <div>
-                  <p className="text-slate-500 dark:text-gray-400 text-sm font-medium mb-1">{stat.label}</p>
-                  <p className="text-slate-900 dark:text-white text-2xl font-bold">{stat.value}</p>
+                  <p className="text-slate-500 dark:text-gray-400 text-xs font-medium mb-1 truncate">{stat.label}</p>
+                  <p className="text-slate-900 dark:text-white text-xl font-bold">{stat.value}</p>
                 </div>
-                <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-600 dark:text-violet-400">
-                  <Icon className="w-5 h-5" />
+                <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0">
+                  <Icon className="w-4.5 h-4.5" />
                 </div>
               </div>
-              <p className="text-xs text-slate-400 dark:text-gray-500 font-mono">
+              <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono truncate">
                 {stat.change}
               </p>
             </div>
@@ -243,58 +254,105 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* Pending Withdrawals */}
-      <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm">
-        <div className="p-6 border-b border-slate-200 dark:border-white/5 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Pending Withdrawals</h3>
-          <span className="bg-red-500/10 text-red-600 dark:text-red-400 px-3 py-1 rounded-full text-sm font-bold border border-red-500/20">
-            {pendingWithdrawals.length}
-          </span>
+      {/* Pending Deposits & Withdrawals Tables */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Pending Deposits */}
+        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="p-6 border-b border-slate-200 dark:border-white/5 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Pending Deposits</h3>
+              <span className="bg-violet-500/10 text-violet-600 dark:text-violet-400 px-3 py-1 rounded-full text-sm font-bold border border-violet-500/20">
+                {pendingDeposits.length}
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/2">
+                    <th className="px-4 py-3 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">User</th>
+                    <th className="px-4 py-3 text-right text-slate-500 dark:text-gray-400 font-semibold text-sm">Amount</th>
+                    <th className="px-4 py-3 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingDeposits.map((deposit) => (
+                    <tr key={deposit.id} className="border-b border-slate-200 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/1 transition-colors">
+                      <td className="px-4 py-3 text-slate-900 dark:text-white text-sm font-medium">{deposit.user}</td>
+                      <td className="px-4 py-3 text-right text-emerald-600 dark:text-emerald-400 font-bold text-sm">{deposit.amount}</td>
+                      <td className="px-4 py-3 text-center text-slate-500 dark:text-gray-400 text-xs">{deposit.date}</td>
+                    </tr>
+                  ))}
+                  {pendingDeposits.length === 0 && (
+                    <tr>
+                      <td colSpan={3} className="px-4 py-8 text-center text-slate-400 dark:text-gray-500 text-sm">
+                        No pending deposits
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="p-4 border-t border-slate-200 dark:border-white/5">
+            <Link href="/admin/deposits" className="w-full block text-center text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium text-sm transition-colors">
+              Manage Deposits
+            </Link>
+          </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/2">
-                <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">Request ID</th>
-                <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">User</th>
-                <th className="px-6 py-4 text-right text-slate-500 dark:text-gray-400 font-semibold text-sm">Amount</th>
-                <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Method</th>
-                <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Status</th>
-                <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pendingWithdrawals.map((withdrawal) => (
-                <tr key={withdrawal.id} className="border-b border-slate-200 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/1 transition-colors">
-                  <td className="px-6 py-4 text-violet-600 dark:text-violet-400 font-mono text-sm">{withdrawal.id}</td>
-                  <td className="px-6 py-4 text-slate-900 dark:text-white">{withdrawal.user}</td>
-                  <td className="px-6 py-4 text-right text-emerald-600 dark:text-emerald-400 font-bold">{withdrawal.amount}</td>
-                  <td className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 text-sm">{withdrawal.method}</td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="text-xs font-bold px-3 py-1 rounded-full border bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20">
-                      {withdrawal.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    <button
-                      onClick={() => handleApprove(withdrawal.id)}
-                      className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 font-medium text-sm transition-colors"
-                    >
-                      Approve
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {pendingWithdrawals.length === 0 && (
-                <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-slate-400 dark:text-gray-500 text-sm">
-                    No pending withdrawals
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        {/* Pending Withdrawals */}
+        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="p-6 border-b border-slate-200 dark:border-white/5 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Pending Withdrawals</h3>
+              <span className="bg-red-500/10 text-red-600 dark:text-red-400 px-3 py-1 rounded-full text-sm font-bold border border-red-500/20">
+                {pendingWithdrawals.length}
+              </span>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/2">
+                    <th className="px-4 py-3 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">User</th>
+                    <th className="px-4 py-3 text-right text-slate-500 dark:text-gray-400 font-semibold text-sm">Amount</th>
+                    <th className="px-4 py-3 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pendingWithdrawals.map((withdrawal) => (
+                    <tr key={withdrawal.id} className="border-b border-slate-200 dark:border-white/5 hover:bg-slate-50 dark:hover:bg-white/1 transition-colors">
+                      <td className="px-4 py-3 text-slate-900 dark:text-white text-sm font-medium">{withdrawal.user}</td>
+                      <td className="px-4 py-3 text-right text-emerald-600 dark:text-emerald-400 font-bold text-sm">{withdrawal.amount}</td>
+                      <td className="px-4 py-3 text-center">
+                        <button
+                          onClick={() => handleApproveWithdrawal(withdrawal.id)}
+                          className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 font-medium text-sm transition-colors"
+                        >
+                          Approve
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {pendingWithdrawals.length === 0 && (
+                    <tr>
+                      <td colSpan={3} className="px-4 py-8 text-center text-slate-400 dark:text-gray-500 text-sm">
+                        No pending withdrawals
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div className="p-4 border-t border-slate-200 dark:border-white/5">
+            <Link href="/admin/withdrawals" className="w-full block text-center text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium text-sm transition-colors">
+              Manage Withdrawals
+            </Link>
+          </div>
         </div>
       </div>
     </AdminLayout>

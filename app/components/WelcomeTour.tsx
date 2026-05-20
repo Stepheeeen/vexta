@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from '@/components/translation-provider';
-import { Sparkles, ArrowRight, ArrowLeft, X } from 'lucide-react';
+import { ArrowRight, ArrowLeft, X } from 'lucide-react';
 
 interface TourStep {
   targetId: string;
@@ -220,9 +220,6 @@ export function WelcomeTour() {
           {/* Header */}
           <div className="flex items-center justify-between mb-3.5">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-              </div>
               <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest">
                 System Guide ({currentStep + 1}/{steps.length})
               </span>

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutGrid, TrendingUp, Users, Wallet, BarChart3, Settings, LogOut, Bell, X, Check, Globe, ArrowUpRight } from 'lucide-react';
+import { LayoutGrid, TrendingUp, Users, Wallet, BarChart3, Settings, LogOut, Bell, X, Check, Globe, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { BackgroundPattern } from '@/components/background-pattern';
 import { VextaLogo } from '@/components/vexta-logo';
 import { useTranslation } from '@/components/translation-provider';
@@ -55,13 +55,14 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const langRef = useRef<HTMLDivElement>(null);
 
   const navItems = [
-    { href: '/dashboard',            icon: LayoutGrid,   labelKey: 'overview',  exact: true },
-    { href: '/dashboard/portfolio',  icon: TrendingUp,   labelKey: 'portfolio' },
-    { href: '/dashboard/arbitrage',  icon: BarChart3,    labelKey: 'arbitrage' },
-    { href: '/dashboard/withdraw',   icon: ArrowUpRight, labelKey: 'withdraw' },
-    { href: '/dashboard/earnings',   icon: Wallet,       labelKey: 'earnings'  },
-    { href: '/dashboard/referrals',  icon: Users,        labelKey: 'referrals' },
-    { href: '/dashboard/settings',   icon: Settings,     labelKey: 'settings'  },
+    { href: '/dashboard',            icon: LayoutGrid,     labelKey: 'overview',  exact: true },
+    { href: '/dashboard/portfolio',  icon: TrendingUp,     labelKey: 'portfolio' },
+    { href: '/dashboard/arbitrage',  icon: BarChart3,      labelKey: 'arbitrage' },
+    { href: '/dashboard/deposit',    icon: ArrowDownRight, labelKey: 'deposit' },
+    { href: '/dashboard/withdraw',   icon: ArrowUpRight,   labelKey: 'withdraw' },
+    { href: '/dashboard/earnings',   icon: Wallet,         labelKey: 'earnings'  },
+    { href: '/dashboard/referrals',  icon: Users,          labelKey: 'referrals' },
+    { href: '/dashboard/settings',   icon: Settings,       labelKey: 'settings'  },
   ];
 
   // Close dropdown on click outside

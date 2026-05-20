@@ -15,6 +15,14 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
+    const settings = await prisma.settings.findFirst();
+    if (settings && !settings.newRegistrations) {
+      return NextResponse.json(
+        { error: 'New registrations are temporarily disabled by the administrator.' },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const parsed = schema.safeParse(body);
 

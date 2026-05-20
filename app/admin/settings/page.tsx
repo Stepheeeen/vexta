@@ -1,17 +1,20 @@
 'use client';
 
 import { AdminLayout } from '@/components/admin-layout';
-import { Settings, Database, Bell, Shield, DollarSign, Check } from 'lucide-react';
-import { useState } from 'react';
+import { Settings, Bell, Shield, DollarSign, Check, Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export default function AdminSettings() {
   const [settings, setSettings] = useState({
     maintenanceMode: false,
     newRegistrations: true,
-    emailNotifications: true,
     twoFactorRequired: false,
+    referralRate: 15,
+    tradingFee: 2,
+    withdrawalFee: 1,
   });
 
+  const [loading, setLoading] = useState(true);
   const [savingCommissions, setSavingCommissions] = useState(false);
   const [savedCommissions, setSavedCommissions] = useState(false);
   const [savingNotifications, setSavingNotifications] = useState(false);
@@ -19,22 +22,79 @@ export default function AdminSettings() {
   const [savingSecurity, setSavingSecurity] = useState(false);
   const [savedSecurity, setSavedSecurity] = useState(false);
 
-  const handleToggle = (key: keyof typeof settings) => {
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch('/api/admin/settings');
+        if (!res.ok) throw new Error('Failed to fetch settings');
+        const data = await res.json();
+        if (data.settings) {
+          setSettings({
+            maintenanceMode: data.settings.maintenanceMode ?? false,
+            newRegistrations: data.settings.newRegistrations ?? true,
+            twoFactorRequired: data.settings.twoFactorRequired ?? false,
+            referralRate: data.settings.referralRate ?? 15,
+            tradingFee: data.settings.tradingFee ?? 2,
+            withdrawalFee: data.settings.withdrawalFee ?? 1,
+          });
+        }
+      } catch (err: any) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSettings();
+  }, []);
+
+  const handleToggle = async (key: 'maintenanceMode' | 'newRegistrations' | 'twoFactorRequired') => {
+    const newVal = !settings[key];
+    // Optimistic UI update
     setSettings(prev => ({
       ...prev,
-      [key]: !prev[key]
+      [key]: newVal
     }));
+
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [key]: newVal }),
+      });
+      if (!res.ok) throw new Error('Failed to update setting');
+    } catch (err: any) {
+      alert(err.message || 'Failed to update setting');
+      // Rollback
+      setSettings(prev => ({
+        ...prev,
+        [key]: !newVal
+      }));
+    }
   };
 
-  const handleSaveCommissions = (e: React.FormEvent) => {
+  const handleSaveCommissions = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingCommissions(true);
     setSavedCommissions(false);
-    setTimeout(() => {
-      setSavingCommissions(false);
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          referralRate: Number(settings.referralRate),
+          tradingFee: Number(settings.tradingFee),
+          withdrawalFee: Number(settings.withdrawalFee),
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to save settings');
       setSavedCommissions(true);
       setTimeout(() => setSavedCommissions(false), 2000);
-    }, 800);
+    } catch (err: any) {
+      alert(err.message || 'An error occurred');
+    } finally {
+      setSavingCommissions(false);
+    }
   };
 
   const handleSaveNotifications = (e: React.FormEvent) => {
@@ -58,6 +118,16 @@ export default function AdminSettings() {
       setTimeout(() => setSavedSecurity(false), 2000);
     }, 800);
   };
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex h-[60vh] items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-violet-600 dark:text-violet-400" />
+        </div>
+      </AdminLayout>
+    );
+  }
 
   return (
     <AdminLayout>
@@ -137,7 +207,7 @@ export default function AdminSettings() {
       <form onSubmit={handleSaveCommissions} className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 mb-6 shadow-sm">
         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
           <DollarSign className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-          Commission Settings
+          Commission & Fee Settings
         </h3>
 
         <div className="space-y-4">
@@ -145,7 +215,8 @@ export default function AdminSettings() {
             <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Referral Commission Rate (%)</label>
             <input
               type="number"
-              defaultValue="15"
+              value={settings.referralRate}
+              onChange={(e) => setSettings({ ...settings, referralRate: Number(e.target.value) })}
               required
               className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 text-sm"
             />
@@ -156,7 +227,8 @@ export default function AdminSettings() {
             <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Trading Fee (%)</label>
             <input
               type="number"
-              defaultValue="2"
+              value={settings.tradingFee}
+              onChange={(e) => setSettings({ ...settings, tradingFee: Number(e.target.value) })}
               required
               className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 text-sm"
             />
@@ -167,7 +239,8 @@ export default function AdminSettings() {
             <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Withdrawal Fee (%)</label>
             <input
               type="number"
-              defaultValue="1"
+              value={settings.withdrawalFee}
+              onChange={(e) => setSettings({ ...settings, withdrawalFee: Number(e.target.value) })}
               required
               className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 text-sm"
             />
@@ -179,7 +252,7 @@ export default function AdminSettings() {
             disabled={savingCommissions}
             className="w-full mt-4 py-3 bg-violet-600 hover:bg-violet-750 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
           >
-            {savingCommissions ? 'Saving...' : savedCommissions ? <><Check className="w-5 h-5" /> Saved</> : 'Save Commission Settings'}
+            {savingCommissions ? 'Saving...' : savedCommissions ? <><Check className="w-5 h-5" /> Saved</> : 'Save Commission & Fee Settings'}
           </button>
         </div>
       </form>
@@ -199,16 +272,9 @@ export default function AdminSettings() {
             </div>
             <button
               type="button"
-              onClick={() => handleToggle('emailNotifications')}
-              className={`relative w-12 h-7 rounded-full transition-colors ${
-                settings.emailNotifications ? 'bg-violet-600 dark:bg-violet-500' : 'bg-slate-200 dark:bg-white/10'
-              }`}
+              className="relative w-12 h-7 rounded-full bg-violet-600 dark:bg-violet-500"
             >
-              <div
-                className={`absolute top-1 w-5 h-5 bg-white dark:bg-[#0F1419] rounded-full transition-transform ${
-                  settings.emailNotifications ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
+              <div className="absolute top-1 w-5 h-5 bg-white dark:bg-[#0F1419] rounded-full translate-x-6" />
             </button>
           </div>
 

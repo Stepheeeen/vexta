@@ -155,7 +155,13 @@ model Withdrawal {
 }
 
 model Settings {
-  id           String    @id @default(auto()) @map("_id") @db.ObjectId
-  lastDailyRun DateTime?
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  lastDailyRun      DateTime?
+  maintenanceMode   Boolean   @default(false)
+  newRegistrations  Boolean   @default(true)
+  twoFactorRequired Boolean   @default(false)
+  referralRate      Float     @default(15.0)
+  tradingFee        Float     @default(2.0)
+  withdrawalFee     Float     @default(6.0)
 }
 
