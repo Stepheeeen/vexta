@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { Menu, X, Bell, LogOut, Check, Globe } from 'lucide-react';
 import { VextaLogo } from '@/components/vexta-logo';
 import { useTranslation } from '@/components/translation-provider';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
+
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -24,6 +25,8 @@ export function Navbar() {
 
   const { language, setLanguage, t } = useTranslation();
   const router = useRouter();
+  const pathname = usePathname();
+
 
   const navLinks = [
     { label: t('navHowItWorks'), href: '#how-it-works' },
@@ -160,10 +163,15 @@ export function Navbar() {
 
   const handleNav = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
-    const id = href.replace('#', '');
-    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    if (pathname !== '/') {
+      router.push(`/${href}`);
+    } else {
+      const id = href.replace('#', '');
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    }
     setIsOpen(false);
   };
+
 
   return (
     <header
