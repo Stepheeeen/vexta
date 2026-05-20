@@ -3,8 +3,13 @@
 import { AdminLayout } from '@/components/admin-layout';
 import { Settings, Bell, Shield, DollarSign, Check, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useTranslation } from '@/components/translation-provider';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminSettings() {
+  const { t } = useTranslation();
+  const { toast } = useToast();
+
   const [settings, setSettings] = useState({
     maintenanceMode: false,
     newRegistrations: true,
@@ -63,8 +68,16 @@ export default function AdminSettings() {
         body: JSON.stringify({ [key]: newVal }),
       });
       if (!res.ok) throw new Error('Failed to update setting');
+      toast({
+        title: t('adminAlertSuccess'),
+        description: t('adminSettingsUpdateSuccess'),
+      });
     } catch (err: any) {
-      alert(err.message || 'Failed to update setting');
+      toast({
+        title: t('adminAlertError'),
+        description: err.message || 'Failed to update setting',
+        variant: 'destructive',
+      });
       // Rollback
       setSettings(prev => ({
         ...prev,
@@ -89,9 +102,17 @@ export default function AdminSettings() {
       });
       if (!res.ok) throw new Error('Failed to save settings');
       setSavedCommissions(true);
+      toast({
+        title: t('adminAlertSuccess'),
+        description: t('adminSettingsUpdateSuccess'),
+      });
       setTimeout(() => setSavedCommissions(false), 2000);
     } catch (err: any) {
-      alert(err.message || 'An error occurred');
+      toast({
+        title: t('adminAlertError'),
+        description: err.message || 'An error occurred',
+        variant: 'destructive',
+      });
     } finally {
       setSavingCommissions(false);
     }
@@ -104,6 +125,10 @@ export default function AdminSettings() {
     setTimeout(() => {
       setSavingNotifications(false);
       setSavedNotifications(true);
+      toast({
+        title: t('adminAlertSuccess'),
+        description: t('adminSettingsUpdateSuccess'),
+      });
       setTimeout(() => setSavedNotifications(false), 2000);
     }, 800);
   };
@@ -115,6 +140,10 @@ export default function AdminSettings() {
     setTimeout(() => {
       setSavingSecurity(false);
       setSavedSecurity(true);
+      toast({
+        title: t('adminAlertSuccess'),
+        description: t('adminSettingsUpdateSuccess'),
+      });
       setTimeout(() => setSavedSecurity(false), 2000);
     }, 800);
   };
@@ -132,22 +161,22 @@ export default function AdminSettings() {
   return (
     <AdminLayout>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Platform Settings</h1>
-        <p className="text-slate-500 dark:text-gray-400">Configure platform-wide settings and preferences</p>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{t('adminSettingsTitle')}</h1>
+        <p className="text-slate-500 dark:text-gray-400">{t('adminSettingsSub')}</p>
       </div>
 
       {/* System Settings */}
       <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 mb-6 shadow-sm">
         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
           <Settings className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-          System Controls
+          {t('adminSettingsSystemControls')}
         </h3>
 
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200 dark:border-white/5">
             <div>
-              <p className="text-slate-900 dark:text-white font-medium text-sm">Maintenance Mode</p>
-              <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">Temporarily disable platform for all users</p>
+              <p className="text-slate-900 dark:text-white font-medium text-sm">{t('adminSettingsMaintenanceMode')}</p>
+              <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">{t('adminSettingsMaintenanceDesc')}</p>
             </div>
             <button
               onClick={() => handleToggle('maintenanceMode')}
@@ -165,8 +194,8 @@ export default function AdminSettings() {
 
           <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200 dark:border-white/5">
             <div>
-              <p className="text-slate-900 dark:text-white font-medium text-sm">Allow New Registrations</p>
-              <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">Enable/disable new user signups</p>
+              <p className="text-slate-900 dark:text-white font-medium text-sm">{t('adminSettingsNewRegistrations')}</p>
+              <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">{t('adminSettingsNewRegistrationsDesc')}</p>
             </div>
             <button
               onClick={() => handleToggle('newRegistrations')}
@@ -184,8 +213,8 @@ export default function AdminSettings() {
 
           <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200 dark:border-white/5">
             <div>
-              <p className="text-slate-900 dark:text-white font-medium text-sm">Require 2FA for All Users</p>
-              <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">Enforce two-factor authentication</p>
+              <p className="text-slate-900 dark:text-white font-medium text-sm">{t('adminSettingsRequire2fa')}</p>
+              <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">{t('adminSettingsRequire2faDesc')}</p>
             </div>
             <button
               onClick={() => handleToggle('twoFactorRequired')}
@@ -207,12 +236,12 @@ export default function AdminSettings() {
       <form onSubmit={handleSaveCommissions} className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 mb-6 shadow-sm">
         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
           <DollarSign className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-          Commission & Fee Settings
+          {t('adminSettingsCommissionFeeSettings')}
         </h3>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Referral Commission Rate (%)</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">{t('adminSettingsReferralRate')}</label>
             <input
               type="number"
               value={settings.referralRate}
@@ -220,11 +249,11 @@ export default function AdminSettings() {
               required
               className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 text-sm"
             />
-            <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">Percentage of each referral&apos;s activity credited to referrer</p>
+            <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">{t('adminSettingsReferralHint')}</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Trading Fee (%)</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">{t('adminSettingsTradingFee')}</label>
             <input
               type="number"
               value={settings.tradingFee}
@@ -232,11 +261,11 @@ export default function AdminSettings() {
               required
               className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 text-sm"
             />
-            <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">Fee charged on each trade execution</p>
+            <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">{t('adminSettingsTradingFeeHint')}</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Withdrawal Fee (%)</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">{t('adminSettingsWithdrawalFee')}</label>
             <input
               type="number"
               value={settings.withdrawalFee}
@@ -244,7 +273,7 @@ export default function AdminSettings() {
               required
               className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 text-sm"
             />
-            <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">Fee charged on withdrawals</p>
+            <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">{t('adminSettingsWithdrawalFeeHint')}</p>
           </div>
 
           <button
@@ -252,7 +281,7 @@ export default function AdminSettings() {
             disabled={savingCommissions}
             className="w-full mt-4 py-3 bg-violet-600 hover:bg-violet-750 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
           >
-            {savingCommissions ? 'Saving...' : savedCommissions ? <><Check className="w-5 h-5" /> Saved</> : 'Save Commission & Fee Settings'}
+            {savingCommissions ? t('adminSettingsSaving') : savedCommissions ? <><Check className="w-5 h-5" /> {t('adminSettingsSaved')}</> : t('adminSettingsSaveCommissionBtn')}
           </button>
         </div>
       </form>
@@ -261,14 +290,14 @@ export default function AdminSettings() {
       <form onSubmit={handleSaveNotifications} className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 mb-6 shadow-sm">
         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
           <Bell className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-          Notification Thresholds
+          {t('adminSettingsNotificationThresholds')}
         </h3>
 
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200 dark:border-white/5">
             <div>
-              <p className="text-slate-900 dark:text-white font-medium text-sm">Email Notifications</p>
-              <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">Send alerts to admins</p>
+              <p className="text-slate-900 dark:text-white font-medium text-sm">{t('adminSettingsEmailNotifications')}</p>
+              <p className="text-xs text-slate-500 dark:text-gray-400 mt-0.5">{t('adminSettingsSendAlertsAdmins')}</p>
             </div>
             <button
               type="button"
@@ -279,10 +308,10 @@ export default function AdminSettings() {
           </div>
 
           <div className="p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200 dark:border-white/5">
-            <p className="text-slate-900 dark:text-white font-medium mb-3 text-sm">Alert Thresholds</p>
+            <p className="text-slate-900 dark:text-white font-medium mb-3 text-sm">{t('adminSettingsAlertThresholds')}</p>
             <div className="space-y-3">
               <div>
-                <label className="block text-xs text-slate-500 dark:text-gray-400 mb-1">Large Withdrawal Alert ($)</label>
+                <label className="block text-xs text-slate-500 dark:text-gray-400 mb-1">{t('adminSettingsLargeWithdrawalAlert')}</label>
                 <input
                   type="number"
                   defaultValue="50000"
@@ -291,11 +320,11 @@ export default function AdminSettings() {
                 />
               </div>
               <div>
-                <label className="block text-xs text-slate-500 dark:text-gray-400 mb-1">Suspicious Activity Alert</label>
+                <label className="block text-xs text-slate-500 dark:text-gray-400 mb-1">{t('adminSettingsSuspiciousAlert')}</label>
                 <select className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-2 text-slate-700 dark:text-gray-300 focus:outline-none focus:border-violet-500 text-sm">
-                  <option>Medium (3+ failed logins)</option>
-                  <option>High (1+ failed login)</option>
-                  <option>Critical (Any failed login)</option>
+                  <option>{t('adminSettingsMediumLogins')}</option>
+                  <option>{t('adminSettingsHighLogins')}</option>
+                  <option>{t('adminSettingsCriticalLogins')}</option>
                 </select>
               </div>
             </div>
@@ -306,7 +335,7 @@ export default function AdminSettings() {
             disabled={savingNotifications}
             className="w-full mt-4 py-3 bg-violet-600 hover:bg-violet-750 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
           >
-            {savingNotifications ? 'Saving...' : savedNotifications ? <><Check className="w-5 h-5" /> Saved</> : 'Save Notification Settings'}
+            {savingNotifications ? t('adminSettingsSaving') : savedNotifications ? <><Check className="w-5 h-5" /> {t('adminSettingsSaved')}</> : t('adminSettingsSaveNotificationsBtn')}
           </button>
         </div>
       </form>
@@ -315,40 +344,40 @@ export default function AdminSettings() {
       <form onSubmit={handleSaveSecurity} className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
           <Shield className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-          Security Controls
+          {t('adminSettingsSecurityControls')}
         </h3>
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Max Failed Login Attempts</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">{t('adminSettingsMaxFailedAttempts')}</label>
             <input
               type="number"
               defaultValue="5"
               required
               className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 text-sm"
             />
-            <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">After this many attempts, account is locked</p>
+            <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">{t('adminSettingsMaxFailedAttemptsHint')}</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">Session Timeout (minutes)</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">{t('adminSettingsSessionTimeout')}</label>
             <input
               type="number"
               defaultValue="30"
               required
               className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 text-sm"
             />
-            <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">Automatic logout after inactivity</p>
+            <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">{t('adminSettingsSessionTimeoutHint')}</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">IP Whitelist</label>
+            <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">{t('adminSettingsIpWhitelistLabel')}</label>
             <textarea
               defaultValue="192.168.1.1&#10;10.0.0.0/8"
               className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-violet-500 h-24 font-mono text-xs"
-              placeholder="Enter IPs (one per line)"
+              placeholder={t('adminSettingsIpWhitelistPlaceholder')}
             />
-            <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">Only these IPs can access admin panel</p>
+            <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">{t('adminSettingsIpWhitelistHint')}</p>
           </div>
 
           <button
@@ -356,7 +385,7 @@ export default function AdminSettings() {
             disabled={savingSecurity}
             className="w-full mt-4 py-3 bg-violet-600 hover:bg-violet-750 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
           >
-            {savingSecurity ? 'Saving...' : savedSecurity ? <><Check className="w-5 h-5" /> Saved</> : 'Save Security Settings'}
+            {savingSecurity ? t('adminSettingsSaving') : savedSecurity ? <><Check className="w-5 h-5" /> {t('adminSettingsSaved')}</> : t('adminSettingsSaveSecurityBtn')}
           </button>
         </div>
       </form>

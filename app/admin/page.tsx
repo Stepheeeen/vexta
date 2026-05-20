@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AdminLayout } from '@/components/admin-layout';
 import { Users, DollarSign, AlertTriangle, TrendingUp, Loader2 } from 'lucide-react';
+import { useTranslation } from '@/components/translation-provider';
+import { useToast } from '@/hooks/use-toast';
 
 interface Stats {
   totalUsers: number;
@@ -40,12 +42,25 @@ interface Deposit {
 }
 
 export default function AdminDashboard() {
+  const { t } = useTranslation();
+  const { toast } = useToast();
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentUsers, setRecentUsers] = useState<User[]>([]);
   const [pendingWithdrawals, setPendingWithdrawals] = useState<Withdrawal[]>([]);
   const [pendingDeposits, setPendingDeposits] = useState<Deposit[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const getStatusLabel = (status: string) => {
+    const s = status.toLowerCase();
+    if (s === 'active') return t('adminStatusActive');
+    if (s === 'pending') return t('adminStatusPending');
+    if (s === 'suspended') return t('adminStatusSuspended');
+    if (s === 'completed') return t('adminStatusCompleted');
+    if (s === 'rejected') return t('adminStatusRejected');
+    if (s === 'failed') return t('adminStatusFailed');
+    return status;
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -76,9 +91,17 @@ export default function AdminDashboard() {
         body: JSON.stringify({ id, action: 'approve' }),
       });
       if (!res.ok) throw new Error('Approval failed');
+      toast({
+        title: t('adminAlertSuccess'),
+        description: t('adminActionSuccess'),
+      });
       fetchDashboardData();
     } catch (err: any) {
-      alert(err.message || 'Action failed');
+      toast({
+        title: t('adminAlertError'),
+        description: err.message || t('adminActionFailed') || 'Action failed',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -103,18 +126,18 @@ export default function AdminDashboard() {
   }
 
   const systemStats = [
-    { label: 'Total Users', value: stats?.totalUsers.toString() || '0', icon: Users, change: 'All users' },
-    { label: 'Total Volume', value: `$${stats?.totalVolume.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` || '$0.00', icon: DollarSign, change: 'Lifetime deposits' },
-    { label: 'Pending Deposits', value: stats?.pendingDepositsCount?.toString() || '0', icon: AlertTriangle, change: 'Awaiting verification' },
-    { label: 'Pending Withdrawals', value: stats?.pendingWithdrawalsCount.toString() || '0', icon: AlertTriangle, change: 'Awaiting approval' },
-    { label: 'Platform ROI Avg', value: `${((stats?.platformROI ?? 0) * 100).toFixed(1)}%` || '0.0%', icon: TrendingUp, change: 'Standard yield' },
+    { label: t('adminMetricTotalUsers'), value: stats?.totalUsers.toString() || '0', icon: Users, change: t('adminMetricTotalUsersSub') },
+    { label: t('adminMetricTotalVol'), value: `$${stats?.totalVolume.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` || '$0.00', icon: DollarSign, change: t('adminMetricTotalVolSub') },
+    { label: t('adminMetricPendingDeps'), value: stats?.pendingDepositsCount?.toString() || '0', icon: AlertTriangle, change: t('adminMetricPendingDepsSub') },
+    { label: t('adminMetricPendingWiths'), value: stats?.pendingWithdrawalsCount.toString() || '0', icon: AlertTriangle, change: t('adminMetricPendingWithsSub') },
+    { label: t('adminMetricRoiAvg'), value: `${((stats?.platformROI ?? 0) * 100).toFixed(1)}%` || '0.0%', icon: TrendingUp, change: t('adminMetricRoiAvgSub') },
   ];
 
   return (
     <AdminLayout>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Admin Dashboard</h1>
-        <p className="text-slate-500 dark:text-gray-400">Platform overview and system metrics</p>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{t('adminDashboardTitle')}</h1>
+        <p className="text-slate-500 dark:text-gray-400">{t('adminDashboardSub')}</p>
       </div>
 
       {/* System Metrics */}
@@ -146,16 +169,16 @@ export default function AdminDashboard() {
         <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden flex flex-col justify-between shadow-sm">
           <div>
             <div className="p-6 border-b border-slate-200 dark:border-white/5">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Recent Users</h3>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t('adminRecentUsers')}</h3>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/2">
-                    <th className="px-4 py-3 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">Name</th>
-                    <th className="px-4 py-3 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Status</th>
-                    <th className="px-4 py-3 text-right text-slate-500 dark:text-gray-400 font-semibold text-sm">Balance</th>
+                    <th className="px-4 py-3 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColName')}</th>
+                    <th className="px-4 py-3 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColStatus')}</th>
+                    <th className="px-4 py-3 text-right text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColBalance')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -175,7 +198,7 @@ export default function AdminDashboard() {
                             ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
                             : 'bg-red-500/10 text-red-500 border-red-500/30'
                         }`}>
-                          {user.status}
+                          {getStatusLabel(user.status)}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right text-emerald-600 dark:text-emerald-400 font-bold text-sm">{user.balance}</td>
@@ -184,7 +207,7 @@ export default function AdminDashboard() {
                   {recentUsers.length === 0 && (
                     <tr>
                       <td colSpan={3} className="px-4 py-8 text-center text-slate-400 dark:text-gray-500 text-sm">
-                        No recent users registered
+                        {t('adminNoRecentUsers')}
                       </td>
                     </tr>
                   )}
@@ -195,7 +218,7 @@ export default function AdminDashboard() {
 
           <div className="p-4 border-t border-slate-200 dark:border-white/5">
             <Link href="/admin/users" className="w-full block text-center text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium text-sm transition-colors">
-              View All Users
+              {t('adminViewAllUsers') || 'View All Users'}
             </Link>
           </div>
         </div>
@@ -203,12 +226,12 @@ export default function AdminDashboard() {
         {/* System Health */}
         <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 flex flex-col justify-between shadow-sm">
           <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">System Health</h3>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">{t('adminSystemHealth') || 'System Health'}</h3>
 
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between mb-2">
-                  <span className="text-slate-500 dark:text-gray-400">Server Uptime</span>
+                  <span className="text-slate-500 dark:text-gray-400">{t('adminServerUptime') || 'Server Uptime'}</span>
                   <span className="text-emerald-600 dark:text-emerald-400 font-bold">99.9%</span>
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
@@ -218,7 +241,7 @@ export default function AdminDashboard() {
 
               <div>
                 <div className="flex justify-between mb-2">
-                  <span className="text-slate-500 dark:text-gray-400">API Response Time</span>
+                  <span className="text-slate-500 dark:text-gray-400">{t('adminApiResponseTime') || 'API Response Time'}</span>
                   <span className="text-violet-600 dark:text-violet-400 font-bold">45ms</span>
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
@@ -228,7 +251,7 @@ export default function AdminDashboard() {
 
               <div>
                 <div className="flex justify-between mb-2">
-                  <span className="text-slate-500 dark:text-gray-400">Database Load</span>
+                  <span className="text-slate-500 dark:text-gray-400">{t('adminDatabaseLoad') || 'Database Load'}</span>
                   <span className="text-violet-600 dark:text-violet-400 font-bold">12%</span>
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
@@ -238,7 +261,7 @@ export default function AdminDashboard() {
 
               <div>
                 <div className="flex justify-between mb-2">
-                  <span className="text-slate-500 dark:text-gray-400">Memory Usage</span>
+                  <span className="text-slate-500 dark:text-gray-400">{t('adminMemoryUsage') || 'Memory Usage'}</span>
                   <span className="text-violet-600 dark:text-violet-400 font-bold">34%</span>
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
@@ -249,7 +272,7 @@ export default function AdminDashboard() {
           </div>
 
           <Link href="/admin/analytics" className="w-full mt-6 py-3 block text-center border border-slate-200 dark:border-white/10 text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl font-medium transition-colors">
-            View Analytics
+            {t('adminViewAnalytics') || 'View Analytics'}
           </Link>
         </div>
       </div>
@@ -260,7 +283,7 @@ export default function AdminDashboard() {
         <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between">
           <div>
             <div className="p-6 border-b border-slate-200 dark:border-white/5 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Pending Deposits</h3>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t('adminMetricPendingDeps') || 'Pending Deposits'}</h3>
               <span className="bg-violet-500/10 text-violet-600 dark:text-violet-400 px-3 py-1 rounded-full text-sm font-bold border border-violet-500/20">
                 {pendingDeposits.length}
               </span>
@@ -270,9 +293,9 @@ export default function AdminDashboard() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/2">
-                    <th className="px-4 py-3 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">User</th>
-                    <th className="px-4 py-3 text-right text-slate-500 dark:text-gray-400 font-semibold text-sm">Amount</th>
-                    <th className="px-4 py-3 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Date</th>
+                    <th className="px-4 py-3 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColName') || 'User'}</th>
+                    <th className="px-4 py-3 text-right text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColAmount') || 'Amount'}</th>
+                    <th className="px-4 py-3 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColDate') || 'Date'}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -286,7 +309,7 @@ export default function AdminDashboard() {
                   {pendingDeposits.length === 0 && (
                     <tr>
                       <td colSpan={3} className="px-4 py-8 text-center text-slate-400 dark:text-gray-500 text-sm">
-                        No pending deposits
+                        {t('adminNoPendingDeposits') || 'No pending deposits'}
                       </td>
                     </tr>
                   )}
@@ -297,7 +320,7 @@ export default function AdminDashboard() {
 
           <div className="p-4 border-t border-slate-200 dark:border-white/5">
             <Link href="/admin/deposits" className="w-full block text-center text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium text-sm transition-colors">
-              Manage Deposits
+              {t('adminManageDeposits') || 'Manage Deposits'}
             </Link>
           </div>
         </div>
@@ -306,7 +329,7 @@ export default function AdminDashboard() {
         <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm flex flex-col justify-between">
           <div>
             <div className="p-6 border-b border-slate-200 dark:border-white/5 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-slate-900 dark:text-white">Pending Withdrawals</h3>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t('adminMetricPendingWiths') || 'Pending Withdrawals'}</h3>
               <span className="bg-red-500/10 text-red-600 dark:text-red-400 px-3 py-1 rounded-full text-sm font-bold border border-red-500/20">
                 {pendingWithdrawals.length}
               </span>
@@ -316,9 +339,9 @@ export default function AdminDashboard() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/2">
-                    <th className="px-4 py-3 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">User</th>
-                    <th className="px-4 py-3 text-right text-slate-500 dark:text-gray-400 font-semibold text-sm">Amount</th>
-                    <th className="px-4 py-3 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Action</th>
+                    <th className="px-4 py-3 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColName') || 'User'}</th>
+                    <th className="px-4 py-3 text-right text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColAmount') || 'Amount'}</th>
+                    <th className="px-4 py-3 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColActions') || 'Action'}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -331,7 +354,7 @@ export default function AdminDashboard() {
                           onClick={() => handleApproveWithdrawal(withdrawal.id)}
                           className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 font-medium text-sm transition-colors"
                         >
-                          Approve
+                          {t('adminActionApprove') || 'Approve'}
                         </button>
                       </td>
                     </tr>
@@ -339,7 +362,7 @@ export default function AdminDashboard() {
                   {pendingWithdrawals.length === 0 && (
                     <tr>
                       <td colSpan={3} className="px-4 py-8 text-center text-slate-400 dark:text-gray-500 text-sm">
-                        No pending withdrawals
+                        {t('adminNoPendingWithdrawals') || 'No pending withdrawals'}
                       </td>
                     </tr>
                   )}
@@ -350,7 +373,7 @@ export default function AdminDashboard() {
 
           <div className="p-4 border-t border-slate-200 dark:border-white/5">
             <Link href="/admin/withdrawals" className="w-full block text-center text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium text-sm transition-colors">
-              Manage Withdrawals
+              {t('adminManageWithdrawals') || 'Manage Withdrawals'}
             </Link>
           </div>
         </div>

@@ -169,10 +169,10 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           if (pendingCount > 0) {
             alerts.push({
               id: 'pending-withdrawals',
-              title: 'Pending Withdrawals',
-              message: `${pendingCount} withdrawal request(s) require review.`,
+              title: t('pendingWithdrawalsAlertTitle') || 'Pending Withdrawals',
+              message: `${pendingCount} ${t('pendingWithdrawalsAlertMessage') || 'withdrawal request(s) require review.'}`,
               type: 'alert',
-              time: 'Needs Action',
+              time: t('needsAction') || 'Needs Action',
             });
           }
           setNotifications(alerts);
@@ -183,7 +183,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     };
 
     loadAdminData();
-  }, [pathname]);
+  }, [pathname, language]);
 
   const handleLogout = async () => {
     try {

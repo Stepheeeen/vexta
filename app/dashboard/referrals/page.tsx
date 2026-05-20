@@ -4,6 +4,7 @@ import { DashboardLayout } from '@/components/dashboard-layout';
 import { Users, Copy, ChevronRight, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from '@/components/translation-provider';
+import { useToast } from '@/hooks/use-toast';
 
 interface ReferralData {
   referralCode: string;
@@ -27,6 +28,7 @@ interface ReferralData {
 
 export default function ReferralsPage() {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [data, setData] = useState<ReferralData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -169,7 +171,9 @@ export default function ReferralsPage() {
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(referralLink);
-                  alert('Link copied to clipboard!');
+                  toast({
+                    description: t('copiedToClipboard') || 'Copied to clipboard!',
+                  });
                 }}
                 className="w-full py-2.5 text-xs font-mono font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-all shadow-md shadow-violet-600/15"
               >

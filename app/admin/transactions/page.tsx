@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { AdminLayout } from '@/components/admin-layout';
 import { Search, Loader2 } from 'lucide-react';
+import { useTranslation } from '@/components/translation-provider';
 
 interface Transaction {
   id: string;
@@ -16,6 +17,7 @@ interface Transaction {
 }
 
 export default function AdminTransactions() {
+  const { t } = useTranslation();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('All Types');
@@ -41,6 +43,23 @@ export default function AdminTransactions() {
     fetchTransactions();
   }, []);
 
+  const getTypeLabel = (type: string) => {
+    const tp = type.toLowerCase();
+    if (tp === 'deposit') return t('adminTxTypeDeposit') || 'Deposit';
+    if (tp === 'withdrawal') return t('adminTxTypeWithdrawal') || 'Withdrawal';
+    if (tp === 'roi') return t('adminTxTypeRoi') || 'ROI';
+    if (tp === 'commission') return t('adminTxTypeCommission') || 'Commission';
+    return type;
+  };
+
+  const getStatusLabel = (status: string) => {
+    const s = status.toLowerCase();
+    if (s === 'completed' || s === 'approved' || s === 'success') return t('adminStatusCompleted') || 'Completed';
+    if (s === 'pending') return t('adminStatusPending') || 'Pending';
+    if (s === 'failed' || s === 'rejected') return t('adminStatusFailed') || 'Failed';
+    return status;
+  };
+
   const filteredTransactions = transactions.filter((tx) => {
     const matchesSearch = 
       tx.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -57,8 +76,8 @@ export default function AdminTransactions() {
   return (
     <AdminLayout>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Transaction Management</h1>
-        <p className="text-slate-500 dark:text-gray-400">View and manage all platform transactions</p>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{t('adminTransactionsTitle') || 'Transaction Management'}</h1>
+        <p className="text-slate-500 dark:text-gray-400">{t('adminTransactionsSub') || 'View and manage all platform transactions'}</p>
       </div>
 
       {/* Search and Filter */}
@@ -67,7 +86,7 @@ export default function AdminTransactions() {
           <Search className="w-5 h-5 text-slate-400" />
           <input
             type="text"
-            placeholder="Search by ID, user, email or details..."
+            placeholder={t('adminTransactionsSearchPlaceholder') || 'Search by ID, user, email or details...'}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="flex-1 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none text-sm"
@@ -80,21 +99,21 @@ export default function AdminTransactions() {
             onChange={(e) => setTypeFilter(e.target.value)}
             className="px-4 py-2 bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl text-slate-700 dark:text-gray-300 focus:outline-none focus:border-violet-500 text-sm"
           >
-            <option>All Types</option>
-            <option>Deposit</option>
-            <option>Withdrawal</option>
-            <option>Roi</option>
-            <option>Commission</option>
+            <option value="All Types">{t('adminTransactionsAllTypes') || 'All Types'}</option>
+            <option value="Deposit">{t('adminTxTypeDeposit') || 'Deposit'}</option>
+            <option value="Withdrawal">{t('adminTxTypeWithdrawal') || 'Withdrawal'}</option>
+            <option value="Roi">{t('adminTxTypeRoi') || 'ROI'}</option>
+            <option value="Commission">{t('adminTxTypeCommission') || 'Commission'}</option>
           </select>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             className="px-4 py-2 bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl text-slate-700 dark:text-gray-300 focus:outline-none focus:border-violet-500 text-sm"
           >
-            <option>All Status</option>
-            <option>Completed</option>
-            <option>Pending</option>
-            <option>Failed</option>
+            <option value="All Status">{t('adminTransactionsAllStatus') || 'All Status'}</option>
+            <option value="Completed">{t('adminStatusCompleted') || 'Completed'}</option>
+            <option value="Pending">{t('adminStatusPending') || 'Pending'}</option>
+            <option value="Failed">{t('adminStatusFailed') || 'Failed'}</option>
           </select>
         </div>
       </div>
@@ -112,13 +131,13 @@ export default function AdminTransactions() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/2">
-                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">TXN ID</th>
-                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">User</th>
-                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">Type</th>
-                  <th className="px-6 py-4 text-right text-slate-500 dark:text-gray-400 font-semibold text-sm">Amount</th>
-                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">Details</th>
-                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Status</th>
-                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Date</th>
+                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColId') || 'TXN ID'}</th>
+                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColDetails') || 'User'}</th>
+                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColType') || 'Type'}</th>
+                  <th className="px-6 py-4 text-right text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColAmount') || 'Amount'}</th>
+                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColDetails') || 'Details'}</th>
+                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColStatus') || 'Status'}</th>
+                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColDate') || 'Date'}</th>
                 </tr>
               </thead>
               <tbody>
@@ -131,7 +150,7 @@ export default function AdminTransactions() {
                     </td>
                     <td className="px-6 py-4">
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">
-                        {tx.type}
+                        {getTypeLabel(tx.type)}
                       </span>
                     </td>
                     <td className={`px-6 py-4 text-right font-bold text-sm ${
@@ -148,7 +167,7 @@ export default function AdminTransactions() {
                           ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
                           : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
                       }`}>
-                        {tx.status}
+                        {getStatusLabel(tx.status)}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 text-sm">{tx.date}</td>
@@ -157,7 +176,7 @@ export default function AdminTransactions() {
                 {filteredTransactions.length === 0 && (
                   <tr>
                     <td colSpan={7} className="px-6 py-8 text-center text-slate-400 dark:text-gray-500 text-sm">
-                      No matching transactions found.
+                      {t('adminTransactionsNoMatch') || 'No matching transactions found.'}
                     </td>
                   </tr>
                 )}

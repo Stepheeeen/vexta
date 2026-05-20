@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { AdminLayout } from '@/components/admin-layout';
 import { Search, Loader2, CheckCircle2, XCircle, ExternalLink, RefreshCw, Copy, Check } from 'lucide-react';
+import { useTranslation } from '@/components/translation-provider';
+import { useToast } from '@/hooks/use-toast';
 
 interface DepositRequest {
   id: string;
@@ -18,6 +20,8 @@ interface DepositRequest {
 }
 
 export default function AdminDeposits() {
+  const { t } = useTranslation();
+  const { toast } = useToast();
   const [deposits, setDeposits] = useState<DepositRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
@@ -25,6 +29,22 @@ export default function AdminDeposits() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('pending');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const getStatusLabel = (status: string) => {
+    const s = status.toLowerCase();
+    if (s === 'pending') return t('adminDepositsPending');
+    if (s === 'completed' || s === 'approved') return t('adminDepositsApproved');
+    if (s === 'failed' || s === 'rejected') return t('adminDepositsRejected');
+    return status;
+  };
+
+  const getFilterLabel = (status: string) => {
+    if (status === 'pending') return t('adminDepositsPending');
+    if (status === 'completed') return t('adminDepositsApproved');
+    if (status === 'failed') return t('adminDepositsRejected');
+    if (status === 'all') return t('adminDepositsAll');
+    return status;
+  };
 
   const fetchDeposits = async () => {
     try {
@@ -46,8 +66,12 @@ export default function AdminDeposits() {
   }, [statusFilter]);
 
   const handleAction = async (id: string, action: 'approve' | 'reject') => {
-    setActionLoadingId(id);
+    const actionWord = action === 'approve' ? (t('adminActionApprove') || 'approve') : (t('adminActionReject') || 'reject');
+    const confirmMsg = (t('adminDepositsConfirmAction') || 'Are you sure you want to {action} this deposit request?').replace('{action}', actionWord);
+    if (!confirm(confirmMsg)) return;
+
     try {
+      setActionLoadingId(id);
       const res = await fetch('/api/admin/deposits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -59,10 +83,19 @@ export default function AdminDeposits() {
         throw new Error(errData.error || 'Failed to process request');
       }
 
+      toast({
+        title: t('adminAlertSuccess'),
+        description: t('adminActionSuccess'),
+      });
+
       // Reload list
       await fetchDeposits();
     } catch (err: any) {
-      alert(err.message || 'An error occurred');
+      toast({
+        title: t('adminAlertError'),
+        description: err.message || 'An error occurred',
+        variant: 'destructive',
+      });
     } finally {
       setActionLoadingId(null);
     }
@@ -87,13 +120,13 @@ export default function AdminDeposits() {
     <AdminLayout>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Deposit Approvals</h1>
-          <p className="text-slate-500 dark:text-gray-400">Review and approve manual blockchain deposits</p>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{t('adminDepositsTitle') || 'Deposit Approvals'}</h1>
+          <p className="text-slate-500 dark:text-gray-400">{t('adminDepositsSub') || 'Review and approve manual blockchain deposits'}</p>
         </div>
         <button
           onClick={fetchDeposits}
           className="p-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 rounded-xl transition-colors text-slate-700 dark:text-slate-200"
-          title="Refresh list"
+          title={t('adminRefreshList') || 'Refresh list'}
         >
           <RefreshCw className="w-5 h-5" />
         </button>
@@ -105,7 +138,7 @@ export default function AdminDeposits() {
           <Search className="w-5 h-5 text-slate-400" />
           <input
             type="text"
-            placeholder="Search by ID, user, email or transaction hash..."
+            placeholder={t('adminDepositsSearchPlaceholder') || 'Search by ID, user, email or transaction hash...'}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="flex-1 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none text-sm"
@@ -123,7 +156,7 @@ export default function AdminDeposits() {
                   : 'bg-slate-50 dark:bg-white/2 border-slate-200 dark:border-white/5 text-slate-600 dark:text-gray-300 hover:border-slate-300 dark:hover:border-white/10'
               }`}
             >
-              {status}
+              {getFilterLabel(status)}
             </button>
           ))}
         </div>
@@ -142,14 +175,14 @@ export default function AdminDeposits() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/2">
-                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">User Details</th>
-                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">Network</th>
-                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">TX Hash / Reference</th>
-                  <th className="px-6 py-4 text-right text-slate-500 dark:text-gray-400 font-semibold text-sm">Amount</th>
-                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Submitted Date</th>
-                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Status</th>
+                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColDetails') || 'User Details'}</th>
+                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColNetwork') || 'Network'}</th>
+                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColTxHash') || 'TX Hash / Reference'}</th>
+                  <th className="px-6 py-4 text-right text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColAmount') || 'Amount'}</th>
+                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColDate') || 'Submitted Date'}</th>
+                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColStatus') || 'Status'}</th>
                   {statusFilter === 'pending' && (
-                    <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Actions</th>
+                    <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColActions') || 'Actions'}</th>
                   )}
                 </tr>
               </thead>
@@ -172,7 +205,7 @@ export default function AdminDeposits() {
                         <button
                           onClick={() => copyTxHash(dep.id, dep.txHash)}
                           className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors shrink-0"
-                          title="Copy hash"
+                          title={t('adminCopyHash') || 'Copy hash'}
                         >
                           {copiedId === dep.id ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                         </button>
@@ -181,7 +214,7 @@ export default function AdminDeposits() {
                           target="_blank"
                           rel="noreferrer"
                           className="text-violet-500 hover:text-violet-600 transition-colors shrink-0"
-                          title="Check on TronScan"
+                          title={t('adminCheckTronScan') || 'Check on TronScan'}
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                         </a>
@@ -201,7 +234,7 @@ export default function AdminDeposits() {
                           ? 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20'
                           : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
                       }`}>
-                        {dep.status}
+                        {getStatusLabel(dep.status)}
                       </span>
                     </td>
                     {statusFilter === 'pending' && (
@@ -211,7 +244,7 @@ export default function AdminDeposits() {
                             disabled={actionLoadingId !== null}
                             onClick={() => handleAction(dep.id, 'approve')}
                             className="p-1.5 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 dark:text-emerald-400 hover:text-white border border-emerald-500/20 rounded-lg transition-all"
-                            title="Approve Deposit"
+                            title={t('adminActionApprove') || 'Approve Deposit'}
                           >
                             {actionLoadingId === dep.id ? (
                               <Loader2 className="w-4 h-4 animate-spin" />
@@ -223,7 +256,7 @@ export default function AdminDeposits() {
                             disabled={actionLoadingId !== null}
                             onClick={() => handleAction(dep.id, 'reject')}
                             className="p-1.5 bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white border border-red-500/20 rounded-lg transition-all"
-                            title="Reject Deposit"
+                            title={t('adminActionReject') || 'Reject Deposit'}
                           >
                             <XCircle className="w-4 h-4" />
                           </button>
@@ -235,7 +268,7 @@ export default function AdminDeposits() {
                 {filteredDeposits.length === 0 && (
                   <tr>
                     <td colSpan={statusFilter === 'pending' ? 7 : 6} className="px-6 py-12 text-center text-slate-400 dark:text-gray-500 text-sm">
-                      No matching deposit requests found.
+                      {t('adminDepositsNoMatch') || 'No matching deposit requests found.'}
                     </td>
                   </tr>
                 )}

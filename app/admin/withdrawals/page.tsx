@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { AdminLayout } from '@/components/admin-layout';
 import { CheckCircle2, Clock, AlertCircle, Loader2 } from 'lucide-react';
+import { useTranslation } from '@/components/translation-provider';
+import { useToast } from '@/hooks/use-toast';
 
 interface Withdrawal {
   id: string;
@@ -21,6 +23,8 @@ interface Metrics {
 }
 
 export default function AdminWithdrawals() {
+  const { t } = useTranslation();
+  const { toast } = useToast();
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [metrics, setMetrics] = useState<Metrics>({ pending: 0, todayProcessed: 0 });
   const [loading, setLoading] = useState(true);
@@ -46,7 +50,9 @@ export default function AdminWithdrawals() {
   }, []);
 
   const handleAction = async (id: string, action: 'approve' | 'reject') => {
-    if (!confirm(`Are you sure you want to ${action} this withdrawal request?`)) return;
+    const actionWord = action === 'approve' ? (t('adminActionApprove') || 'approve') : (t('adminActionReject') || 'reject');
+    const confirmMsg = (t('adminWithdrawalsConfirmAction') || 'Are you sure you want to {action} this withdrawal request?').replace('{action}', actionWord);
+    if (!confirm(confirmMsg)) return;
     try {
       const res = await fetch('/api/admin/withdrawals', {
         method: 'POST',
@@ -54,10 +60,26 @@ export default function AdminWithdrawals() {
         body: JSON.stringify({ id, action }),
       });
       if (!res.ok) throw new Error('Action failed');
+      toast({
+        title: t('adminAlertSuccess'),
+        description: t('adminActionSuccess'),
+      });
       fetchWithdrawals();
     } catch (err: any) {
-      alert(err.message || `Failed to ${action} withdrawal`);
+      toast({
+        title: t('adminAlertError'),
+        description: err.message || `Failed to ${action} withdrawal`,
+        variant: 'destructive',
+      });
     }
+  };
+
+  const getStatusLabel = (status: string) => {
+    const s = status.toLowerCase();
+    if (s === 'pending') return t('adminStatusPending') || 'Pending';
+    if (s === 'completed' || s === 'approved' || s === 'success') return t('adminStatusCompleted') || 'Completed';
+    if (s === 'rejected' || s === 'failed') return t('adminStatusRejected') || 'Rejected';
+    return status;
   };
 
   const statusConfig = {
@@ -69,8 +91,8 @@ export default function AdminWithdrawals() {
   return (
     <AdminLayout>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Withdrawal Management</h1>
-        <p className="text-slate-500 dark:text-gray-400">Process and manage user withdrawal requests</p>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{t('adminWithdrawalsTitle') || 'Withdrawal Management'}</h1>
+        <p className="text-slate-500 dark:text-gray-400">{t('adminWithdrawalsSub') || 'Process and manage user withdrawal requests'}</p>
       </div>
 
       {/* Summary Cards */}
@@ -78,7 +100,7 @@ export default function AdminWithdrawals() {
         <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-500 dark:text-gray-400 text-sm font-medium mb-1">Awaiting Review</p>
+              <p className="text-slate-500 dark:text-gray-400 text-sm font-medium mb-1">{t('adminWithdrawalsAwaitingReview') || 'Awaiting Review'}</p>
               <p className="text-3xl font-bold text-red-500">
                 ${metrics.pending.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
@@ -92,7 +114,7 @@ export default function AdminWithdrawals() {
         <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-slate-500 dark:text-gray-400 text-sm font-medium mb-1">Today Processed</p>
+              <p className="text-slate-500 dark:text-gray-400 text-sm font-medium mb-1">{t('adminWithdrawalsTodayProcessed') || 'Today Processed'}</p>
               <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
                 ${metrics.todayProcessed.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
@@ -107,7 +129,7 @@ export default function AdminWithdrawals() {
       {/* Withdrawals Table */}
       <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden shadow-sm">
         <div className="p-6 border-b border-slate-200 dark:border-white/5">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">All Withdrawal Requests</h3>
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t('adminWithdrawalsTitle') || 'All Withdrawal Requests'}</h3>
         </div>
 
         {loading ? (
@@ -121,14 +143,14 @@ export default function AdminWithdrawals() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/2">
-                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">Request ID</th>
-                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">User</th>
-                  <th className="px-6 py-4 text-right text-slate-500 dark:text-gray-400 font-semibold text-sm">Amount</th>
-                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Method</th>
-                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">Account</th>
-                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Date</th>
-                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Status</th>
-                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Actions</th>
+                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColId') || 'ID'}</th>
+                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColDetails') || 'User'}</th>
+                  <th className="px-6 py-4 text-right text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColAmount') || 'Amount'}</th>
+                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColMethod') || 'Method'}</th>
+                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColAccount') || 'Account'}</th>
+                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColDate') || 'Date'}</th>
+                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColStatus') || 'Status'}</th>
+                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColActions') || 'Actions'}</th>
                 </tr>
               </thead>
               <tbody>
@@ -151,7 +173,7 @@ export default function AdminWithdrawals() {
                       <td className="px-6 py-4 text-center">
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border flex items-center justify-center gap-1 w-fit mx-auto ${config.bg} ${config.color} ${config.border}`}>
                           <StatusIcon className="w-3 h-3" />
-                          {withdrawal.status}
+                          {getStatusLabel(withdrawal.status)}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
@@ -161,13 +183,13 @@ export default function AdminWithdrawals() {
                               onClick={() => handleAction(withdrawal.id, 'approve')}
                               className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 font-semibold text-sm transition-colors"
                             >
-                              Approve
+                              {t('adminActionApprove') || 'Approve'}
                             </button>
                             <button
                               onClick={() => handleAction(withdrawal.id, 'reject')}
                               className="text-red-500 hover:text-red-600 font-semibold text-sm transition-colors"
                             >
-                              Reject
+                              {t('adminActionReject') || 'Reject'}
                             </button>
                           </div>
                         ) : (
@@ -180,7 +202,7 @@ export default function AdminWithdrawals() {
                 {withdrawals.length === 0 && (
                   <tr>
                     <td colSpan={8} className="px-6 py-8 text-center text-slate-400 dark:text-gray-500 text-sm">
-                      No withdrawal requests found.
+                      {t('adminWithdrawalsNoMatch') || 'No withdrawal requests found.'}
                     </td>
                   </tr>
                 )}

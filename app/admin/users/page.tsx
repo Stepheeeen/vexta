@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import { AdminLayout } from '@/components/admin-layout';
 import { Search, Loader2, ShieldAlert, ToggleLeft, ToggleRight } from 'lucide-react';
+import { useTranslation } from '@/components/translation-provider';
+import { useToast } from '@/hooks/use-toast';
 
 interface User {
   id: string;
@@ -15,11 +17,33 @@ interface User {
 }
 
 export default function AdminUsers() {
+  const { t } = useTranslation();
+  const { toast } = useToast();
   const [users, setUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const getStatusLabel = (status: string) => {
+    const s = status.toLowerCase();
+    if (s === 'active') return t('adminStatusActive');
+    if (s === 'pending') return t('adminStatusPending');
+    if (s === 'suspended') return t('adminStatusSuspended');
+    if (s === 'completed') return t('adminStatusCompleted');
+    if (s === 'rejected') return t('adminStatusRejected');
+    if (s === 'failed') return t('adminStatusFailed');
+    return status;
+  };
+
+  const getFilterLabel = (filter: string) => {
+    const f = filter.toLowerCase();
+    if (f === 'all') return t('adminFilterAll');
+    if (f === 'active') return t('adminStatusActive');
+    if (f === 'pending') return t('adminStatusPending');
+    if (f === 'suspended') return t('adminStatusSuspended');
+    return filter;
+  };
 
   const fetchUsers = async () => {
     try {
@@ -51,14 +75,22 @@ export default function AdminUsers() {
         body: JSON.stringify({ userId, action: 'toggle-active' }),
       });
       if (!res.ok) throw new Error('Action failed');
+      toast({
+        title: t('adminAlertSuccess'),
+        description: t('adminActionSuccess'),
+      });
       fetchUsers();
     } catch (err: any) {
-      alert(err.message || 'Failed to update user status');
+      toast({
+        title: t('adminAlertError'),
+        description: err.message || t('adminActionFailed') || 'Failed to update user status',
+        variant: 'destructive',
+      });
     }
   };
 
   const handlePromoteAdmin = async (userId: string) => {
-    if (!confirm('Are you sure you want to promote this user to Admin? This action is irreversible.')) return;
+    if (!confirm(t('adminUsersIrreversible') || 'Are you sure you want to promote this user to Admin? This action is irreversible.')) return;
     try {
       const res = await fetch('/api/admin/users', {
         method: 'POST',
@@ -66,18 +98,25 @@ export default function AdminUsers() {
         body: JSON.stringify({ userId, action: 'promote-admin' }),
       });
       if (!res.ok) throw new Error('Action failed');
-      alert('User promoted to Admin successfully');
+      toast({
+        title: t('adminAlertSuccess'),
+        description: t('adminUsersPromoteSuccess') || 'User promoted to Admin successfully',
+      });
       fetchUsers();
     } catch (err: any) {
-      alert(err.message || 'Failed to promote user');
+      toast({
+        title: t('adminAlertError'),
+        description: err.message || t('adminActionFailed') || 'Failed to promote user',
+        variant: 'destructive',
+      });
     }
   };
 
   return (
     <AdminLayout>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">User Management</h1>
-        <p className="text-slate-500 dark:text-gray-400">Manage platform users and accounts</p>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{t('adminUsersTitle') || 'User Management'}</h1>
+        <p className="text-slate-500 dark:text-gray-400">{t('adminUsersSub') || 'Manage platform users and accounts'}</p>
       </div>
 
       {/* Search and Filter */}
@@ -86,7 +125,7 @@ export default function AdminUsers() {
           <Search className="w-5 h-5 text-slate-400" />
           <input
             type="text"
-            placeholder="Search by name or email..."
+            placeholder={t('adminUsersSearchPlaceholder') || 'Search by name or email...'}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="flex-1 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none text-sm"
@@ -104,7 +143,7 @@ export default function AdminUsers() {
                   : 'border-slate-200 dark:border-white/10 text-slate-500 dark:text-gray-400 hover:border-violet-500/50 hover:text-violet-600'
               }`}
             >
-              {filter}
+              {getFilterLabel(filter)}
             </button>
           ))}
         </div>
@@ -123,14 +162,14 @@ export default function AdminUsers() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/2">
-                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">ID</th>
-                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">Name</th>
-                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">Email</th>
-                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Joined</th>
-                  <th className="px-6 py-4 text-right text-slate-500 dark:text-gray-400 font-semibold text-sm">Balance</th>
-                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Referrals</th>
-                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Status</th>
-                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">Actions</th>
+                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColId') || 'ID'}</th>
+                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColName') || 'Name'}</th>
+                  <th className="px-6 py-4 text-left text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColEmail') || 'Email'}</th>
+                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColJoined') || 'Joined'}</th>
+                  <th className="px-6 py-4 text-right text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColBalance') || 'Balance'}</th>
+                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColReferrals') || 'Referrals'}</th>
+                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColStatus') || 'Status'}</th>
+                  <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColActions') || 'Actions'}</th>
                 </tr>
               </thead>
               <tbody>
@@ -152,7 +191,7 @@ export default function AdminUsers() {
                           ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
                           : 'bg-red-500/10 text-red-500 border-red-500/30'
                       }`}>
-                        {user.status}
+                        {getStatusLabel(user.status)}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -188,7 +227,7 @@ export default function AdminUsers() {
                 {users.length === 0 && (
                   <tr>
                     <td colSpan={8} className="px-6 py-8 text-center text-slate-400 dark:text-gray-500 text-sm">
-                      No users match the criteria.
+                      {t('adminUsersNoMatch') || 'No users match the criteria.'}
                     </td>
                   </tr>
                 )}

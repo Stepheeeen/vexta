@@ -51,6 +51,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     investNow: 'Invest Now',
     insufficientFunds: 'Insufficient balance to invest in this plan.',
     investmentSuccessful: 'Investment successful!',
+    copiedToClipboard: 'Copied to clipboard!',
     enterAmount: 'Enter Investment Amount',
 
     // Referrals Page
@@ -434,6 +435,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     investNow: 'Invertir ahora',
     insufficientFunds: 'Saldo insuficiente para invertir en este plan.',
     investmentSuccessful: '¡Inversión exitosa!',
+    copiedToClipboard: '¡Copiado al portapapeles!',
     enterAmount: 'Ingrese el monto de inversión',
 
     // Referrals Page
@@ -815,6 +817,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     investNow: 'Đầu tư ngay',
     insufficientFunds: 'Số dư không đủ để đầu tư vào gói này.',
     investmentSuccessful: 'Đầu tư thành công!',
+    copiedToClipboard: 'Đã sao chép vào bộ nhớ tạm!',
     enterAmount: 'Nhập số tiền đầu tư',
 
     // Referrals Page
@@ -1196,6 +1199,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     investNow: 'ลงทุนทันที',
     insufficientFunds: 'ยอดคงเหลือไม่เพียงพอสำหรับการลงทุนในแผนนี้',
     investmentSuccessful: 'การลงทุนสำเร็จ!',
+    copiedToClipboard: 'คัดลอกไปยังคลิปบอร์ดแล้ว!',
     enterAmount: 'ระบุจำนวนเงินลงทุน',
 
     // Referrals Page
@@ -1577,6 +1581,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     investNow: 'Investir Agora',
     insufficientFunds: 'Saldo insuficiente para investir neste plano.',
     investmentSuccessful: 'Investimento realizado com sucesso!',
+    copiedToClipboard: 'Copiado para a área de transferência!',
     enterAmount: 'Insira o Valor do Investimento',
 
     // Referrals Page
@@ -1958,6 +1963,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     investNow: '지금 투자하기',
     insufficientFunds: '이 플랜에 투자할 잔액이 부족합니다.',
     investmentSuccessful: '투자가 성공적으로 완료되었습니다!',
+    copiedToClipboard: '클립보드에 복사되었습니다!',
     enterAmount: '투자 금액 입력',
 
     // Referrals Page
@@ -2338,6 +2344,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     investNow: 'Investir maintenant',
     insufficientFunds: 'Solde insuffisant pour investir dans ce plan.',
     investmentSuccessful: 'Investissement réussi !',
+    copiedToClipboard: 'Copié dans le presse-papiers !',
     enterAmount: 'Entrez le montant de l’investissement',
 
     // Referrals Page
