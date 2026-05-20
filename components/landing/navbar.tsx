@@ -29,12 +29,13 @@ export function Navbar() {
 
 
   const navLinks = [
-    { label: t('navHowItWorks'), href: '#how-it-works' },
-    { label: t('navPlans'), href: '#plans' },
-    { label: t('navWhyUs'), href: '#why-us' },
-    { label: t('navFAQ'), href: '#faq' },
+    { label: t('navHowItWorks'), href: '/#how-it-works' },
+    { label: t('navPlans'), href: '/#plans' },
+    { label: t('navWhyUs'), href: '/#why-us' },
+    { label: t('navFAQ'), href: '/#faq' },
     { label: t('handoverTitle'), href: '/handover', external: true },
   ];
+
 
   const flags = {
     en: '🇺🇸',
@@ -162,15 +163,14 @@ export function Navbar() {
   };
 
   const handleNav = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    e.preventDefault();
-    if (pathname !== '/') {
-      router.push(`/${href}`);
-    } else {
-      const id = href.replace('#', '');
+    if (pathname === '/') {
+      e.preventDefault();
+      const id = href.replace('/#', '').replace('#', '');
       document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
     }
     setIsOpen(false);
   };
+
 
 
   return (
@@ -192,8 +192,9 @@ export function Navbar() {
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1">
             {navLinks.map((item) => {
-              const id = item.href.replace('#', '');
+              const id = item.href.replace('/#', '').replace('#', '');
               if ((item as any).external) {
+
                 return (
                   <Link
                     key={item.href}
@@ -205,7 +206,7 @@ export function Navbar() {
                 );
               }
               return (
-                <a
+                <Link
                   key={item.href}
                   href={item.href}
                   onClick={(e) => handleNav(e, item.href)}
@@ -216,8 +217,9 @@ export function Navbar() {
                   }`}
                 >
                   {item.label}
-                </a>
+                </Link>
               );
+
             })}
           </nav>
 
@@ -372,15 +374,16 @@ export function Navbar() {
       >
         <div className="bg-white/95 dark:bg-[#090C10]/95 backdrop-blur-xl border-t border-slate-200 dark:border-white/5 px-4 py-4 space-y-1 shadow-lg shadow-slate-100 dark:shadow-none animate-fade-in-up">
           {navLinks.map(({ label, href }) => (
-            <a
+            <Link
               key={href}
               href={href}
               onClick={(e) => handleNav(e, href)}
               className="block px-4 py-3 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
             >
               {label}
-            </a>
+            </Link>
           ))}
+
           <div className="pt-3 flex flex-col gap-2 border-t border-slate-200 dark:border-white/5">
             {/* Mobile Language selector */}
             <div className="relative">
