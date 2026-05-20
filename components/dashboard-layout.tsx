@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutGrid, TrendingUp, Users, Wallet, BarChart3, Settings, LogOut, Bell, X, Check, Globe, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { LayoutGrid, TrendingUp, Users, Wallet, BarChart3, Settings, LogOut, Bell, X, Check, Globe, ArrowUpRight, ArrowDownRight, FileText } from 'lucide-react';
 import { BackgroundPattern } from '@/components/background-pattern';
 import { VextaLogo } from '@/components/vexta-logo';
 import { useTranslation } from '@/components/translation-provider';
