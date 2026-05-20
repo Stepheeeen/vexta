@@ -46,22 +46,35 @@ export async function POST(req: NextRequest) {
     }
 
     // Calculate available balance
-    const earnedResult = await prisma.investment.aggregate({
-      where: { userId: payload.userId },
-      _sum: { totalEarned: true },
+    const depositTxns = await prisma.transaction.aggregate({
+      where: {
+        userId: payload.userId,
+        type: 'deposit',
+        description: { not: { contains: 'Investment activated' } }
+      },
+      _sum: { amount: true }
     });
+    const totalDeposits = depositTxns._sum.amount ?? 0;
+
+    const investments = await prisma.investment.findMany({
+      where: { userId: payload.userId },
+    });
+    const totalInvested = investments.reduce((s, i) => s + i.amount, 0);
+    const totalEarned = investments.reduce((s, i) => s + i.totalEarned, 0);
+
     const commissionResult = await prisma.commission.aggregate({
       where: { userId: payload.userId },
       _sum: { amount: true },
     });
+    const totalCommissions = commissionResult._sum.amount ?? 0;
+
     const withdrawnResult = await prisma.withdrawal.aggregate({
       where: { userId: payload.userId, status: { in: ['approved', 'pending'] } },
       _sum: { amount: true },
     });
+    const totalWithdrawn = withdrawnResult._sum.amount ?? 0;
 
-    const available = (earnedResult._sum.totalEarned ?? 0)
-      + (commissionResult._sum.amount ?? 0)
-      - (withdrawnResult._sum.amount ?? 0);
+    const available = +(totalDeposits + totalEarned + totalCommissions - totalInvested - totalWithdrawn).toFixed(2);
 
     if (amount > available) {
       return NextResponse.json(

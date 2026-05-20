@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutGrid, Users, CreditCard, BarChart3, Settings, LogOut, Bell, X, Check, ArrowDownRight } from 'lucide-react';
+import { LayoutGrid, Users, CreditCard, BarChart3, Settings, LogOut, Bell, X, Check, ArrowDownRight, AlertTriangle } from 'lucide-react';
 import { BackgroundPattern } from '@/components/background-pattern';
 import { VextaLogo } from '@/components/vexta-logo';
 import { useTranslation } from '@/components/translation-provider';
@@ -207,7 +207,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-slate-900 dark:text-white tracking-widest font-sans uppercase">vexta</span>
             <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">
-              Admin
+              {t('adminBadge') || 'Admin'}
             </span>
           </div>
         </Link>
@@ -218,7 +218,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             <button
               onClick={() => setShowLang(!showLang)}
               className="text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white transition-all flex items-center justify-center"
-              title="Select Language"
+              title={t('selectLanguage') || 'Select Language'}
             >
               <span className="text-base select-none">{flags[language]}</span>
             </button>
@@ -261,7 +261,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             {showNotif && (
               <div className="absolute right-0 top-9 w-80 bg-white dark:bg-[#0A0F14]/95 border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl z-50 overflow-hidden font-sans">
                 <div className="p-4 border-b border-slate-200 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-white/2">
-                  <span className="text-xs font-semibold text-slate-800 dark:text-white">Admin Alerts</span>
+                  <span className="text-xs font-semibold text-slate-800 dark:text-white">{t('adminAlerts') || 'Admin Alerts'}</span>
                 </div>
                 <div className="max-h-[300px] overflow-y-auto divide-y divide-slate-100 dark:divide-white/5">
                   {notifications.length > 0 ? (
@@ -279,7 +279,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-slate-400 dark:text-gray-500 font-mono py-8 text-center">No active alerts.</p>
+                    <p className="text-xs text-slate-400 dark:text-gray-500 font-mono py-8 text-center">{t('noActiveAlerts') || 'No active alerts.'}</p>
                   )}
                 </div>
               </div>
@@ -296,7 +296,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             <button
               onClick={handleLogout}
               className="text-slate-400 hover:text-red-500 transition-all flex items-center justify-center"
-              title="Sign out"
+              title={t('signOut') || 'Sign out'}
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -337,7 +337,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           <VextaLogo className="w-9 h-9" variant="transparent" />
           <div className="flex items-center gap-1.5">
             <span className="text-sm font-bold text-slate-900 dark:text-white tracking-widest font-sans uppercase">vexta</span>
-            <span className="px-1 py-0.5 rounded text-[7px] font-bold uppercase bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">Admin</span>
+            <span className="px-1 py-0.5 rounded text-[7px] font-bold uppercase bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">{t('adminBadge') || 'Admin'}</span>
           </div>
         </Link>
         <div className="flex items-center gap-2">
@@ -355,7 +355,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           {showNotif && (
             <div className="absolute right-4 top-12 w-72 bg-white dark:bg-[#0A0F14]/95 border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl z-50 overflow-hidden font-sans">
               <div className="p-3 border-b border-slate-200 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-white/2">
-                <span className="text-xs font-semibold text-slate-800 dark:text-white">Admin Alerts</span>
+                <span className="text-xs font-semibold text-slate-800 dark:text-white">{t('adminAlerts') || 'Admin Alerts'}</span>
               </div>
               <div className="max-h-[240px] overflow-y-auto divide-y divide-slate-100 dark:divide-white/5">
                 {notifications.length > 0 ? (
@@ -369,7 +369,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                     </div>
                   ))
                 ) : (
-                  <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono py-6 text-center">No alerts.</p>
+                  <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono py-6 text-center">{t('noActiveAlerts') || 'No active alerts.'}</p>
                 )}
               </div>
             </div>
@@ -383,6 +383,14 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
       {/* ── Page Content ───────────────────────────────────── */}
       <main className="relative z-10 pt-14 pb-20 md:pb-4 min-h-screen md:pl-20">
+        {/* Test Mode Disclaimer Banner */}
+        <div className="bg-amber-500/10 border-b border-amber-500/25 px-4 py-2 text-center text-xs font-medium text-amber-600 dark:text-amber-400 flex items-center justify-center gap-2 select-none backdrop-blur-md relative z-20">
+          <AlertTriangle className="w-4 h-4 shrink-0 animate-pulse text-amber-500" />
+          <span>{t('demoDisclaimerText')}</span>
+          <span className="bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border border-amber-500/30">
+            {t('demoDisclaimerBadge')}
+          </span>
+        </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {children}
         </div>

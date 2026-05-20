@@ -1,10 +1,11 @@
 'use client';
 
 import { DashboardLayout } from '@/components/dashboard-layout';
-import { ArrowUpRight, ArrowDownRight, Wallet, Calendar, AlertCircle, Loader2, ArrowLeftRight, CheckCircle2 } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Wallet, Calendar, AlertCircle, Loader2, ArrowLeftRight, CheckCircle2, Play, HelpCircle } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/components/translation-provider';
+import { useToast } from '@/hooks/use-toast';
 
 interface StatsData {
   stats: {
@@ -35,6 +36,7 @@ const sectionClass =
 export default function WithdrawPage() {
   const router = useRouter();
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [balance, setBalance] = useState(0);
   const [withdrawals, setWithdrawals] = useState<WithdrawalItem[]>([]);
@@ -47,6 +49,7 @@ export default function WithdrawPage() {
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pageError, setPageError] = useState<string | null>(null);
+  const [simulating, setSimulating] = useState(false);
 
   const fetchWithdrawalData = async () => {
     try {
@@ -80,6 +83,40 @@ export default function WithdrawPage() {
     fetchWithdrawalData();
   }, []);
 
+  const handleSimulate = async () => {
+    setSimulating(true);
+    try {
+      const res = await fetch('/api/dashboard/simulate-demo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'deposit' }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        toast({
+          title: 'Simulation Successful',
+          description: json.message || 'Demo deposit of $5,000 completed successfully!',
+        });
+        await fetchWithdrawalData();
+      } else {
+        toast({
+          title: 'Simulation Failed',
+          description: json.error || 'Failed to simulate demo deposit',
+          variant: 'destructive',
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: 'Network Error',
+        description: 'Error communicating with demo simulation server',
+        variant: 'destructive',
+      });
+    } finally {
+      setSimulating(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -89,12 +126,22 @@ export default function WithdrawPage() {
     const numericAmount = parseFloat(amount);
     if (isNaN(numericAmount) || numericAmount < 10) {
       setError('Minimum withdrawal amount is $10.00');
+      toast({
+        title: 'Validation Error',
+        description: 'Minimum withdrawal amount is $10.00',
+        variant: 'destructive',
+      });
       setSubmitting(false);
       return;
     }
 
     if (numericAmount > balance) {
       setError(`Insufficient balance. Maximum available: $${balance.toLocaleString()}`);
+      toast({
+        title: 'Withdrawal Failed',
+        description: `Insufficient balance. Maximum available: $${balance.toLocaleString()}`,
+        variant: 'destructive',
+      });
       setSubmitting(false);
       return;
     }
@@ -119,12 +166,21 @@ export default function WithdrawPage() {
       if (!res.ok) throw new Error(json.error || 'Failed to request withdrawal');
 
       setSuccess(`Your withdrawal of $${numericAmount.toLocaleString()} (${network}) was requested successfully!`);
+      toast({
+        title: 'Withdrawal Requested',
+        description: `Your withdrawal of $${numericAmount.toLocaleString()} (${network}) was requested successfully!`,
+      });
       setAmount('');
       setWalletAddress('');
       await fetchWithdrawalData();
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'Failed to process withdrawal request');
+      toast({
+        title: 'Withdrawal Failed',
+        description: err.message || 'Failed to process withdrawal request',
+        variant: 'destructive',
+      });
     } finally {
       setSubmitting(false);
     }
@@ -156,7 +212,58 @@ export default function WithdrawPage() {
           </button>
         </div>
       ) : (
-        <div className="grid lg:grid-cols-3 gap-6 items-start">
+        <>
+          {/* Step-by-Step Guideline Banner */}
+          <div className="bg-gradient-to-br from-violet-600/10 via-blue-600/5 to-transparent border border-violet-500/10 rounded-2xl p-6 mb-6 shadow-sm">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <HelpCircle className="w-5 h-5 text-violet-500 dark:text-violet-400" />
+                  <h3 className="text-sm font-semibold text-slate-950 dark:text-white">{t('withdrawGuideTitle')}</h3>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-gray-400 max-w-2xl leading-relaxed">
+                  {t('withdrawGuideDesc')}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-slate-200/50 dark:border-white/5 text-[11px] font-mono">
+                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
+                    <span className="text-violet-500 font-bold block mb-0.5">{t('withdrawGuideStep1Title')}</span>
+                    <span className="text-slate-400">{t('withdrawGuideStep1Sub')}</span>
+                  </div>
+                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
+                    <span className="text-violet-500 font-bold block mb-0.5">{t('withdrawGuideStep2Title')}</span>
+                    <span className="text-slate-400">{t('withdrawGuideStep2Sub')}</span>
+                  </div>
+                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
+                    <span className="text-violet-500 font-bold block mb-0.5">{t('withdrawGuideStep3Title')}</span>
+                    <span className="text-slate-400">{t('withdrawGuideStep3Sub')}</span>
+                  </div>
+                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
+                    <span className="text-violet-500 font-bold block mb-0.5">{t('withdrawGuideStep4Title')}</span>
+                    <span className="text-slate-400">{t('withdrawGuideStep4Sub')}</span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={handleSimulate}
+                disabled={simulating}
+                className="flex-shrink-0 flex items-center gap-1.5 px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold shadow-md shadow-violet-600/15 transition-all hover:-translate-y-0.5 duration-200 disabled:opacity-50"
+              >
+                {simulating ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>{t('withdrawProcessingBtn')}</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <span>{t('withdrawSimulateBtn')}</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-6 items-start">
           {/* Form and info */}
           <div className="lg:col-span-2 space-y-6">
             {/* Info Card */}
@@ -241,7 +348,7 @@ export default function WithdrawPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-3 text-xs font-semibold text-white bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-3 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-md shadow-violet-600/15"
               >
                 {submitting ? (
                   <>
@@ -294,7 +401,8 @@ export default function WithdrawPage() {
             </div>
           </div>
         </div>
-      )}
+      </>
+    )}
     </DashboardLayout>
   );
 }

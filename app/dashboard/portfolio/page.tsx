@@ -1,9 +1,10 @@
 'use client';
 
 import { DashboardLayout } from '@/components/dashboard-layout';
-import { TrendingUp, Loader2 } from 'lucide-react';
+import { TrendingUp, Loader2, Play, HelpCircle, ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from '@/components/translation-provider';
+import { useToast } from '@/hooks/use-toast';
 
 interface StatsData {
   stats: {
@@ -29,6 +30,7 @@ interface StatsData {
 
 export default function PortfolioPage() {
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [data, setData] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [daysActive, setDaysActive] = useState(0);
@@ -77,6 +79,42 @@ export default function PortfolioPage() {
     fetchData();
   }, []);
 
+  const [simulating, setSimulating] = useState(false);
+
+  const handleSimulate = async () => {
+    setSimulating(true);
+    try {
+      const res = await fetch('/api/dashboard/simulate-demo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'arbitrage' }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        toast({
+          title: 'Simulation Successful',
+          description: json.message || 'Demo portfolio asset activated successfully!',
+        });
+        await fetchData();
+      } else {
+        toast({
+          title: 'Simulation Failed',
+          description: json.error || 'Failed to simulate portfolio asset',
+          variant: 'destructive',
+        });
+      }
+    } catch (err) {
+      console.error(err);
+      toast({
+        title: 'Network Error',
+        description: 'Error communicating with demo simulation server',
+        variant: 'destructive',
+      });
+    } finally {
+      setSimulating(false);
+    }
+  };
+
   const stats = [
     { label: t('portfolioStat1'), value: `$${(data?.stats.totalInvested ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: t('portfolioStat1Sub') },
     { label: t('portfolioStat2'),    value: `${data?.stats.activeInvestments ?? 0}`,        change: t('portfolioStat2Sub') },
@@ -105,6 +143,56 @@ export default function PortfolioPage() {
         </div>
       ) : (
         <>
+          {/* Step-by-Step Guideline Banner */}
+          <div className="bg-gradient-to-br from-violet-600/10 via-blue-600/5 to-transparent border border-violet-500/10 rounded-2xl p-6 mb-6 shadow-sm">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <HelpCircle className="w-5 h-5 text-violet-500 dark:text-violet-400" />
+                  <h3 className="text-sm font-semibold text-slate-950 dark:text-white">{t('portfolioGuideTitle')}</h3>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-gray-400 max-w-2xl leading-relaxed">
+                  {t('portfolioGuideDesc')}
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-slate-200/50 dark:border-white/5 text-[11px] font-mono">
+                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
+                    <span className="text-violet-500 font-bold block mb-0.5">{t('portfolioGuideStep1Title')}</span>
+                    <span className="text-slate-400">{t('portfolioGuideStep1Sub')}</span>
+                  </div>
+                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
+                    <span className="text-violet-500 font-bold block mb-0.5">{t('portfolioGuideStep2Title')}</span>
+                    <span className="text-slate-400">{t('portfolioGuideStep2Sub')}</span>
+                  </div>
+                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
+                    <span className="text-violet-500 font-bold block mb-0.5">{t('portfolioGuideStep3Title')}</span>
+                    <span className="text-slate-400">{t('portfolioGuideStep3Sub')}</span>
+                  </div>
+                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
+                    <span className="text-violet-500 font-bold block mb-0.5">{t('portfolioGuideStep4Title')}</span>
+                    <span className="text-slate-400">{t('portfolioGuideStep4Sub')}</span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={handleSimulate}
+                disabled={simulating}
+                className="flex-shrink-0 flex items-center gap-1.5 px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold shadow-md shadow-violet-600/15 transition-all hover:-translate-y-0.5 duration-200 disabled:opacity-50"
+              >
+                {simulating ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>{t('portfolioProcessingBtn')}</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <span>{t('portfolioSimulateBtn')}</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+
           {/* Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {stats.map(({ label, value, change }) => (

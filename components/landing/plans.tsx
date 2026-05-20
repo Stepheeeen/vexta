@@ -112,7 +112,7 @@ export function InvestmentPlans() {
                   href="/signup"
                   className={`group/btn w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
                     plan.featured
-                      ? 'bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white shadow-md shadow-violet-500/10'
+                      ? 'bg-violet-600 hover:bg-violet-700 text-white shadow-md shadow-violet-600/15'
                       : 'border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-350'
                   }`}
                 >

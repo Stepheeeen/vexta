@@ -7,7 +7,6 @@ import { VextaLogo } from '@/components/vexta-logo';
 import { useTranslation } from '@/components/translation-provider';
 import { useRouter, usePathname } from 'next/navigation';
 
-
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -27,7 +26,6 @@ export function Navbar() {
   const router = useRouter();
   const pathname = usePathname();
 
-
   const navLinks = [
     { label: t('navHowItWorks'), href: '/#how-it-works' },
     { label: t('navPlans'), href: '/#plans' },
@@ -35,7 +33,6 @@ export function Navbar() {
     { label: t('navFAQ'), href: '/#faq' },
     { label: t('handoverTitle'), href: '/handover', external: true },
   ];
-
 
   const flags = {
     en: '🇺🇸',
@@ -167,17 +164,19 @@ export function Navbar() {
       e.preventDefault();
       const id = href.replace('/#', '').replace('#', '');
       document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      // If we are not on the landing page, force a route change to landing page section
+      e.preventDefault();
+      router.push(href);
     }
     setIsOpen(false);
   };
-
-
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-white/95 dark:bg-[#090C10]/95 backdrop-blur-xl border-b border-slate-200/80 dark:border-white/5 shadow-sm shadow-slate-100/50 dark:shadow-none'
+          ? 'bg-slate-950/95 dark:bg-[#090C10]/95 backdrop-blur-xl border-b border-slate-850 dark:border-white/5 shadow-lg'
           : 'bg-transparent'
       }`}
     >
@@ -186,7 +185,7 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <VextaLogo className="h-8 w-8 transition-transform duration-300 group-hover:scale-105" />
-            <span className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">vexta</span>
+            <span className={`text-xl font-bold tracking-tight transition-colors ${scrolled ? 'text-white' : 'text-slate-900 dark:text-white'}`}>vexta</span>
           </Link>
 
           {/* Desktop nav */}
@@ -194,12 +193,17 @@ export function Navbar() {
             {navLinks.map((item) => {
               const id = item.href.replace('/#', '').replace('#', '');
               if ((item as any).external) {
-
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 text-violet-600 bg-violet-50/60 dark:text-violet-400 dark:bg-violet-500/10 hover:bg-violet-100/70 dark:hover:bg-violet-500/20"
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      pathname === '/handover'
+                        ? 'text-white bg-violet-600/40 dark:text-violet-400 dark:bg-violet-500/10'
+                        : scrolled
+                        ? 'text-violet-400 bg-white/5 hover:bg-white/10'
+                        : 'text-violet-600 bg-violet-50/60 dark:text-violet-400 dark:bg-violet-500/10 hover:bg-violet-100/70 dark:hover:bg-violet-500/20'
+                    }`}
                   >
                     {item.label}
                   </Link>
@@ -212,14 +216,17 @@ export function Navbar() {
                   onClick={(e) => handleNav(e, item.href)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     active === id
-                      ? 'text-violet-600 bg-violet-50 dark:text-violet-450 dark:bg-white/5'
+                      ? scrolled
+                        ? 'text-violet-400 bg-white/5'
+                        : 'text-violet-600 bg-violet-50 dark:text-violet-450 dark:bg-white/5'
+                      : scrolled
+                      ? 'text-slate-300 hover:text-white hover:bg-white/5'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-white/5'
                   }`}
                 >
                   {item.label}
                 </Link>
               );
-
             })}
           </nav>
 
@@ -229,7 +236,9 @@ export function Navbar() {
             <div className="relative" ref={langRef}>
               <button
                 onClick={() => setShowLang(!showLang)}
-                className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center cursor-pointer animate-fade-in"
+                className={`transition-all flex items-center justify-center cursor-pointer animate-fade-in ${
+                  scrolled ? 'text-slate-300 hover:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
                 title={t('navSelectLanguage')}
               >
                 <span className="text-base select-none">{flags[language]}</span>
@@ -268,7 +277,9 @@ export function Navbar() {
                 <div className="relative" ref={notifRef}>
                   <button
                     onClick={() => setShowNotif(!showNotif)}
-                    className="relative text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all flex items-center justify-center cursor-pointer"
+                    className={`relative transition-all flex items-center justify-center cursor-pointer ${
+                      scrolled ? 'text-slate-300 hover:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                    }`}
                   >
                     <Bell className="w-4 h-4" />
                     {unreadCount > 0 && (
@@ -304,7 +315,7 @@ export function Navbar() {
                               </div>
                               <button
                                 onClick={() => clearNotification(notif.id)}
-                                className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 dark:text-slate-500 hover:text-slate-650 dark:hover:text-white transition-all"
+                                className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 dark:text-slate-505 hover:text-slate-650 dark:hover:text-white transition-all"
                               >
                                 <X className="w-3 h-3" />
                               </button>
@@ -330,7 +341,9 @@ export function Navbar() {
 
                   <button
                     onClick={handleLogout}
-                    className="text-slate-400 dark:text-slate-505 hover:text-red-500 dark:hover:text-red-400 transition-all flex items-center justify-center cursor-pointer"
+                    className={`transition-all flex items-center justify-center cursor-pointer ${
+                      scrolled ? 'text-slate-400 hover:text-red-400' : 'text-slate-400 dark:text-slate-550 hover:text-red-500 dark:hover:text-red-400'
+                    }`}
                     title={t('navSignOut')}
                   >
                     <LogOut className="w-4 h-4" />
@@ -341,13 +354,15 @@ export function Navbar() {
               <>
                 <Link
                   href="/login"
-                  className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${
+                    scrolled ? 'text-slate-300 hover:text-white' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                  }`}
                 >
                   {t('navLogIn')}
                 </Link>
                 <Link
                   href="/signup"
-                  className="px-4 py-2 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 rounded-lg transition-all shadow-md shadow-violet-500/10"
+                  className="px-4 py-2 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition-all shadow-md shadow-violet-600/15"
                 >
                   {t('navGetStarted')}
                 </Link>
@@ -358,7 +373,9 @@ export function Navbar() {
           {/* Mobile menu toggle */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+            className={`md:hidden p-2 transition-colors ${
+              scrolled ? 'text-slate-300 hover:text-white' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
             aria-label="Toggle menu"
           >
             {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -372,33 +389,33 @@ export function Navbar() {
           isOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="bg-white/95 dark:bg-[#090C10]/95 backdrop-blur-xl border-t border-slate-200 dark:border-white/5 px-4 py-4 space-y-1 shadow-lg shadow-slate-100 dark:shadow-none animate-fade-in-up">
+        <div className="bg-slate-950/95 dark:bg-[#090C10]/95 backdrop-blur-xl border-t border-slate-800 dark:border-white/5 px-4 py-4 space-y-1 shadow-lg shadow-slate-900/50 dark:shadow-none animate-fade-in-up">
           {navLinks.map(({ label, href }) => (
             <Link
               key={href}
               href={href}
               onClick={(e) => handleNav(e, href)}
-              className="block px-4 py-3 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5 transition-all"
+              className="block px-4 py-3 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-all"
             >
               {label}
             </Link>
           ))}
 
-          <div className="pt-3 flex flex-col gap-2 border-t border-slate-200 dark:border-white/5">
+          <div className="pt-3 flex flex-col gap-2 border-t border-slate-800 dark:border-white/5">
             {/* Mobile Language selector */}
             <div className="relative">
               <button
                 onClick={() => setShowLang(!showLang)}
-                className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-slate-705 dark:text-slate-350 bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-all"
+                className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-slate-300 bg-white/5 border border-slate-800 dark:border-white/5 rounded-xl hover:bg-white/10 transition-all"
               >
                 <span className="flex items-center gap-2">
-                  <Globe className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                  <Globe className="w-3.5 h-3.5 text-slate-400" />
                   <span>{t('navLanguageLabel')}: {langNames[language]}</span>
                 </span>
                 <span>{flags[language]}</span>
               </button>
               {showLang && (
-                <div className="mt-1 border border-slate-150 dark:border-white/5 rounded-xl overflow-hidden bg-white dark:bg-[#0f141c] shadow-md max-h-48 overflow-y-auto">
+                <div className="mt-1 border border-slate-800 dark:border-white/5 rounded-xl overflow-hidden bg-slate-900 shadow-md max-h-48 overflow-y-auto">
                   {(Object.keys(flags) as Array<keyof typeof flags>).map((lang) => (
                     <button
                       key={lang}
@@ -406,13 +423,13 @@ export function Navbar() {
                         setLanguage(lang);
                         setShowLang(false);
                       }}
-                      className={`w-full flex items-center justify-between px-4 py-2 text-xs font-medium text-left hover:bg-slate-50 dark:hover:bg-white/5 transition-all ${language === lang ? 'text-violet-600 bg-violet-50/50 dark:text-violet-400 dark:bg-white/5' : 'text-slate-650 dark:text-slate-350'}`}
+                      className={`w-full flex items-center justify-between px-4 py-2 text-xs font-medium text-left hover:bg-white/5 transition-all ${language === lang ? 'text-violet-450 bg-white/5' : 'text-slate-300'}`}
                     >
                       <span className="flex items-center gap-2">
                         <span>{flags[lang]}</span>
                         <span>{langNames[lang]}</span>
                       </span>
-                      {language === lang && <Check className="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />}
+                      {language === lang && <Check className="w-3.5 h-3.5 text-violet-400" />}
                     </button>
                   ))}
                 </div>
@@ -422,13 +439,13 @@ export function Navbar() {
             {user ? (
               <div className="space-y-3 pt-1">
                 {/* Mobile User Profile details */}
-                <div className="flex items-center gap-3 px-4 py-2.5 bg-slate-50 dark:bg-white/3 rounded-xl">
-                  <div className="w-9 h-9 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center text-xs font-bold text-violet-600 dark:text-violet-400 uppercase">
+                <div className="flex items-center gap-3 px-4 py-2.5 bg-white/5 rounded-xl">
+                  <div className="w-9 h-9 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center text-xs font-bold text-violet-400 uppercase">
                     {userInitials}
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-slate-800 dark:text-white">{user.firstName} {user.lastName}</p>
-                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{user.email}</p>
+                    <p className="text-xs font-semibold text-white">{user.firstName} {user.lastName}</p>
+                    <p className="text-[10px] text-slate-400 font-mono">{user.email}</p>
                   </div>
                 </div>
 
@@ -436,7 +453,7 @@ export function Navbar() {
                 <Link
                   href={user.role === 'admin' ? '/admin' : '/dashboard'}
                   onClick={() => setIsOpen(false)}
-                  className="block w-full px-4 py-2.5 text-center text-xs font-semibold text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10 border border-violet-500/20 rounded-xl hover:bg-violet-100 dark:hover:bg-violet-500/20 transition-all"
+                  className="block w-full px-4 py-2.5 text-center text-xs font-semibold text-violet-450 bg-violet-500/10 border border-violet-500/20 rounded-xl hover:bg-violet-500/20 transition-all"
                 >
                   {t('navGoToDashboard')}
                 </Link>
@@ -447,7 +464,7 @@ export function Navbar() {
                     handleLogout();
                     setIsOpen(false);
                   }}
-                  className="w-full px-4 py-2.5 text-center text-xs font-semibold text-red-650 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full px-4 py-2.5 text-center text-xs font-semibold text-red-400 bg-red-500/10 hover:bg-red-500/20 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   {t('navSignOut')}
@@ -455,10 +472,10 @@ export function Navbar() {
               </div>
             ) : (
               <div className="flex flex-col gap-2 mt-1">
-                <Link href="/login" className="block px-4 py-3 text-center text-sm font-medium text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-white/5 rounded-lg transition-all hover:bg-slate-50 dark:hover:bg-white/5">
+                <Link href="/login" className="block px-4 py-3 text-center text-sm font-medium text-slate-300 border border-white/5 rounded-lg transition-all hover:bg-white/5">
                   {t('navLogIn')}
                 </Link>
-                <Link href="/signup" className="block px-4 py-3 text-center text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-blue-600 rounded-lg transition-all">
+                <Link href="/signup" className="block px-4 py-3 text-center text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition-all">
                   {t('navGetStarted')}
                 </Link>
               </div>

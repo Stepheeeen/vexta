@@ -57,7 +57,7 @@ export function Hero() {
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 mb-10 animate-fade-in-up" style={{ animationDelay: '220ms' }}>
               <Link
                 href="/signup"
-                className="group inline-flex items-center gap-2 px-7 py-3.5 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 rounded-xl transition-all duration-200 shadow-md shadow-violet-500/10"
+                className="group inline-flex items-center gap-2 px-7 py-3.5 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-all duration-200 shadow-md shadow-violet-600/15"
               >
                 {t('heroStartInvesting')}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />

@@ -61,7 +61,7 @@ export function ReferralSystem() {
 
             <Link
               href="/signup"
-              className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 rounded-xl transition-all shadow-md shadow-violet-500/10 group"
+              className="inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-all shadow-md shadow-violet-600/15 group"
             >
               <Users className="w-4 h-4" />
               {t('referralStartBuilding')}

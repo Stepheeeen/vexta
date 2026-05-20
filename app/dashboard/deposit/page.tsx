@@ -3,9 +3,10 @@
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { useState } from 'react';
 import { Copy, Check, Info, ShieldCheck, Zap, AlertTriangle, ArrowRight, Wallet, QrCode } from 'lucide-react';
+import { useTranslation } from '@/components/translation-provider';
 
 export default function DepositPage() {
-  const [activeTab, setActiveTab] = useState<'manual' | 'sandbox'>('manual');
+  const { t } = useTranslation();
   const [network, setNetwork] = useState('USDT_TRC20');
   const [amount, setAmount] = useState('');
   const [txHash, setTxHash] = useState('');
@@ -35,12 +36,12 @@ export default function DepositPage() {
 
     const amt = parseFloat(amount);
     if (isNaN(amt) || amt < 10) {
-      setError('Minimum deposit amount is $10');
+      setError(t('depMinAmtError'));
       return;
     }
 
     if (!txHash.trim()) {
-      setError('Transaction Hash is required');
+      setError(t('depTxHashRequired'));
       return;
     }
 
@@ -59,48 +60,12 @@ export default function DepositPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Failed to submit deposit');
+        throw new Error(data.error || t('failedSubmitDeposit'));
       }
 
-      setSuccess('Deposit request submitted! Awaiting administrator approval. You can verify status in your Transaction History.');
+      setSuccess(t('depSuccessManual'));
       setAmount('');
       setTxHash('');
-    } catch (err: any) {
-      setError(err.message || 'An error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSandboxDeposit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setSuccess(null);
-
-    const amt = parseFloat(amount);
-    if (isNaN(amt) || amt < 10) {
-      setError('Minimum deposit amount is $10');
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const res = await fetch('/api/deposit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: amt,
-          instant: true
-        })
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'Failed to submit simulated deposit');
-      }
-
-      setSuccess(`Success! Instantly credited $${amt} to your sandbox balance. MLM commission and upline rewards have been distributed.`);
-      setAmount('');
     } catch (err: any) {
       setError(err.message || 'An error occurred');
     } finally {
@@ -111,33 +76,8 @@ export default function DepositPage() {
   return (
     <DashboardLayout>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Fund Wallet</h1>
-        <p className="text-slate-500 dark:text-gray-400">Add funds to start investing and building your unilevel team</p>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex bg-slate-100 dark:bg-white/5 p-1 rounded-xl mb-8 max-w-md">
-        <button
-          onClick={() => { setActiveTab('manual'); setError(null); setSuccess(null); }}
-          className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
-            activeTab === 'manual'
-              ? 'bg-white dark:bg-[#0F1419] text-violet-600 dark:text-violet-400 shadow-sm'
-              : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          Crypto Deposit (Manual Verify)
-        </button>
-        <button
-          onClick={() => { setActiveTab('sandbox'); setError(null); setSuccess(null); }}
-          className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 ${
-            activeTab === 'sandbox'
-              ? 'bg-white dark:bg-[#0F1419] text-violet-600 dark:text-violet-400 shadow-sm'
-              : 'text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
-          }`}
-        >
-          <Zap className="w-4 h-4 text-amber-500" />
-          Instant Sandbox
-        </button>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{t('depFundWallet')}</h1>
+        <p className="text-slate-500 dark:text-gray-400">{t('depAddFundsSub')}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -157,137 +97,104 @@ export default function DepositPage() {
             </div>
           )}
 
-          {activeTab === 'manual' ? (
-            <form onSubmit={handleManualDeposit} className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm space-y-6">
-              {/* Step 1: Select Network */}
-              <div>
-                <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-3">1. Select Cryptocurency Network</label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {[
-                    { id: 'USDT_TRC20', name: 'USDT', desc: 'TRC20 (Tron)' },
-                    { id: 'USDT_ERC20', name: 'USDT', desc: 'ERC20 (Ethereum)' },
-                    { id: 'BTC', name: 'Bitcoin', desc: 'Native BTC' }
-                  ].map((net) => (
-                    <button
-                      key={net.id}
-                      type="button"
-                      onClick={() => setNetwork(net.id)}
-                      className={`p-4 rounded-xl border text-left transition-all ${
-                        network === net.id
-                          ? 'border-violet-500 bg-violet-500/5 text-slate-900 dark:text-white ring-1 ring-violet-500'
-                          : 'border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10'
-                      }`}
-                    >
-                      <p className="font-bold text-sm">{net.name}</p>
-                      <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">{net.desc}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Step 2: Pay Address */}
-              <div className="p-5 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200 dark:border-white/5 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
-                    <Wallet className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-                    <span>2. Deposit Destination Address</span>
-                  </div>
-                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded">
-                    {network.replace('_', ' ')}
-                  </span>
-                </div>
-
-                <div className="flex gap-2 items-center bg-white dark:bg-[#0A0F14] border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3">
-                  <span className="flex-1 font-mono text-xs text-slate-900 dark:text-white truncate">
-                    {walletAddresses[network]}
-                  </span>
+          <form onSubmit={handleManualDeposit} className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm space-y-6">
+            {/* Step 1: Select Network */}
+            <div>
+              <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-3">{t('depSelectNetwork')}</label>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {[
+                  { id: 'USDT_TRC20', name: 'USDT', desc: 'TRC20 (Tron)' },
+                  { id: 'USDT_ERC20', name: 'USDT', desc: 'ERC20 (Ethereum)' },
+                  { id: 'BTC', name: 'Bitcoin', desc: 'Native BTC' }
+                ].map((net) => (
                   <button
+                    key={net.id}
                     type="button"
-                    onClick={handleCopy}
-                    className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
-                    title="Copy address"
+                    onClick={() => setNetwork(net.id)}
+                    className={`p-4 rounded-xl border text-left transition-all ${
+                      network === net.id
+                        ? 'border-violet-500 bg-violet-500/5 text-slate-900 dark:text-white ring-1 ring-violet-500'
+                        : 'border-slate-200 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10'
+                    }`}
                   >
-                    {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                    <p className="font-bold text-sm">{net.name}</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">{net.desc}</p>
                   </button>
-                </div>
+                ))}
+              </div>
+            </div>
 
-                <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-gray-400">
-                  <Info className="w-4 h-4 text-violet-500 shrink-0" />
-                  <span>Send ONLY the selected cryptocurrency to this address. Sending other assets will result in permanent loss.</span>
+            {/* Step 2: Pay Address */}
+            <div className="p-5 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200 dark:border-white/5 space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+                  <Wallet className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                  <span>{t('depAddressDestination')}</span>
                 </div>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded">
+                  {network.replace('_', ' ')}
+                </span>
               </div>
 
-              {/* Step 3: Enter Details */}
-              <div className="space-y-4">
-                <p className="text-sm font-semibold text-slate-900 dark:text-white">3. Submit Transaction Proof</p>
-                
-                <div>
-                  <label className="block text-xs font-medium text-slate-500 dark:text-gray-400 mb-2">Deposit Amount (USD equivalent)</label>
-                  <input
-                    type="number"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    required
-                    placeholder="Enter deposit amount ($)"
-                    className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 text-sm"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-slate-500 dark:text-gray-400 mb-2">Transaction Hash (TXID / Tx Hash)</label>
-                  <input
-                    type="text"
-                    value={txHash}
-                    onChange={(e) => setTxHash(e.target.value)}
-                    required
-                    placeholder="Enter block explorer transaction hash"
-                    className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 font-mono text-sm"
-                  />
-                  <p className="text-[10px] text-slate-500 dark:text-gray-400 mt-2">Example: 0x71C7656EC7ab88b098defB751B7401B5f6d8976F...</p>
-                </div>
+              <div className="flex gap-2 items-center bg-white dark:bg-[#0A0F14] border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3">
+                <span className="flex-1 font-mono text-xs text-slate-900 dark:text-white truncate">
+                  {walletAddresses[network]}
+                </span>
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors"
+                  title={t('depCopyBtn')}
+                >
+                  {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                </button>
               </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 bg-violet-600 hover:bg-violet-750 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
-              >
-                {loading ? 'Submitting Deposit...' : 'Submit Deposit Request'}
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handleSandboxDeposit} className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm space-y-6">
-              <div className="p-4 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 rounded-xl text-xs flex gap-3">
-                <Zap className="w-5 h-5 shrink-0" />
-                <div>
-                  <p className="font-bold mb-1">Sandbox Simulation Mode</p>
-                  <p>Use this tab to instantly inject virtual USD funds into your account for demonstration purposes. This will automatically execute upline MLM commission calculations.</p>
-                </div>
+              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-gray-400">
+                <Info className="w-4 h-4 text-violet-500 shrink-0" />
+                <span>{t('depSendOnlySelected')}</span>
               </div>
+            </div>
 
+            {/* Step 3: Enter Details */}
+            <div className="space-y-4">
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">{t('depSubmitProof')}</p>
+              
               <div>
-                <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-2">Simulated Deposit Amount (USD)</label>
+                <label className="block text-xs font-medium text-slate-500 dark:text-gray-400 mb-2">{t('depAmountUsd')}</label>
                 <input
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   required
-                  placeholder="Enter amount to simulate ($)"
+                  placeholder={t('depAmountUsdPlaceholder')}
                   className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 text-sm"
                 />
               </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
-              >
-                {loading ? 'Simulating...' : 'Instantly Credit Sandbox Balance'}
-                <Zap className="w-4 h-4 fill-current" />
-              </button>
-            </form>
-          )}
+              <div>
+                <label className="block text-xs font-medium text-slate-500 dark:text-gray-400 mb-2">{t('depTxHashLabel')}</label>
+                <input
+                  type="text"
+                  value={txHash}
+                  onChange={(e) => setTxHash(e.target.value)}
+                  required
+                  placeholder={t('depTxHashPlaceholder')}
+                  className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 font-mono text-sm"
+                />
+                <p className="text-[10px] text-slate-500 dark:text-gray-400 mt-2">{t('depTxHashExample')}</p>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-3 bg-violet-600 hover:bg-violet-750 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 text-sm"
+            >
+              {loading ? t('depSubmitting') : t('depSubmitBtn')}
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </form>
         </div>
 
         {/* Sidebar Info/QR Block */}
@@ -295,7 +202,7 @@ export default function DepositPage() {
           <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm flex flex-col items-center text-center space-y-4">
             <div className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
               <QrCode className="w-5 h-5 text-violet-600 dark:text-violet-400" />
-              <span>Scan QR Code</span>
+              <span>{t('depScanQr')}</span>
             </div>
             
             <div className="w-48 h-48 bg-white border border-slate-200 rounded-xl p-2 flex items-center justify-center shadow-inner">
@@ -306,37 +213,37 @@ export default function DepositPage() {
                   {walletAddresses[network].slice(0, 10)}...{walletAddresses[network].slice(-10)}
                 </span>
                 <div className="w-24 h-24 mt-2 border-2 border-dashed border-slate-300 flex items-center justify-center text-[10px] text-slate-400">
-                  Scan QR Ready
+                  {t('depScanQrReady')}
                 </div>
               </div>
             </div>
           </div>
 
           <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm space-y-4">
-            <h3 className="text-sm font-bold text-slate-900 dark:text-white">Verification Timeline</h3>
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t('depTimeline')}</h3>
             
             <div className="space-y-4 text-xs">
               <div className="flex gap-3">
                 <div className="w-5 h-5 rounded-full bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold shrink-0">1</div>
                 <div>
-                  <p className="font-bold text-slate-900 dark:text-white">Request Sent</p>
-                  <p className="text-slate-500 dark:text-gray-400">Your TX Hash and amount are queued for verification.</p>
+                  <p className="font-bold text-slate-900 dark:text-white">{t('depTimelineStep1')}</p>
+                  <p className="text-slate-500 dark:text-gray-400">{t('depTimelineStep1Desc')}</p>
                 </div>
               </div>
 
               <div className="flex gap-3">
                 <div className="w-5 h-5 rounded-full bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold shrink-0">2</div>
                 <div>
-                  <p className="font-bold text-slate-900 dark:text-white">Block Explorer Check</p>
-                  <p className="text-slate-500 dark:text-gray-400">Admins verify transaction exists on the network explorer.</p>
+                  <p className="font-bold text-slate-900 dark:text-white">{t('depTimelineStep2')}</p>
+                  <p className="text-slate-500 dark:text-gray-400">{t('depTimelineStep2Desc')}</p>
                 </div>
               </div>
 
               <div className="flex gap-3">
                 <div className="w-5 h-5 rounded-full bg-violet-100 dark:bg-violet-900/40 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold shrink-0">3</div>
                 <div>
-                  <p className="font-bold text-slate-900 dark:text-white">Balance Credited</p>
-                  <p className="text-slate-500 dark:text-gray-400">Funds are activated and unilevel upline tree payouts trigger.</p>
+                  <p className="font-bold text-slate-900 dark:text-white">{t('depTimelineStep3')}</p>
+                  <p className="text-slate-500 dark:text-gray-400">{t('depTimelineStep3Desc')}</p>
                 </div>
               </div>
             </div>

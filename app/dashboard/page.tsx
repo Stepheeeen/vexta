@@ -1,7 +1,8 @@
 'use client';
 
 import { DashboardLayout } from '@/components/dashboard-layout';
-import { TrendingUp, Eye, EyeOff, Copy, ArrowUpRight, ArrowDownRight, Zap, RefreshCw, Plus, Minus, Settings, Loader2 } from 'lucide-react';
+import Link from 'next/link';
+import { TrendingUp, Eye, EyeOff, Copy, ArrowUpRight, ArrowDownRight, Zap, RefreshCw, Plus, Minus, Settings, Loader2, Wallet } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from '@/components/translation-provider';
 import { WelcomeTour } from '../components/WelcomeTour';
@@ -28,10 +29,6 @@ export default function Dashboard() {
   const [userFirstName, setUserFirstName] = useState('User');
   const [referralCode, setReferralCode] = useState('VEXTA_CODE');
 
-  // Simulation states
-  const [simulating, setSimulating] = useState<string | null>(null);
-  const [simError, setSimError] = useState<string | null>(null);
-  const [simSuccess, setSimSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const fetchDashboardData = async () => {
@@ -73,75 +70,6 @@ export default function Dashboard() {
     fetchDashboardData();
   }, []);
 
-  const handleSimulateDeposit = async (amount: number) => {
-    setSimulating('deposit');
-    setSimError(null);
-    setSimSuccess(null);
-    try {
-      const res = await fetch('/api/deposit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount }),
-      });
-      const resJson = await res.json();
-      if (!res.ok) throw new Error(resJson.error || 'Deposit simulation failed');
-      
-      setSimSuccess(`Successfully deposited simulated $${amount.toLocaleString()}!`);
-      await fetchDashboardData();
-    } catch (err: any) {
-      setSimError(err.message || 'Deposit failed');
-    } finally {
-      setSimulating(null);
-    }
-  };
-
-  const handleSimulateAction = async (action: string) => {
-    setSimulating(action);
-    setSimError(null);
-    setSimSuccess(null);
-    try {
-      const res = await fetch(`/api/admin/simulate?action=${action}`, {
-        method: 'POST',
-        headers: { 'x-admin-key': 'vexta-admin-dev' },
-      });
-      const resJson = await res.json();
-      if (!res.ok) throw new Error(resJson.error || 'Simulation failed');
-
-      setSimSuccess(`Simulation action '${action}' completed successfully!`);
-      await fetchDashboardData();
-    } catch (err: any) {
-      setSimError(err.message || 'Simulation action failed');
-    } finally {
-      setSimulating(null);
-    }
-  };
-
-  const handleSimulateWithdrawal = async (amount: number) => {
-    setSimulating('withdrawal');
-    setSimError(null);
-    setSimSuccess(null);
-    try {
-      const res = await fetch('/api/withdrawals', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount,
-          walletAddress: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
-          network: 'TRC20',
-        }),
-      });
-      const resJson = await res.json();
-      if (!res.ok) throw new Error(resJson.error || 'Withdrawal simulation failed');
-
-      setSimSuccess(`Successfully requested simulated withdrawal of $${amount.toLocaleString()}!`);
-      await fetchDashboardData();
-    } catch (err: any) {
-      setSimError(err.message || 'Withdrawal failed');
-    } finally {
-      setSimulating(null);
-    }
-  };
-
   const metrics = [
     { label: t('overviewBalance'), value: `$${(data?.stats.availableBalance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: data?.recentTransactions.length ? t('overviewLedger') : t('overviewFreshAccount') },
     { label: t('overviewInvested'), value: `$${(data?.stats.totalInvested ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: `${data?.stats.activeInvestments ?? 0} ${t('overviewActivePlans')}` },
@@ -153,15 +81,40 @@ export default function Dashboard() {
     <DashboardLayout>
       <WelcomeTour />
       {/* Page header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
         <div>
           <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">{t('overview')}</p>
           <h1 className="text-2xl font-bold text-slate-950 dark:text-white tracking-tight">{t('overviewWelcome')}, {userFirstName}</h1>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Main CTA Actions */}
+          <Link
+            href="/dashboard/deposit"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold shadow-md shadow-violet-600/15 transition-all hover:-translate-y-0.5 duration-200"
+          >
+            <Wallet className="w-3.5 h-3.5" />
+            {t('deposit') || 'Deposit'}
+          </Link>
+          <Link
+            href="/dashboard/withdraw"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 text-slate-950 dark:text-white text-xs font-semibold transition-all hover:-translate-y-0.5 duration-200"
+          >
+            <ArrowUpRight className="w-3.5 h-3.5" />
+            {t('withdraw') || 'Withdraw'}
+          </Link>
+          <Link
+            href="/dashboard/arbitrage"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 text-slate-950 dark:text-white text-xs font-semibold transition-all hover:-translate-y-0.5 duration-200"
+          >
+            <TrendingUp className="w-3.5 h-3.5" />
+            {t('arbitrage') || 'Arbitrage'}
+          </Link>
+
+          <div className="w-px h-6 bg-slate-200 dark:bg-white/10 mx-1 hidden lg:block" />
+
           <button
             onClick={() => setShow(!show)}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-100 dark:bg-white/3 border border-slate-200 dark:border-white/8 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white text-xs font-mono transition-all"
+            className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-slate-100 dark:bg-white/3 border border-slate-200 dark:border-white/8 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white text-xs font-mono transition-all"
           >
             {show ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
             {show ? t('overviewHideBalance') : t('overviewShowBalance')} {t('overviewBalanceSuffix')}
@@ -169,7 +122,7 @@ export default function Dashboard() {
           <button
             onClick={fetchDashboardData}
             disabled={loading}
-            className="p-1 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-all disabled:opacity-50 flex items-center justify-center"
+            className="p-1.5 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-all disabled:opacity-50 flex items-center justify-center"
             title="Refresh"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -208,148 +161,7 @@ export default function Dashboard() {
             ))}
           </div>
 
-          {/* Simulation Controls Panel */}
-          <div id="tour-simulation" className="bg-white dark:bg-[#0A0F14]/80 backdrop-blur-xl border border-dashed border-[#00D9FF]/40 dark:border-[#00D9FF]/20 rounded-2xl p-6 mb-8 relative overflow-hidden group shadow-sm dark:shadow-[0_0_20px_rgba(0,217,255,0.02)]">
-            <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-48 h-48 bg-[#00D9FF]/5 rounded-full blur-3xl pointer-events-none" />
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-8 h-8 rounded-lg bg-[#00D9FF]/10 border border-[#00D9FF]/20 flex items-center justify-center">
-                <Settings className="w-4 h-4 text-[#00D9FF] animate-spin" style={{ animationDuration: '6s' }} />
-              </div>
-              <div>
-                <h2 className="text-sm font-semibold text-slate-950 dark:text-white">{t('overviewSimControls')}</h2>
-                <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{t('overviewSimControlsSub')}</p>
-              </div>
-            </div>
 
-            {simError && (
-              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 rounded-xl text-xs font-mono">
-                {simError}
-              </div>
-            )}
-            {simSuccess && (
-              <div className="mb-4 p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-mono">
-                {simSuccess}
-              </div>
-            )}
-
-            <div className="grid md:grid-cols-4 gap-4">
-              {/* Deposit Card */}
-              <div className="bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl p-4 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white font-mono uppercase mb-1">{t('overviewSimStep1')}</h3>
-                  <p className="text-[10px] text-slate-500 dark:text-gray-500 mb-3 leading-relaxed">{t('overviewSimStep1Sub')}</p>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleSimulateDeposit(1000)}
-                    disabled={simulating !== null}
-                    className="flex-1 py-2 bg-[#00FF88]/10 hover:bg-[#00FF88]/20 border border-[#00FF88]/20 text-[#00E070] dark:text-[#00FF88] rounded-lg text-xs font-mono transition-all disabled:opacity-50"
-                  >
-                    +$1k
-                  </button>
-                  <button
-                    onClick={() => handleSimulateDeposit(5000)}
-                    disabled={simulating !== null}
-                    className="flex-1 py-2 bg-[#00FF88]/10 hover:bg-[#00FF88]/20 border border-[#00FF88]/20 text-[#00E070] dark:text-[#00FF88] rounded-lg text-xs font-mono transition-all disabled:opacity-50"
-                  >
-                    +$5k
-                  </button>
-                </div>
-              </div>
-
-              {/* Investment Card */}
-              <div className="bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl p-4 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white font-mono uppercase mb-1">{t('overviewSimStep2')}</h3>
-                  <p className="text-[10px] text-slate-500 dark:text-gray-500 mb-3 leading-relaxed">{t('overviewSimStep2Sub')}</p>
-                </div>
-                <div className="flex flex-col gap-2">
-                  <button
-                    onClick={async () => {
-                      setSimulating('investment');
-                      setSimError(null);
-                      setSimSuccess(null);
-                      try {
-                        // Seed plans
-                        await fetch('/api/admin/simulate?action=seed-plans', { method: 'POST', headers: { 'x-admin-key': 'vexta-admin-dev' } });
-                        
-                        // Fetch plans
-                        const pRes = await fetch('/api/plans');
-                        if (!pRes.ok) throw new Error('Could not fetch plans. Please try again.');
-                        const plansData = await pRes.json();
-                        const planC = plansData.plans.find((p: any) => p.name === 'Ultra Plan') || plansData.plans[0];
-                        if (!planC) throw new Error('No plans found. Seeding first...');
-                        
-                        const invRes = await fetch('/api/investments', {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ planId: planC.id, amount: 5000 }),
-                        });
-                        const invJson = await invRes.json();
-                        if (!invRes.ok) throw new Error(invJson.error || 'Failed to start investment');
-                        setSimSuccess(`Successfully started 60-day simulated Ultra Plan ($5,000)!`);
-                        await fetchDashboardData();
-                      } catch (err: any) {
-                        setSimError(err.message || 'Investment failed');
-                      } finally {
-                        setSimulating(null);
-                      }
-                    }}
-                    disabled={simulating !== null}
-                    className="w-full py-2 bg-[#00D9FF]/10 hover:bg-[#00D9FF]/20 border border-[#00D9FF]/20 text-[#00A3C4] dark:text-[#00D9FF] rounded-lg text-xs font-mono transition-all disabled:opacity-50"
-                  >
-                    {t('overviewSimInvestBtn')}
-                  </button>
-                </div>
-              </div>
-
-              {/* ROI Yield Card */}
-              <div className="bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl p-4 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white font-mono uppercase mb-1">{t('overviewSimStep3')}</h3>
-                  <p className="text-[10px] text-slate-500 dark:text-gray-500 mb-3 leading-relaxed">{t('overviewSimStep3Sub')}</p>
-                </div>
-                <button
-                  onClick={() => handleSimulateAction('roi')}
-                  disabled={simulating !== null}
-                  className="w-full py-2 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/20 text-violet-600 dark:text-violet-400 rounded-lg text-xs font-mono transition-all disabled:opacity-50 flex items-center justify-center gap-1.5"
-                >
-                  {simulating === 'roi' ? (
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                  ) : (
-                    <>
-                      <Zap className="w-3.5 h-3.5" />
-                      {t('overviewSimTriggerRoi')}
-                    </>
-                  )}
-                </button>
-              </div>
-
-              {/* Reset/Clean Card */}
-              <div className="bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl p-4 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-xs font-semibold text-slate-900 dark:text-white font-mono uppercase mb-1">{t('overviewSimStep4')}</h3>
-                  <p className="text-[10px] text-slate-500 dark:text-gray-500 mb-3 leading-relaxed">{t('overviewSimStep4Sub')}</p>
-                </div>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleSimulateWithdrawal(500)}
-                    disabled={simulating !== null}
-                    className="flex-1 py-2 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-amber-600 dark:text-amber-400 rounded-lg text-xs font-mono transition-all disabled:opacity-50"
-                  >
-                    {t('overviewSimWithdrawBtn')}
-                  </button>
-                  <button
-                    onClick={() => handleSimulateAction('reset')}
-                    disabled={simulating !== null}
-                    className="flex-1 py-2 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-500 dark:text-red-400 rounded-lg text-xs font-mono transition-all disabled:opacity-50"
-                  >
-                    {t('overviewSimResetBtn')}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* Two-col section */}
           <div className="grid md:grid-cols-2 gap-5 mb-5">

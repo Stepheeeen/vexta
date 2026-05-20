@@ -171,7 +171,7 @@ export default function ReferralsPage() {
                   navigator.clipboard.writeText(referralLink);
                   alert('Link copied to clipboard!');
                 }}
-                className="w-full py-2.5 text-xs font-mono font-semibold text-white bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 rounded-xl transition-all"
+                className="w-full py-2.5 text-xs font-mono font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-all shadow-md shadow-violet-600/15"
               >
                 {t('referralsCopyShare')}
               </button>
