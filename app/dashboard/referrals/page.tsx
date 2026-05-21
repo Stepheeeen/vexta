@@ -87,18 +87,18 @@ export default function ReferralsPage() {
 
   const levelRates: Record<number, string> = {
     1: '10%',
-    2: '5%',
+    2: '6%',
     3: '3%',
     4: '2%',
-    5: '1.5%',
-    6: '1.5%',
+    5: '2%',
+    6: '1%',
     7: '1%',
-    8: '1%',
-    9: '1%',
-    10: '1%',
-    11: '1%',
-    12: '1%',
-    13: '1%',
+    8: '0.25%',
+    9: '0.25%',
+    10: '0.25%',
+    11: '0.25%',
+    12: '0.25%',
+    13: '0.25%',
   };
 
   return (
@@ -205,7 +205,7 @@ export default function ReferralsPage() {
               </div>
               <div className="mt-4 pt-4 border-t border-slate-200/60 dark:border-white/5 flex justify-between">
                 <span className="text-xs text-slate-400 dark:text-gray-500 font-mono">{t('referralsTotalPayout')}</span>
-                <span className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400 font-mono">30%</span>
+                <span className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400 font-mono">26.5%</span>
               </div>
             </div>
           </div>

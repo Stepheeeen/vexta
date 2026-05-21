@@ -11,7 +11,12 @@ const flags = {
   th: '🇹🇭',
   pt: '🇵🇹',
   ko: '🇰🇷',
-  fr: '🇫🇷'
+  fr: '🇫🇷',
+  zh: '🇨🇳',
+  ar: '🇸🇦',
+  ru: '🇷🇺',
+  hi: '🇮🇳',
+  de: '🇩🇪'
 };
 
 const langNames = {
@@ -21,7 +26,12 @@ const langNames = {
   th: 'ภาษาไทย',
   pt: 'Português',
   ko: '한국어',
-  fr: 'Français'
+  fr: 'Français',
+  zh: '简体中文',
+  ar: 'العربية',
+  ru: 'Русский',
+  hi: 'हिन्दी',
+  de: 'Deutsch'
 };
 
 export function LanguageSwitcher() {

@@ -35,27 +35,37 @@ export async function POST(req: NextRequest) {
 
     // 1. If instant simulation deposit
     if (instant) {
-      const txn = await prisma.transaction.create({
-        data: {
-          userId: payload.userId,
-          type: 'deposit',
-          amount,
-          status: 'completed',
-          description: 'Simulated USD Deposit (Instant)',
-        },
+      const result = await prisma.$transaction(async (tx) => {
+        // Lock user record
+        await tx.user.update({
+          where: { id: payload.userId },
+          data: { updatedAt: new Date() }
+        });
+
+        const txn = await tx.transaction.create({
+          data: {
+            userId: payload.userId,
+            type: 'deposit',
+            amount,
+            status: 'completed',
+            description: 'Simulated USD Deposit (Instant)',
+          },
+        });
+
+        await tx.user.update({
+          where: { id: payload.userId },
+          data: {
+            balance: { increment: amount },
+            activeDeposit: { increment: amount }
+          }
+        });
+
+        await distributeUnilevelCommission(payload.userId, amount, tx);
+
+        return txn;
       });
 
-      await prisma.user.update({
-        where: { id: payload.userId },
-        data: {
-          balance: { increment: amount },
-          activeDeposit: { increment: amount }
-        }
-      });
-
-      await distributeUnilevelCommission(payload.userId, amount);
-
-      return NextResponse.json({ message: 'Simulated deposit successful', transaction: txn }, { status: 201 });
+      return NextResponse.json({ message: 'Simulated deposit successful', transaction: result }, { status: 201 });
     }
 
     // 2. Manual Blockchain Deposit Request

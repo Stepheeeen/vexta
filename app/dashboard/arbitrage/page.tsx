@@ -1,10 +1,75 @@
 'use client';
 
 import { DashboardLayout } from '@/components/dashboard-layout';
-import { BarChart3, TrendingUp, Clock, Loader2, Terminal, Shield, Cpu, Play, HelpCircle, ArrowRight } from 'lucide-react';
+import { BarChart3, TrendingUp, Clock, Loader2, Terminal, Shield, Cpu, Play, HelpCircle, ArrowRight, Wallet } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
+
+const getExchangeLogo = (name: string) => {
+  const n = name.toLowerCase();
+  if (n.includes('binance')) {
+    return (
+      <div className="w-12 h-12 rounded-xl bg-[#F0B90B]/10 border border-[#F0B90B]/20 flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#F0B90B]/5">
+        <svg className="w-6 h-6 text-[#F0B90B]" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2L4 10l2.5 2.5L12 7l5.5 5.5L20 10zM4 14l8 8 8-8-2.5-2.5L12 17l-5.5-5.5zM12 9l-3 3 3 3 3-3z"/>
+        </svg>
+      </div>
+    );
+  }
+  if (n.includes('bybit')) {
+    return (
+      <div className="w-12 h-12 rounded-xl bg-[#FF9800]/10 border border-[#FF9800]/20 flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#FF9800]/5">
+        <svg className="w-6 h-6 text-[#FF9800]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
+        </svg>
+      </div>
+    );
+  }
+  if (n.includes('okx')) {
+    return (
+      <div className="w-12 h-12 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center flex-shrink-0 shadow-lg shadow-white/5">
+        <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M3 3h7v7H3zm11 0h7v7h-7zM3 14h7v7H3zm11 0h7v7h-7z"/>
+        </svg>
+      </div>
+    );
+  }
+  if (n.includes('bitget')) {
+    return (
+      <div className="w-12 h-12 rounded-xl bg-[#00F0FF]/10 border border-[#00F0FF]/20 flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#00F0FF]/5">
+        <svg className="w-6 h-6 text-[#00F0FF]" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2L2 12h5v8h10v-8h5z" />
+        </svg>
+      </div>
+    );
+  }
+  if (n.includes('coinbase')) {
+    return (
+      <div className="w-12 h-12 rounded-xl bg-[#0052FF]/10 border border-[#0052FF]/20 flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#0052FF]/5">
+        <svg className="w-6 h-6 text-[#0052FF]" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="12" cy="12" r="10" />
+        </svg>
+      </div>
+    );
+  }
+  if (n.includes('kucoin')) {
+    return (
+      <div className="w-12 h-12 rounded-xl bg-[#00E676]/10 border border-[#00E676]/20 flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#00E676]/5">
+        <svg className="w-6 h-6 text-[#00E676]" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2l10 6v12l-10 6-10-6V8z" />
+        </svg>
+      </div>
+    );
+  }
+  return (
+    <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center flex-shrink-0">
+      <svg className="w-6 h-6 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
+        <circle cx="12" cy="12" r="10" />
+      </svg>
+    </div>
+  );
+};
 
 interface StatsData {
   stats: {
@@ -34,8 +99,43 @@ export default function ArbitragePage() {
   const [data, setData] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [logs, setLogs] = useState<string[]>([]);
-  const logsEndRef = useRef<HTMLDivElement | null>(null);
+
+  // New states for investment card and live routing
+  const [plans, setPlans] = useState<any[]>([]);
+  const [investAmount, setInvestAmount] = useState('');
+  const [investing, setInvesting] = useState(false);
+
+  const [activeTrade, setActiveTrade] = useState<{
+    pair: string;
+    buyExchange: string;
+    sellExchange: string;
+    spread: string;
+    amount: string;
+    profit: string;
+  }>({
+    pair: 'BTC/USDT',
+    buyExchange: 'Binance',
+    sellExchange: 'OKX',
+    spread: '1.84',
+    amount: '0.45',
+    profit: '148.20'
+  });
+
+  const [recentTrades, setRecentTrades] = useState<Array<{
+    timestamp: string;
+    pair: string;
+    buyExchange: string;
+    sellExchange: string;
+    spread: string;
+    amount: string;
+    profit: string;
+    status: string;
+  }>>([
+    { timestamp: new Date(Date.now() - 20000).toLocaleTimeString(), pair: 'ETH/USDT', buyExchange: 'Bitget', sellExchange: 'Bybit', spread: '1.24', amount: '2.50', profit: '75.40', status: 'completed' },
+    { timestamp: new Date(Date.now() - 15000).toLocaleTimeString(), pair: 'SOL/USDT', buyExchange: 'Binance', sellExchange: 'OKX', spread: '2.10', amount: '15.20', profit: '45.10', status: 'completed' },
+    { timestamp: new Date(Date.now() - 10000).toLocaleTimeString(), pair: 'BTC/USDT', buyExchange: 'Bybit', sellExchange: 'Coinbase', spread: '1.45', amount: '0.12', profit: '32.80', status: 'completed' },
+    { timestamp: new Date(Date.now() - 5000).toLocaleTimeString(), pair: 'LINK/USDT', buyExchange: 'Coinbase', sellExchange: 'KuCoin', spread: '1.75', amount: '84.00', profit: '22.30', status: 'completed' },
+  ]);
 
   const fetchData = async () => {
     try {
@@ -51,6 +151,13 @@ export default function ArbitragePage() {
       }
       const json = await res.json();
       setData(json);
+
+      // Fetch plans for investment card
+      const resPlans = await fetch('/api/plans');
+      if (resPlans.ok) {
+        const plansJson = await resPlans.json();
+        setPlans(plansJson.plans || []);
+      }
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'An error occurred while fetching stats');
@@ -100,52 +207,106 @@ export default function ArbitragePage() {
   };
 
   useEffect(() => {
-    // Initial logs for terminal
-    const initialLogs = [
-      `[${new Date(Date.now() - 30000).toLocaleTimeString()}] [SYSTEM] Vexta Arbitrage Router initialized.`,
-      `[${new Date(Date.now() - 25000).toLocaleTimeString()}] [SYSTEM] Connected to Internal Pool Alpha (Depth: $1.2M).`,
-      `[${new Date(Date.now() - 20000).toLocaleTimeString()}] [SYSTEM] Connected to Internal Pool Beta (Depth: $850k).`,
-      `[${new Date(Date.now() - 15000).toLocaleTimeString()}] [SYSTEM] Scanned spread: BTC/USDT @ +1.84%.`,
-      `[${new Date(Date.now() - 10000).toLocaleTimeString()}] [ROUTER] Route locked: Buy Pool Alpha -> Sell Pool Beta.`,
-      `[${new Date(Date.now() - 5000).toLocaleTimeString()}] [TRADE] Executed 0.45 BTC arbitrage. Profit: +$148.20.`,
-    ];
-    setLogs(initialLogs);
-
     const interval = setInterval(() => {
       const pairs = ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'ADA/USDT', 'XRP/USDT', 'LINK/USDT'];
-      const pools = ['Pool Alpha', 'Pool Beta', 'Vault Gamma', 'Vault Delta'];
+      const exchanges = ['Binance', 'Bybit', 'OKX', 'Bitget', 'Coinbase', 'KuCoin'];
       const pair = pairs[Math.floor(Math.random() * pairs.length)];
-      const poolA = pools[Math.floor(Math.random() * pools.length)];
-      let poolB = pools[Math.floor(Math.random() * pools.length)];
-      while (poolA === poolB) {
-        poolB = pools[Math.floor(Math.random() * pools.length)];
+      const buyEx = exchanges[Math.floor(Math.random() * exchanges.length)];
+      let sellEx = exchanges[Math.floor(Math.random() * exchanges.length)];
+      while (buyEx === sellEx) {
+        sellEx = exchanges[Math.floor(Math.random() * exchanges.length)];
       }
       const spread = (Math.random() * 2 + 1).toFixed(2);
       const amount = (Math.random() * 5 + 0.1).toFixed(2);
       const profit = (Math.random() * 200 + 10).toFixed(2);
       const timestamp = new Date().toLocaleTimeString();
 
-      const newLog = [
-        `[${timestamp}] [ROUTER] Scanned spread: ${pair} on ${poolA} & ${poolB} @ +${spread}%`,
-        `[${timestamp}] [TRADE] Executed: buy ${amount} ${pair.split('/')[0]} on ${poolA}, sell on ${poolB}`,
-        `[${timestamp}] [SUCCESS] Arbitrage complete. Net Profit: +$${profit} USD.`,
-      ];
+      const newTrade = {
+        pair,
+        buyExchange: buyEx,
+        sellExchange: sellEx,
+        spread,
+        amount,
+        profit
+      };
 
-      setLogs((prev) => {
-        const updated = [...prev, ...newLog];
-        if (updated.length > 50) {
-          return updated.slice(updated.length - 50);
-        }
-        return updated;
+      setActiveTrade(newTrade);
+
+      setRecentTrades(prev => {
+        const updated = [
+          { timestamp, ...newTrade, status: 'completed' },
+          ...prev
+        ];
+        return updated.slice(0, 4);
       });
     }, 4000);
 
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [logs]);
+  const handleInvest = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const amountNum = parseFloat(investAmount);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      toast({
+        title: 'Validation Error',
+        description: 'Please enter a valid investment amount.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Find matching plan
+    const matching = plans
+      .sort((a, b) => b.minDeposit - a.minDeposit)
+      .find(p => amountNum >= p.minDeposit);
+
+    if (!matching) {
+      toast({
+        title: 'Validation Error',
+        description: 'Amount must be at least $10.00 to match Starter Plan.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const available = data?.stats.availableBalance ?? 0;
+    if (amountNum > available) {
+      toast({
+        title: 'Insufficient Balance',
+        description: `Your available balance is $${available.toFixed(2)}.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setInvesting(true);
+    try {
+      const res = await fetch('/api/investments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId: matching.id, amount: amountNum }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        throw new Error(json.error || 'Failed to activate investment');
+      }
+      toast({
+        title: 'Investment Activated',
+        description: `Successfully activated ${matching.name} with $${amountNum.toFixed(2)}.`,
+      });
+      setInvestAmount('');
+      await fetchData();
+    } catch (err: any) {
+      toast({
+        title: 'Investment Failed',
+        description: err.message || 'An error occurred while creating investment.',
+        variant: 'destructive',
+      });
+    } finally {
+      setInvesting(false);
+    }
+  };
 
   // Compute stats
   const activeCount = data?.stats.activeInvestments ?? 0;
@@ -165,8 +326,28 @@ export default function ArbitragePage() {
     { label: t('arbitrageStat4'), value: avgSpread,             sub: t('arbitrageStat4Sub') },
   ];
 
+  const amountNum = parseFloat(investAmount);
+  const matchingPlan = plans.length > 0 && !isNaN(amountNum)
+    ? plans
+        .slice()
+        .sort((a, b) => b.minDeposit - a.minDeposit)
+        .find(p => amountNum >= p.minDeposit)
+    : null;
+
   return (
     <DashboardLayout>
+      {/* CSS Flow Animation Injection */}
+      <style dangerouslySetInnerHTML={{ __html: `
+        @keyframes flow-right {
+          0% { stroke-dashoffset: 24; }
+          100% { stroke-dashoffset: 0; }
+        }
+        .animate-flow-right {
+          stroke-dasharray: 6 12;
+          animation: flow-right 1.5s linear infinite;
+        }
+      ` }} />
+
       {/* Header */}
       <div className="mb-8">
         <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">{t('arbitrage')}</p>
@@ -247,9 +428,116 @@ export default function ArbitragePage() {
             ))}
           </div>
 
-          {/* Main Content Grid */}
+          {/* Live Arbitrage Routing Panel (Visual flow matching layout) */}
+          <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none mb-6">
+            <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-200/60 dark:border-white/5">
+              <div className="flex items-center gap-2">
+                <Cpu className="w-5 h-5 text-violet-500 dark:text-violet-400" />
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-950 dark:text-white">VEXTA HFT ROUTER ENGINE</h2>
+                  <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">Real-time global exchange liquidity matching</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-[#00FF88] animate-pulse" />
+                <span className="text-[10px] font-mono font-bold text-[#00FF88]">HFT BOT ACTIVE</span>
+              </div>
+            </div>
+
+            {/* Visual routing diagram */}
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6 p-6 bg-slate-50 dark:bg-white/2 rounded-2xl border border-slate-200/50 dark:border-white/5">
+              {/* Buy Exchange Card */}
+              <div className="flex-1 w-full p-4 bg-white dark:bg-[#0A0F14]/80 rounded-xl border border-slate-200/60 dark:border-white/5 text-center flex flex-col items-center justify-center">
+                <span className="text-[9px] font-mono text-green-500 font-bold uppercase tracking-wider mb-2">BUY FROM</span>
+                {getExchangeLogo(activeTrade.buyExchange)}
+                <span className="text-sm font-bold text-slate-900 dark:text-white font-mono mt-2 tracking-wide uppercase">{activeTrade.buyExchange}</span>
+                <span className="text-xs text-slate-400 font-mono mt-1">$63,450.20</span>
+              </div>
+
+              {/* Glowing flow direction arrow paths */}
+              <div className="flex-[1.5] w-full flex flex-col items-center justify-center">
+                <span className="text-[9px] font-mono text-slate-400 mb-1">LIQUIDITY PATH</span>
+                <div className="relative w-full flex items-center justify-center my-1.5">
+                  <svg className="w-full h-8 text-violet-500/20 dark:text-violet-400/20" viewBox="0 0 100 20" preserveAspectRatio="none" fill="none">
+                    <path d="M 0 10 L 100 10" stroke="currentColor" strokeWidth="2" strokeDasharray="3 3" />
+                    <path d="M 0 10 L 100 10" stroke="url(#flow-gradient)" strokeWidth="3" className="animate-flow-right" />
+                    <defs>
+                      <linearGradient id="flow-gradient" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.8" />
+                        <stop offset="50%" stopColor="#00FF88" stopOpacity="1" />
+                        <stop offset="100%" stopColor="#00F0FF" stopOpacity="0.8" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div className="absolute px-3 py-1 bg-violet-600/10 border border-violet-500/30 rounded-full text-[10px] font-bold font-mono text-violet-600 dark:text-violet-400 flex items-center gap-1.5 backdrop-blur-sm">
+                    <span>{activeTrade.pair}</span>
+                    <span className="text-[#00FF88] font-black">+{activeTrade.spread}%</span>
+                  </div>
+                </div>
+                <span className="text-[9px] font-mono text-[#00FF88] mt-1 animate-pulse">MATCHED SPREAD FOUND</span>
+              </div>
+
+              {/* Sell Exchange Card */}
+              <div className="flex-1 w-full p-4 bg-white dark:bg-[#0A0F14]/80 rounded-xl border border-slate-200/60 dark:border-white/5 text-center flex flex-col items-center justify-center">
+                <span className="text-[9px] font-mono text-cyan-500 font-bold uppercase tracking-wider mb-2">SELL TO</span>
+                {getExchangeLogo(activeTrade.sellExchange)}
+                <span className="text-sm font-bold text-slate-900 dark:text-white font-mono mt-2 tracking-wide uppercase">{activeTrade.sellExchange}</span>
+                <span className="text-xs text-slate-400 font-mono mt-1">$64,524.80</span>
+              </div>
+            </div>
+
+            {/* Bottom ticket details */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-200/60 dark:border-white/5 text-left">
+              <div>
+                <p className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase">Trade Volume</p>
+                <p className="text-xs font-bold font-mono text-slate-900 dark:text-white mt-1">{activeTrade.amount} BTC</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase">Execution Fee</p>
+                <p className="text-xs font-bold font-mono text-emerald-500 mt-1">0.00% (Zero Fee)</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase">Gross Spread PnL</p>
+                <p className="text-xs font-bold font-mono text-slate-900 dark:text-white mt-1">+{activeTrade.spread}%</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase">Net Simulated profit</p>
+                <p className="text-xs font-bold font-mono text-[#00FF88] mt-1">+${activeTrade.profit}</p>
+              </div>
+            </div>
+
+            {/* Scrolling Feed of Recent Executed Trades */}
+            <div className="mt-6 pt-6 border-t border-slate-200/60 dark:border-white/5">
+              <p className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase tracking-widest mb-3">Recent Router Executions</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 text-left">
+                {recentTrades.map((t, idx) => (
+                  <div key={idx} className="p-3 bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl flex flex-col justify-between">
+                    <div className="flex justify-between items-center text-[9px] font-mono text-slate-400 mb-2">
+                      <span>{t.timestamp}</span>
+                      <span className="text-emerald-500 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded">SUCCESS</span>
+                    </div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold font-mono text-slate-900 dark:text-white">{t.pair}</span>
+                      <span className="text-[10px] text-green-500 font-bold font-mono">+{t.spread}%</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[9px] text-slate-500 font-mono mb-2">
+                      <span className="font-semibold text-slate-700 dark:text-gray-300">{t.buyExchange}</span>
+                      <ArrowRight className="w-3 h-3 text-slate-400" />
+                      <span className="font-semibold text-slate-700 dark:text-gray-300">{t.sellExchange}</span>
+                    </div>
+                    <div className="flex justify-between items-center pt-2 border-t border-slate-200/40 dark:border-white/5 text-[10px] font-mono">
+                      <span className="text-slate-400">Profit:</span>
+                      <span className="text-[#00FF88] font-bold">+${parseFloat(t.profit).toFixed(2)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Grid Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Positions table */}
+            {/* Left: Positions Table */}
             <div className="lg:col-span-2 bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
@@ -284,7 +572,7 @@ export default function ArbitragePage() {
                     }
 
                     return (
-                      <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-all">
+                      <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-all text-left">
                         <div className="flex items-center gap-3 min-w-0">
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${active ? 'bg-green-500/10' : 'bg-slate-200 dark:bg-white/5'}`}>
                             <TrendingUp className={`w-4 h-4 ${active ? 'text-green-500 dark:text-green-400' : 'text-slate-400 dark:text-gray-500'}`} />
@@ -324,47 +612,105 @@ export default function ArbitragePage() {
               </div>
             </div>
 
-            {/* Live Arbitrage Engine Log Console */}
-            <div className="bg-slate-950 border border-slate-900 rounded-2xl p-5 shadow-sm dark:shadow-none flex flex-col h-[520px] text-[#00FF88]">
-              <div className="flex items-center gap-3 mb-4 border-b border-slate-900 pb-3">
-                <div className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-                  <Terminal className="w-4 h-4 text-green-400" />
+            {/* Right: Invest Capital Card */}
+            <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none flex flex-col text-left justify-between h-full">
+              <div>
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
+                    <Wallet className="w-4 h-4 text-violet-500 dark:text-violet-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-sm font-semibold text-slate-950 dark:text-white">{t('enterAmount') || 'Invest Capital'}</h2>
+                    <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">Deploy funds to arbitrage contracts</p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono">{t('arbitrageConsoleTitle')}</h2>
-                  <p className="text-[9px] text-slate-400 font-mono">{t('arbitrageConsoleSubtitle')}</p>
-                </div>
-                <div className="ml-auto flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-[8px] font-mono text-green-500">MONITOR</span>
-                </div>
-              </div>
 
-              {/* Console log window */}
-              <div className="flex-1 overflow-y-auto font-mono text-[10px] space-y-2 pr-1 custom-scrollbar text-left scroll-smooth">
-                {logs.map((log, index) => {
-                  let colorClass = 'text-green-400';
-                  if (log.includes('[SYSTEM]')) colorClass = 'text-slate-400';
-                  if (log.includes('[SUCCESS]')) colorClass = 'text-emerald-400 font-bold';
-                  if (log.includes('[ROUTER]')) colorClass = 'text-cyan-400';
-                  
-                  return (
-                    <div key={index} className={`${colorClass} leading-relaxed break-all`}>
-                      {log}
+                {/* Balance display */}
+                <div className="p-4 bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl mb-5 flex justify-between items-center">
+                  <div>
+                    <span className="text-[9px] font-mono text-slate-400 dark:text-gray-500 block uppercase">AVAILABLE BALANCE</span>
+                    <span className="text-lg font-bold text-slate-950 dark:text-white font-mono">
+                      ${(data?.stats.availableBalance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  <span className="text-[9px] font-mono text-violet-600 dark:text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-full">USDT</span>
+                </div>
+
+                <form onSubmit={handleInvest} className="space-y-4">
+                  <div>
+                    <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2">Investment Amount (USD)</label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-3 text-slate-400 font-mono text-sm">$</span>
+                      <input
+                        type="number"
+                        step="any"
+                        value={investAmount}
+                        onChange={(e) => setInvestAmount(e.target.value)}
+                        placeholder="0.00"
+                        className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/8 rounded-xl pl-8 pr-4 py-2.5 text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-violet-500/50 focus:bg-white/5 transition-all font-mono"
+                        required
+                        disabled={investing}
+                      />
                     </div>
-                  );
-                })}
-                <div ref={logsEndRef} />
-              </div>
+                    {/* Quick percents */}
+                    <div className="grid grid-cols-4 gap-2 mt-2">
+                      {[0.25, 0.50, 0.75, 1.0].map((pct) => (
+                        <button
+                          key={pct}
+                          type="button"
+                          onClick={() => {
+                            const bal = data?.stats.availableBalance ?? 0;
+                            setInvestAmount((bal * pct).toFixed(2));
+                          }}
+                          className="py-1 text-[9px] font-mono bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 rounded text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-all"
+                        >
+                          {pct === 1.0 ? 'MAX' : `${pct * 100}%`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-              {/* Console footer */}
-              <div className="mt-4 pt-3 border-t border-slate-900 flex items-center justify-between text-[9px] text-slate-500 font-mono">
-                <span className="flex items-center gap-1">
-                  <Shield className="w-3 h-3 text-green-500" /> {t('arbitrageConsoleSecureChannel')}
-                </span>
-                <span className="flex items-center gap-1">
-                  <Cpu className="w-3 h-3 text-cyan-400" /> Vexta OS v1.2
-                </span>
+                  {/* Reactive Plan Info */}
+                  {matchingPlan ? (
+                    <div className="p-4 bg-violet-500/5 border border-violet-500/10 rounded-xl space-y-2.5 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-slate-400 font-mono">Plan Detected:</span>
+                        <span className="font-bold text-violet-600 dark:text-violet-400 font-mono">{matchingPlan.name}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400 font-mono">Daily Yield ROI:</span>
+                        <span className="font-bold text-green-500 dark:text-green-400 font-mono">+{(matchingPlan.dailyROI * 100).toFixed(2)}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-400 font-mono">Contract Period:</span>
+                        <span className="font-bold text-slate-900 dark:text-white font-mono">{matchingPlan.duration} days</span>
+                      </div>
+                      <div className="flex justify-between pt-1.5 border-t border-slate-200/50 dark:border-white/5">
+                        <span className="text-slate-400 font-mono">Projected Total Profit:</span>
+                        <span className="font-bold text-[#00FF88] font-mono">+${((amountNum || 0) * matchingPlan.dailyROI * matchingPlan.duration).toFixed(2)}</span>
+                      </div>
+                    </div>
+                  ) : investAmount && amountNum < 10 ? (
+                    <div className="p-3 bg-red-500/5 border border-red-500/10 rounded-xl text-center">
+                      <span className="text-[10px] font-mono text-red-500">Minimum investment is $10.00 (Starter Plan)</span>
+                    </div>
+                  ) : null}
+
+                  <button
+                    type="submit"
+                    disabled={investing || !matchingPlan}
+                    className="w-full py-3 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-md shadow-violet-600/15"
+                  >
+                    {investing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Processing...</span>
+                      </>
+                    ) : (
+                      <span>Activate Contract</span>
+                    )}
+                  </button>
+                </form>
               </div>
             </div>
           </div>

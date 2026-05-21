@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getUserFromRequest } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { propagateCommissions } from '@/lib/referral-engine';
+import { getAvailableBalance } from '@/lib/balance';
 
 const createSchema = z.object({
   planId: z.string().min(1),
@@ -49,90 +50,75 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Calculate available balance
-    const depositTxns = await prisma.transaction.aggregate({
-      where: {
-        userId: payload.userId,
-        type: 'deposit',
-        description: { not: { contains: 'Investment activated' } }
-      },
-      _sum: { amount: true }
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Lock user document
+      await tx.user.update({
+        where: { id: payload.userId },
+        data: { updatedAt: new Date() }
+      });
+
+      // 2. Calculate available balance inside transaction
+      const availableBalance = await getAvailableBalance(payload.userId, tx);
+
+      if (amount > availableBalance) {
+        throw new Error('INSUFFICIENT_BALANCE');
+      }
+
+      const startDate = new Date();
+      const endDate = new Date();
+      endDate.setDate(endDate.getDate() + plan.duration);
+
+      let bonusAmount = 0;
+      if (amount >= 3000) {
+        bonusAmount = amount * 0.30;
+      } else if (amount >= 1000) {
+        bonusAmount = amount * 0.10;
+      }
+
+      const investment = await tx.investment.create({
+        data: {
+          userId: payload.userId,
+          planId,
+          amount,
+          bonusAmount,
+          startDate,
+          endDate,
+          status: 'active',
+        },
+      });
+
+      // Deposit transaction
+      await tx.transaction.create({
+        data: {
+          userId: payload.userId,
+          type: 'deposit',
+          amount,
+          status: 'completed',
+          description: `Investment activated — ${plan.name}`,
+          reference: investment.id,
+        },
+      });
+
+      // Decrement the user's persisted balance field
+      await tx.user.update({
+        where: { id: payload.userId },
+        data: { balance: { decrement: amount } }
+      });
+
+      // Propagate referral commissions
+      await propagateCommissions(payload.userId, investment.id, amount, tx);
+
+      return investment;
     });
-    const totalDeposits = depositTxns._sum.amount ?? 0;
 
-    const earnedResult = await prisma.investment.aggregate({
-      where: { userId: payload.userId },
-      _sum: { totalEarned: true },
-    });
-    const totalEarned = earnedResult._sum.totalEarned ?? 0;
-
-    const commissionResult = await prisma.commission.aggregate({
-      where: { userId: payload.userId },
-      _sum: { amount: true },
-    });
-    const totalCommissions = commissionResult._sum.amount ?? 0;
-
-    const investmentsResult = await prisma.investment.aggregate({
-      where: { userId: payload.userId },
-      _sum: { amount: true },
-    });
-    const totalInvested = investmentsResult._sum.amount ?? 0;
-
-    const withdrawnResult = await prisma.withdrawal.aggregate({
-      where: { userId: payload.userId, status: { in: ['approved', 'pending'] } },
-      _sum: { amount: true },
-    });
-    const totalWithdrawn = withdrawnResult._sum.amount ?? 0;
-
-    const availableBalance = totalDeposits + totalEarned + totalCommissions - totalInvested - totalWithdrawn;
-
-    if (amount > availableBalance) {
+    return NextResponse.json({ message: 'Investment activated', investment: result }, { status: 201 });
+  } catch (err: any) {
+    if (err.message === 'INSUFFICIENT_BALANCE') {
       return NextResponse.json(
-        { error: `Insufficient available balance to invest. Available: $${availableBalance.toFixed(2)}` },
+        { error: 'Insufficient available balance to invest.' },
         { status: 400 }
       );
     }
-
-    const startDate = new Date();
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + plan.duration);
-
-    let bonusAmount = 0;
-    if (amount >= 3000) {
-      bonusAmount = amount * 0.30;
-    } else if (amount >= 1000) {
-      bonusAmount = amount * 0.10;
-    }
-
-    const investment = await prisma.investment.create({
-      data: {
-        userId: payload.userId,
-        planId,
-        amount,
-        bonusAmount,
-        startDate,
-        endDate,
-        status: 'active',
-      },
-    });
-
-    // Deposit transaction
-    await prisma.transaction.create({
-      data: {
-        userId: payload.userId,
-        type: 'deposit',
-        amount,
-        status: 'completed',
-        description: `Investment activated — ${plan.name}`,
-        reference: investment.id,
-      },
-    });
-
-    // Propagate referral commissions
-    await propagateCommissions(payload.userId, investment.id, amount);
-
-    return NextResponse.json({ message: 'Investment activated', investment }, { status: 201 });
-  } catch (err) {
     console.error('[investments/POST]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

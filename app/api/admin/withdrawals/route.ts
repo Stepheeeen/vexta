@@ -89,61 +89,84 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Withdrawal has already been processed' }, { status: 400 });
     }
 
-    if (action === 'approve') {
-      const netAmount = Number((withdrawal.amount * 0.94).toFixed(2));
-      const fee = Number((withdrawal.amount * 0.06).toFixed(2));
-
-      // 1. Mark withdrawal as approved
-      await prisma.withdrawal.update({
-        where: { id },
-        data: {
-          status: 'approved',
-          processedAt: new Date(),
-        }
-      });
-
-      // 2. Update existing pending transaction to completed
-      await prisma.transaction.updateMany({
-        where: { reference: withdrawal.id },
-        data: {
-          status: 'completed',
-          description: `Withdrawal request processed (${withdrawal.network}) (Net: $${netAmount.toFixed(2)}, Fee: $${fee.toFixed(2)})`
-        }
-      });
-
-      return NextResponse.json({ message: 'Withdrawal approved successfully' });
-    }
-
-    if (action === 'reject') {
-      // 1. Refund the user's balance immediately
-      await prisma.user.update({
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Lock user document
+      await tx.user.update({
         where: { id: withdrawal.userId },
-        data: { balance: { increment: withdrawal.amount } }
+        data: { updatedAt: new Date() }
       });
 
-      // 2. Mark withdrawal as rejected
-      await prisma.withdrawal.update({
-        where: { id },
-        data: {
-          status: 'rejected',
-          processedAt: new Date(),
-        }
+      // 2. Verify pending status inside transaction
+      const currentWithdrawal = await tx.withdrawal.findUnique({
+        where: { id }
       });
 
-      // 3. Mark transaction as failed
-      await prisma.transaction.updateMany({
-        where: { reference: withdrawal.id },
-        data: {
-          status: 'failed',
-          description: `Withdrawal request rejected (${withdrawal.network})`
-        }
-      });
+      if (!currentWithdrawal || currentWithdrawal.status !== 'pending') {
+        throw new Error('ALREADY_PROCESSED');
+      }
 
-      return NextResponse.json({ message: 'Withdrawal rejected successfully' });
+      if (action === 'approve') {
+        const netAmount = Number((currentWithdrawal.amount * 0.94).toFixed(2));
+        const fee = Number((currentWithdrawal.amount * 0.06).toFixed(2));
+
+        // Mark withdrawal as approved
+        await tx.withdrawal.update({
+          where: { id },
+          data: {
+            status: 'approved',
+            processedAt: new Date(),
+          }
+        });
+
+        // Update transaction status
+        await tx.transaction.updateMany({
+          where: { reference: currentWithdrawal.id },
+          data: {
+            status: 'completed',
+            description: `Withdrawal request processed (${currentWithdrawal.network}) (Net: $${netAmount.toFixed(2)}, Fee: $${fee.toFixed(2)})`
+          }
+        });
+
+        return { message: 'Withdrawal approved successfully' };
+      } else if (action === 'reject') {
+        // Refund the user's balance immediately
+        await tx.user.update({
+          where: { id: currentWithdrawal.userId },
+          data: { balance: { increment: currentWithdrawal.amount } }
+        });
+
+        // Mark withdrawal as rejected
+        await tx.withdrawal.update({
+          where: { id },
+          data: {
+            status: 'rejected',
+            processedAt: new Date(),
+          }
+        });
+
+        // Mark transaction as failed
+        await tx.transaction.updateMany({
+          where: { reference: currentWithdrawal.id },
+          data: {
+            status: 'failed',
+            description: `Withdrawal request rejected (${currentWithdrawal.network})`
+          }
+        });
+
+        return { message: 'Withdrawal rejected successfully' };
+      } else {
+        throw new Error('INVALID_ACTION');
+      }
+    });
+
+    return NextResponse.json(result);
+  } catch (err: any) {
+    if (err.message === 'ALREADY_PROCESSED') {
+      return NextResponse.json({ error: 'Withdrawal has already been processed' }, { status: 400 });
     }
-
-    return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
-  } catch (err) {
+    if (err.message === 'INVALID_ACTION') {
+      return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+    }
     console.error('[admin-withdrawals-post]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

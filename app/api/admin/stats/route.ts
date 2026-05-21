@@ -50,21 +50,39 @@ export async function GET(req: NextRequest) {
           select: {
             type: true,
             amount: true,
-            status: true
+            status: true,
+            description: true,
           }
         }
       }
     });
 
     const recentUsers = rawRecentUsers.map(user => {
-      // Calculate dynamic user balance = Deposits + Commissions + ROI - Withdrawals
+      // Calculate dynamic user balance dynamically
       let balance = 0;
       user.transactions.forEach(t => {
-        if (t.status === 'completed' || t.status === 'approved') {
-          if (['deposit', 'commission', 'roi'].includes(t.type)) {
+        if (t.status !== 'failed' && t.status !== 'rejected') {
+          const desc = t.description || '';
+          const isInvestment = t.type === 'deposit' && desc.includes('Investment activated');
+
+          if (t.type === 'deposit' && !isInvestment) {
+            if (t.status === 'completed') {
+              balance += t.amount;
+            }
+          } else if (isInvestment) {
+            balance -= t.amount;
+          } else if (t.type === 'commission' && t.status === 'completed') {
             balance += t.amount;
+          } else if ((t.type === 'roi' || t.type === 'daily_roi') && t.status === 'completed') {
+            balance += t.amount;
+          } else if (t.type === 'p2p_received' && t.status === 'completed') {
+            balance += t.amount;
+          } else if (t.type === 'p2p_sent' && t.status === 'completed') {
+            balance -= t.amount;
           } else if (t.type === 'withdrawal') {
-            balance -= Math.abs(t.amount);
+            if (t.status === 'pending' || t.status === 'completed' || t.status === 'approved') {
+              balance -= Math.abs(t.amount);
+            }
           }
         }
       });
@@ -74,7 +92,7 @@ export async function GET(req: NextRequest) {
         email: user.email,
         joined: user.createdAt.toISOString().split('T')[0],
         status: user.isActive ? 'Active' : 'Suspended',
-        balance: `$${balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+        balance: `$${Math.max(0, balance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
       };
     });
 

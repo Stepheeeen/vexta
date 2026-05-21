@@ -6,19 +6,19 @@
 import { prisma } from './prisma';
 
 export const COMMISSION_RATES: Record<number, number> = {
-  1: 0.10,  // 10% — Direct referral
-  2: 0.05,  // 5%  — Level 2
-  3: 0.03,  // 3%  — Level 3
-  4: 0.02,  // 2%  — Level 4
-  5: 0.015, // 1.5% — Level 5
-  6: 0.015, // 1.5% — Level 6
-  7: 0.01,  // 1%   — Level 7
-  8: 0.01,  // 1%   — Level 8
-  9: 0.01,  // 1%   — Level 9
-  10: 0.01, // 1%   — Level 10
-  11: 0.01, // 1%   — Level 11
-  12: 0.01, // 1%   — Level 12
-  13: 0.01, // 1%   — Level 13
+  1: 0.10,   // 10%
+  2: 0.06,   // 6%
+  3: 0.03,   // 3%
+  4: 0.02,   // 2%
+  5: 0.02,   // 2%
+  6: 0.01,   // 1%
+  7: 0.01,   // 1%
+  8: 0.0025, // 0.25%
+  9: 0.0025, // 0.25%
+  10: 0.0025,// 0.25%
+  11: 0.0025,// 0.25%
+  12: 0.0025,// 0.25%
+  13: 0.0025,// 0.25%
 };
 
 export const MAX_LEVELS = 13;
@@ -32,15 +32,17 @@ export const MAX_LEVELS = 13;
 export async function propagateCommissions(
   investorId: string,
   investmentId: string,
-  investmentAmount: number
+  investmentAmount: number,
+  tx?: any
 ): Promise<{ level: number; recipientId: string; amount: number }[]> {
   const results: { level: number; recipientId: string; amount: number }[] = [];
+  const client = tx || prisma;
 
   let currentUserId = investorId;
 
   for (let level = 1; level <= MAX_LEVELS; level++) {
     // Find who referred the current user
-    const link = await prisma.referralLink.findUnique({
+    const link = await client.referralLink.findUnique({
       where: { referredId: currentUserId },
     });
 
@@ -50,7 +52,7 @@ export async function propagateCommissions(
     const amount = +(investmentAmount * rate).toFixed(2);
 
     // Record commission
-    await prisma.commission.create({
+    await client.commission.create({
       data: {
         userId: link.referrerId,
         sourceUserId: investorId,
@@ -62,7 +64,7 @@ export async function propagateCommissions(
     });
 
     // Record transaction for recipient
-    await prisma.transaction.create({
+    await client.transaction.create({
       data: {
         userId: link.referrerId,
         type: 'commission',
@@ -71,6 +73,15 @@ export async function propagateCommissions(
         description: `Level ${level} referral commission`,
         reference: investmentId,
         metadata: JSON.stringify({ level, sourceUserId: investorId, rate }),
+      },
+    });
+
+    // Update referrer's User.balance and User.totalCommission fields
+    await client.user.update({
+      where: { id: link.referrerId },
+      data: {
+        balance: { increment: amount },
+        totalCommission: { increment: amount },
       },
     });
 

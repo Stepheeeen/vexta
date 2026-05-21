@@ -6,17 +6,18 @@ import { prisma } from '../../lib/prisma';
  * @param depositUserId The ID of the user who made the deposit
  * @param depositAmount The amount of the deposit
  */
-export async function distributeUnilevelCommission(depositUserId: string, depositAmount: number): Promise<void> {
+export async function distributeUnilevelCommission(depositUserId: string, depositAmount: number, tx?: any): Promise<void> {
   console.log(`[UNILEVEL] Starting commission distribution for user ${depositUserId}, amount: ${depositAmount}`);
+  const client = tx || prisma;
 
   const rates = [
-    0.08, 0.04, 0.02, 0.01, 0.01,         // L1 - L5
-    0.005, 0.005, 0.005, 0.005, 0.005,    // L6 - L10
-    0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.0025 // L11 - L16
+    0.10, 0.06, 0.03, 0.02, 0.02,         // L1 - L5
+    0.01, 0.01,                           // L6 - L7
+    0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.0025 // L8 - L13
   ];
 
   // 1. Fetch the depositing user to get the upline ID
-  const depositor = await prisma.user.findUnique({
+  const depositor = await client.user.findUnique({
     where: { id: depositUserId },
     select: { uplineId: true, email: true }
   });
@@ -40,7 +41,7 @@ export async function distributeUnilevelCommission(depositUserId: string, deposi
 
     try {
       // Find the upline user details
-      const uplineUser = await prisma.user.findUnique({
+      const uplineUser = await client.user.findUnique({
         where: { id: currentUplineId },
         select: { id: true, firstName: true, lastName: true, email: true, uplineId: true }
       });
@@ -53,7 +54,7 @@ export async function distributeUnilevelCommission(depositUserId: string, deposi
 
       if (commissionAmount > 0) {
         // Increment upline balance and totalCommission
-        await prisma.user.update({
+        await client.user.update({
           where: { id: uplineUser.id },
           data: {
             balance: { increment: commissionAmount },
@@ -62,7 +63,7 @@ export async function distributeUnilevelCommission(depositUserId: string, deposi
         });
 
         // Create transaction history
-        await prisma.transaction.create({
+        await client.transaction.create({
           data: {
             userId: uplineUser.id,
             type: 'commission',

@@ -81,8 +81,7 @@ export async function POST(req: NextRequest) {
     }
 
     const txn = await prisma.transaction.findUnique({
-      where: { id },
-      include: { user: true }
+      where: { id }
     });
 
     if (!txn || txn.type !== 'deposit') {
@@ -94,41 +93,76 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === 'approve') {
-      await prisma.transaction.update({
-        where: { id },
-        data: {
-          status: 'completed',
-          description: txn.description ? txn.description.replace('Pending', 'Approved') : 'Approved Deposit'
-        }
-      });
+      await prisma.$transaction(async (tx) => {
+        // 1. Lock user document
+        await tx.user.update({
+          where: { id: txn.userId },
+          data: { updatedAt: new Date() }
+        });
 
-      await prisma.user.update({
-        where: { id: txn.userId },
-        data: {
-          balance: { increment: txn.amount },
-          activeDeposit: { increment: txn.amount },
-        }
-      });
+        // 2. Verify pending status inside transaction
+        const currentTxn = await tx.transaction.findUnique({
+          where: { id }
+        });
 
-      await distributeUnilevelCommission(txn.userId, txn.amount);
+        if (!currentTxn || currentTxn.status !== 'pending') {
+          throw new Error('ALREADY_PROCESSED');
+        }
+
+        // 3. Mark transaction as completed
+        await tx.transaction.update({
+          where: { id },
+          data: {
+            status: 'completed',
+            description: currentTxn.description ? currentTxn.description.replace('Pending', 'Approved') : 'Approved Deposit'
+          }
+        });
+
+        // 4. Update user balance & activeDeposit
+        await tx.user.update({
+          where: { id: currentTxn.userId },
+          data: {
+            balance: { increment: currentTxn.amount },
+            activeDeposit: { increment: currentTxn.amount },
+          }
+        });
+
+        // 5. Distribute unilevel commission
+        await distributeUnilevelCommission(currentTxn.userId, currentTxn.amount, tx);
+      });
 
       return NextResponse.json({ message: 'Deposit approved successfully' });
     }
 
     if (action === 'reject') {
-      await prisma.transaction.update({
-        where: { id },
-        data: {
-          status: 'failed',
-          description: txn.description ? txn.description.replace('Pending', 'Rejected') : 'Rejected Deposit'
+      await prisma.$transaction(async (tx) => {
+        // 1. Verify pending status inside transaction
+        const currentTxn = await tx.transaction.findUnique({
+          where: { id }
+        });
+
+        if (!currentTxn || currentTxn.status !== 'pending') {
+          throw new Error('ALREADY_PROCESSED');
         }
+
+        // 2. Mark transaction as failed
+        await tx.transaction.update({
+          where: { id },
+          data: {
+            status: 'failed',
+            description: currentTxn.description ? currentTxn.description.replace('Pending', 'Rejected') : 'Rejected Deposit'
+          }
+        });
       });
 
       return NextResponse.json({ message: 'Deposit rejected successfully' });
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
-  } catch (err) {
+  } catch (err: any) {
+    if (err.message === 'ALREADY_PROCESSED') {
+      return NextResponse.json({ error: 'Deposit has already been processed' }, { status: 400 });
+    }
     console.error('[admin-deposits-post]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

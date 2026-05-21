@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { getAvailableBalance } from '@/lib/balance';
 
 const schema = z.object({
   amount:        z.number().positive().min(5, 'Minimum withdrawal is $5'),
@@ -45,79 +46,64 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Calculate available balance
-    const depositTxns = await prisma.transaction.aggregate({
-      where: {
-        userId: payload.userId,
-        type: 'deposit',
-        description: { not: { contains: 'Investment activated' } }
-      },
-      _sum: { amount: true }
+    const result = await prisma.$transaction(async (tx) => {
+      // 1. Lock user document
+      await tx.user.update({
+        where: { id: payload.userId },
+        data: { updatedAt: new Date() }
+      });
+
+      // 2. Calculate available balance inside transaction
+      const available = await getAvailableBalance(payload.userId, tx);
+
+      if (amount > available) {
+        throw new Error('INSUFFICIENT_BALANCE');
+      }
+
+      const feeRate = settings ? settings.withdrawalFee / 100 : 0.06;
+      const fee = Number((amount * feeRate).toFixed(2));
+      const netAmount = Number((amount - fee).toFixed(2));
+
+      // 3. Decrement user's persisted balance field
+      await tx.user.update({
+        where: { id: payload.userId },
+        data: { balance: { decrement: amount } }
+      });
+
+      const withdrawal = await tx.withdrawal.create({
+        data: { 
+          userId: payload.userId, 
+          amount, 
+          walletAddress, 
+          network, 
+          status: 'pending',
+          note: `${(feeRate * 100).toFixed(0)}% fee: $${fee.toFixed(2)} | Net payout: $${netAmount.toFixed(2)}`
+        },
+      });
+
+      // 4. Record outgoing transaction
+      await tx.transaction.create({
+        data: {
+          userId: payload.userId,
+          type: 'withdrawal',
+          amount: -amount,
+          status: 'pending',
+          description: `Withdrawal request — ${network} (Net: $${netAmount.toFixed(2)}, Fee: $${fee.toFixed(2)})`,
+          reference: withdrawal.id,
+        },
+      });
+
+      return withdrawal;
     });
-    const totalDeposits = depositTxns._sum.amount ?? 0;
 
-    const investments = await prisma.investment.findMany({
-      where: { userId: payload.userId },
-    });
-    const totalInvested = investments.reduce((s, i) => s + i.amount, 0);
-    const totalEarned = investments.reduce((s, i) => s + i.totalEarned, 0);
-
-    const commissionResult = await prisma.commission.aggregate({
-      where: { userId: payload.userId },
-      _sum: { amount: true },
-    });
-    const totalCommissions = commissionResult._sum.amount ?? 0;
-
-    const withdrawnResult = await prisma.withdrawal.aggregate({
-      where: { userId: payload.userId, status: { in: ['approved', 'pending'] } },
-      _sum: { amount: true },
-    });
-    const totalWithdrawn = withdrawnResult._sum.amount ?? 0;
-
-    const available = +(totalDeposits + totalEarned + totalCommissions - totalInvested - totalWithdrawn).toFixed(2);
-
-    if (amount > available) {
+    return NextResponse.json({ message: 'Withdrawal request submitted', withdrawal: result }, { status: 201 });
+  } catch (err: any) {
+    if (err.message === 'INSUFFICIENT_BALANCE') {
       return NextResponse.json(
-        { error: `Insufficient balance. Available: $${available.toFixed(2)}` },
+        { error: 'Insufficient balance.' },
         { status: 400 }
       );
     }
-
-    const feeRate = settings ? settings.withdrawalFee / 100 : 0.06;
-    const fee = Number((amount * feeRate).toFixed(2));
-    const netAmount = Number((amount - fee).toFixed(2));
-
-    // Decrement user's persisted balance field immediately to avoid double-spend
-    await prisma.user.update({
-      where: { id: payload.userId },
-      data: { balance: { decrement: amount } }
-    });
-
-    const withdrawal = await prisma.withdrawal.create({
-      data: { 
-        userId: payload.userId, 
-        amount, 
-        walletAddress, 
-        network, 
-        status: 'pending',
-        note: `${(feeRate * 100).toFixed(0)}% fee: $${fee.toFixed(2)} | Net payout: $${netAmount.toFixed(2)}`
-      },
-    });
-
-    // Record outgoing transaction
-    await prisma.transaction.create({
-      data: {
-        userId: payload.userId,
-        type: 'withdrawal',
-        amount: -amount,
-        status: 'pending',
-        description: `Withdrawal request — ${network} (Net: $${netAmount.toFixed(2)}, Fee: $${fee.toFixed(2)})`,
-        reference: withdrawal.id,
-      },
-    });
-
-    return NextResponse.json({ message: 'Withdrawal request submitted', withdrawal }, { status: 201 });
-  } catch (err) {
     console.error('[withdrawals/POST]', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
