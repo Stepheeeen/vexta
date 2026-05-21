@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Menu, X, Bell, LogOut, Check, Globe } from 'lucide-react';
 import { VextaLogo } from '@/components/vexta-logo';
-import { useTranslation } from '@/components/translation-provider';
+import { useTranslation, Language } from '@/components/translation-provider';
 import { useRouter, usePathname } from 'next/navigation';
 
 export function Navbar() {
@@ -34,7 +34,7 @@ export function Navbar() {
     { label: t('handoverTitle'), href: '/handover', external: true },
   ];
 
-  const flags = {
+  const flags: Record<string, string> = {
     en: '🇺🇸',
     es: '🇪🇸',
     vi: '🇻🇳',
@@ -42,14 +42,9 @@ export function Navbar() {
     pt: '🇵🇹',
     ko: '🇰🇷',
     fr: '🇫🇷',
-    zh: '🇨🇳',
-    ar: '🇸🇦',
-    ru: '🇷🇺',
-    hi: '🇮🇳',
-    de: '🇩🇪'
   };
 
-  const langNames = {
+  const langNames: Record<string, string> = {
     en: 'English',
     es: 'Español',
     vi: 'Tiếng Việt',
@@ -57,11 +52,6 @@ export function Navbar() {
     pt: 'Português',
     ko: '한국어',
     fr: 'Français',
-    zh: '简体中文',
-    ar: 'العربية',
-    ru: 'Русский',
-    hi: 'हिन्दी',
-    de: 'Deutsch'
   };
 
   const markAllRead = () => {
@@ -145,9 +135,9 @@ export function Navbar() {
     fetchSession();
   }, []);
 
-  // Click outside to close dropdowns
+  // Click/touch outside to close dropdowns
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    function handleOutside(event: Event) {
       if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
         setShowNotif(false);
       }
@@ -155,8 +145,8 @@ export function Navbar() {
         setShowLang(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('pointerdown', handleOutside);
+    return () => document.removeEventListener('pointerdown', handleOutside);
   }, []);
 
   const handleLogout = async () => {
@@ -245,6 +235,7 @@ export function Navbar() {
             {/* Language Switcher */}
             <div className="relative" ref={langRef}>
               <button
+                type="button"
                 onClick={() => setShowLang(!showLang)}
                 className={`transition-all flex items-center justify-center cursor-pointer animate-fade-in ${
                   scrolled ? 'text-slate-300 hover:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
@@ -256,8 +247,9 @@ export function Navbar() {
               {showLang && (
                 <div className="absolute right-0 top-8 w-40 bg-white dark:bg-[#0f141c] border border-slate-200 dark:border-white/5 rounded-xl shadow-xl z-50 overflow-hidden font-sans">
                   <div className="py-1">
-                    {(Object.keys(flags) as Array<keyof typeof flags>).map((lang) => (
+                    {(Object.keys(flags) as Array<Language>).map((lang) => (
                       <button
+                        type="button"
                         key={lang}
                         onClick={() => {
                           setLanguage(lang);
@@ -415,6 +407,7 @@ export function Navbar() {
             {/* Mobile Language selector */}
             <div className="relative">
               <button
+                type="button"
                 onClick={() => setShowLang(!showLang)}
                 className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-slate-300 bg-white/5 border border-slate-800 dark:border-white/5 rounded-xl hover:bg-white/10 transition-all"
               >
@@ -426,8 +419,9 @@ export function Navbar() {
               </button>
               {showLang && (
                 <div className="mt-1 border border-slate-800 dark:border-white/5 rounded-xl overflow-hidden bg-slate-900 shadow-md max-h-48 overflow-y-auto">
-                  {(Object.keys(flags) as Array<keyof typeof flags>).map((lang) => (
+                  {(Object.keys(flags) as Array<Language>).map((lang) => (
                     <button
+                      type="button"
                       key={lang}
                       onClick={() => {
                         setLanguage(lang);

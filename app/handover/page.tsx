@@ -18,7 +18,7 @@ import { handoverTranslations } from './handover-translations';
 const card = 'bg-white dark:bg-white/3 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl p-6 mb-6 shadow-sm';
 
 /* ─── code block ─── */
-const codeBlock = 'bg-slate-900 text-emerald-400 rounded-xl p-4 font-mono text-xs leading-relaxed border border-white/5 overflow-x-auto';
+const codeBlock = 'bg-slate-900 text-emerald-400 rounded-xl p-4 font-mono text-xs leading-relaxed border border-white/5 overflow-x-auto w-full max-w-full';
 
 /* ─── Inline code ─── */
 function IC({ children }: { children: React.ReactNode }) {
@@ -268,7 +268,7 @@ export default function HandoverPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F14]">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0A0F14] overflow-x-hidden">
       {/* Shared landing navbar */}
       <Navbar />
 

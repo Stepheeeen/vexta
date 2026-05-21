@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslation, Language } from '@/components/translation-provider';
 import { Check } from 'lucide-react';
 
-const flags = {
+const flags: Record<string, string> = {
   en: '🇺🇸',
   es: '🇪🇸',
   vi: '🇻🇳',
@@ -12,14 +12,9 @@ const flags = {
   pt: '🇵🇹',
   ko: '🇰🇷',
   fr: '🇫🇷',
-  zh: '🇨🇳',
-  ar: '🇸🇦',
-  ru: '🇷🇺',
-  hi: '🇮🇳',
-  de: '🇩🇪'
 };
 
-const langNames = {
+const langNames: Record<string, string> = {
   en: 'English',
   es: 'Español',
   vi: 'Tiếng Việt',
@@ -27,11 +22,6 @@ const langNames = {
   pt: 'Português',
   ko: '한국어',
   fr: 'Français',
-  zh: '简体中文',
-  ar: 'العربية',
-  ru: 'Русский',
-  hi: 'हिन्दी',
-  de: 'Deutsch'
 };
 
 export function LanguageSwitcher() {
@@ -40,18 +30,19 @@ export function LanguageSwitcher() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+    function handleOutside(event: Event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('pointerdown', handleOutside);
+    return () => document.removeEventListener('pointerdown', handleOutside);
   }, []);
 
   return (
     <div className="fixed top-6 right-6 z-50" ref={dropdownRef}>
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/80 dark:bg-[#1A1F2E]/80 border border-slate-200 dark:border-[#00D9FF]/30 backdrop-blur-md shadow-sm text-slate-700 dark:text-white hover:bg-slate-50 dark:hover:bg-[#1A1F2E] transition-all text-xs font-mono"
         title="Select Language"
@@ -65,6 +56,7 @@ export function LanguageSwitcher() {
           <div className="py-1">
             {(Object.keys(flags) as Array<Language>).map((lang) => (
               <button
+                type="button"
                 key={lang}
                 onClick={() => {
                   setLanguage(lang);
