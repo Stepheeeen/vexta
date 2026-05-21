@@ -100,6 +100,10 @@ export default function ArbitragePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Terminal Console Logs state
+  const [logs, setLogs] = useState<string[]>([]);
+  const logsEndRef = useRef<HTMLDivElement | null>(null);
+
   // New states for investment card and live routing
   const [plans, setPlans] = useState<any[]>([]);
   const [investAmount, setInvestAmount] = useState('');
@@ -168,6 +172,17 @@ export default function ArbitragePage() {
 
   useEffect(() => {
     fetchData();
+
+    // Initial logs for terminal
+    const initialLogs = [
+      `[${new Date(Date.now() - 30000).toLocaleTimeString()}] [SYSTEM] Vexta Arbitrage Router initialized.`,
+      `[${new Date(Date.now() - 25000).toLocaleTimeString()}] [SYSTEM] Connected to Internal Pool Alpha (Depth: $1.2M).`,
+      `[${new Date(Date.now() - 20000).toLocaleTimeString()}] [SYSTEM] Connected to Internal Pool Beta (Depth: $850k).`,
+      `[${new Date(Date.now() - 15000).toLocaleTimeString()}] [SYSTEM] Scanned spread: BTC/USDT @ +1.84%.`,
+      `[${new Date(Date.now() - 10000).toLocaleTimeString()}] [ROUTER] Route locked: Buy Pool Alpha -> Sell Pool Beta.`,
+      `[${new Date(Date.now() - 5000).toLocaleTimeString()}] [TRADE] Executed 0.45 BTC arbitrage. Profit: +$148.20.`,
+    ];
+    setLogs(initialLogs);
   }, []);
 
   const [simulating, setSimulating] = useState(false);
@@ -232,6 +247,23 @@ export default function ArbitragePage() {
 
       setActiveTrade(newTrade);
 
+      const poolA = ['Pool Alpha', 'Vault Gamma'][Math.floor(Math.random() * 2)];
+      const poolB = ['Pool Beta', 'Vault Delta'][Math.floor(Math.random() * 2)];
+
+      const newLog = [
+        `[${timestamp}] [ROUTER] Scanned spread: ${pair} on ${poolA} & ${poolB} @ +${spread}%`,
+        `[${timestamp}] [TRADE] Executed: buy ${amount} ${pair.split('/')[0]} on ${poolA}, sell on ${poolB}`,
+        `[${timestamp}] [SUCCESS] Arbitrage complete. Net Profit: +$${profit} USD.`,
+      ];
+
+      setLogs((prev) => {
+        const updated = [...prev, ...newLog];
+        if (updated.length > 50) {
+          return updated.slice(updated.length - 50);
+        }
+        return updated;
+      });
+
       setRecentTrades(prev => {
         const updated = [
           { timestamp, ...newTrade, status: 'completed' },
@@ -243,6 +275,10 @@ export default function ArbitragePage() {
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [logs]);
 
   const handleInvest = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -612,8 +648,10 @@ export default function ArbitragePage() {
               </div>
             </div>
 
-            {/* Right: Invest Capital Card */}
-            <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none flex flex-col text-left justify-between h-full">
+            {/* Right: Stacked Invest Card and Terminal */}
+            <div className="space-y-6">
+              {/* Invest Capital Card */}
+              <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none flex flex-col text-left">
               <div>
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
@@ -712,7 +750,52 @@ export default function ArbitragePage() {
                   </button>
                 </form>
               </div>
+
+              {/* Live Arbitrage Engine Log Console */}
+              <div className="bg-slate-950 border border-slate-900 rounded-2xl p-5 shadow-sm dark:shadow-none flex flex-col h-[400px] text-[#00FF88]">
+                <div className="flex items-center gap-3 mb-4 border-b border-slate-900 pb-3">
+                  <div className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                    <Terminal className="w-4 h-4 text-green-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono">{t('arbitrageConsoleTitle') || 'LIVE ARBITRAGE ENGINE'}</h2>
+                    <p className="text-[9px] text-slate-400 font-mono">{t('arbitrageConsoleSubtitle') || 'Monitoring active pairs'}</p>
+                  </div>
+                  <div className="ml-auto flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                    <span className="text-[8px] font-mono text-green-500">MONITOR</span>
+                  </div>
+                </div>
+
+                {/* Console log window */}
+                <div className="flex-1 overflow-y-auto font-mono text-[10px] space-y-2 pr-1 custom-scrollbar text-left scroll-smooth">
+                  {logs.map((log, index) => {
+                    let colorClass = 'text-green-400';
+                    if (log.includes('[SYSTEM]')) colorClass = 'text-slate-400';
+                    if (log.includes('[SUCCESS]')) colorClass = 'text-emerald-400 font-bold';
+                    if (log.includes('[ROUTER]')) colorClass = 'text-cyan-400';
+                    
+                    return (
+                      <div key={index} className={`${colorClass} leading-relaxed break-all`}>
+                        {log}
+                      </div>
+                    );
+                  })}
+                  <div ref={logsEndRef} />
+                </div>
+
+                {/* Console footer */}
+                <div className="mt-4 pt-3 border-t border-slate-900 flex items-center justify-between text-[9px] text-slate-500 font-mono">
+                  <span className="flex items-center gap-1">
+                    <Shield className="w-3 h-3 text-green-500" /> {t('arbitrageConsoleSecureChannel') || 'Encrypted connection'}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Cpu className="w-3 h-3 text-cyan-400" /> Vexta OS v1.2
+                  </span>
+                </div>
+              </div>
             </div>
+          </div>
           </div>
         </>
       )}
