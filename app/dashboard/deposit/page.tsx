@@ -421,14 +421,13 @@ export default function DepositPage() {
             {plans.length === 0 ? (
               <p className="text-sm text-slate-400 dark:text-gray-500 font-mono">No plans configured.</p>
             ) : (
-              <div className="flex justify-center md:justify-start w-full">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
                 {plans.map(plan => (
-                  <div key={plan.id} className="w-full max-w-sm">
-                    <PlanCard
-                      plan={plan}
-                      onSelect={(minAmt) => setAmount(String(minAmt))}
-                    />
-                  </div>
+                  <PlanCard
+                    key={plan.id}
+                    plan={plan}
+                    onSelect={(minAmt) => setAmount(String(minAmt))}
+                  />
                 ))}
               </div>
             )}

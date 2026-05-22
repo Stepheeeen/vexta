@@ -222,19 +222,9 @@ export default function PortfolioPage() {
               {data && data.investments.length > 0 ? (
                 data.investments.map((plan, idx) => {
                   const active = plan.status === 'active';
-                  const start = new Date(plan.startDate).getTime();
-                  const end = new Date(plan.endDate).getTime();
-                  const now = new Date().getTime();
-                  const totalDuration = end - start;
-                  const elapsed = now - start;
-                  
-                  let progress = 100;
-                  if (active && totalDuration > 0) {
-                    progress = Math.min(100, Math.max(0, Math.round((elapsed / totalDuration) * 100)));
-                  }
-                  
-                  const daysLeft = active
-                    ? Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)))
+                  const targetReturn = plan.amount * 3;
+                  const progress = targetReturn > 0
+                    ? Math.min(100, Math.max(0, Math.round((plan.totalEarned / targetReturn) * 100)))
                     : 0;
 
                   return (
@@ -260,7 +250,7 @@ export default function PortfolioPage() {
                         {[
                           { label: t('portfolioDeposited'), value: `$${plan.amount.toLocaleString()}` },
                           { label: t('portfolioEarned'),    value: `$${plan.totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, green: true },
-                          { label: t('portfolioDaysLeft'), value: active ? `${daysLeft}d` : t('portfolioCompleted') },
+                          { label: t('portfolioTargetReturn'), value: `$${targetReturn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` },
                         ].map(({ label, value, green }) => (
                           <div key={label}>
                             <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono mb-1">{label}</p>
