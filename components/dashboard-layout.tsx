@@ -90,7 +90,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { href: '/dashboard/settings',   icon: Settings,       labelKey: 'settings'  },
   ];
 
-  const navItems = [...coreNavItems, ...extraNavItems];
+  const navItems = [
+    ...coreNavItems,
+    ...extraNavItems.filter(item => item.labelKey !== 'materials' && item.labelKey !== 'settings')
+  ];
 
   // Close dropdown on click outside
   useEffect(() => {
