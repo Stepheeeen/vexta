@@ -76,12 +76,8 @@ function PlanCard({ plan, onSelect }: { plan: Plan; onSelect: (amount: number) =
           <span className="font-bold text-emerald-500">{(plan.dailyROI * 100).toFixed(1)}% / day</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-slate-500 dark:text-gray-400">Duration</span>
-          <span className="font-semibold text-slate-800 dark:text-white">{plan.duration} days</span>
-        </div>
-        <div className="flex justify-between">
           <span className="text-slate-500 dark:text-gray-400">Total ROI</span>
-          <span className="font-bold text-emerald-400">{(plan.dailyROI * plan.duration * 100).toFixed(0)}%</span>
+          <span className="font-bold text-emerald-400">300%</span>
         </div>
         <div className="flex justify-between border-t border-white/5 pt-2.5">
           <span className="text-slate-500 dark:text-gray-400">Min. Deposit</span>
@@ -425,13 +421,14 @@ export default function DepositPage() {
             {plans.length === 0 ? (
               <p className="text-sm text-slate-400 dark:text-gray-500 font-mono">No plans configured.</p>
             ) : (
-              <div className="grid md:grid-cols-3 gap-5">
+              <div className="flex justify-center md:justify-start w-full">
                 {plans.map(plan => (
-                  <PlanCard
-                    key={plan.id}
-                    plan={plan}
-                    onSelect={(minAmt) => setAmount(String(minAmt))}
-                  />
+                  <div key={plan.id} className="w-full max-w-sm">
+                    <PlanCard
+                      plan={plan}
+                      onSelect={(minAmt) => setAmount(String(minAmt))}
+                    />
+                  </div>
                 ))}
               </div>
             )}

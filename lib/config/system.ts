@@ -30,8 +30,6 @@ export const SYSTEM_CONFIG = {
     ],
   },
   plans: {
-    STARTER: { minDeposit: 10, dailyROI: 0.010, duration: 30, name: 'STARTER PLAN', tag: 'STARTER PLAN' },
-    PRIME: { minDeposit: 1000, dailyROI: 0.010, duration: 45, name: 'PRIME PLAN', tag: 'PRIME PLAN' },
-    ULTRA: { minDeposit: 3000, dailyROI: 0.010, duration: 60, name: 'ULTRA PLAN', tag: 'ULTRA PLAN' },
+    STARTER: { minDeposit: 10, dailyROI: 0.010, duration: 9999, name: 'STARTER PLAN', tag: 'STARTER PLAN' },
   }
 };

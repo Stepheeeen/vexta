@@ -28,19 +28,19 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === 'arbitrage') {
-      // Find or upsert PRIME PLAN (Popular)
+      // Find or upsert STARTER PLAN
       let plan = await prisma.plan.findFirst({
-        where: { name: 'PRIME PLAN' },
+        where: { name: 'STARTER PLAN' },
       });
 
       if (!plan) {
         plan = await prisma.plan.create({
           data: {
-            name: 'PRIME PLAN',
-            tag: 'PRIME PLAN',
-            minDeposit: 1000,
+            name: 'STARTER PLAN',
+            tag: 'STARTER PLAN',
+            minDeposit: 10,
             dailyROI: 0.01,
-            duration: 45,
+            duration: 9999,
           },
         });
       }
@@ -82,14 +82,14 @@ export async function POST(req: NextRequest) {
           type: 'deposit',
           amount: 2000.00,
           status: 'completed',
-          description: 'Investment activated — PRIME PLAN',
+          description: 'Investment activated — STARTER PLAN',
           reference: investment.id,
         },
       });
 
       return NextResponse.json({
         success: true,
-        message: 'Demo Arbitrage PRIME PLAN ($2,000 position) activated successfully!',
+        message: 'Demo Arbitrage STARTER PLAN ($2,000 position) activated successfully!',
         investment,
         transactionDeposit,
         transactionInvest,
@@ -105,17 +105,17 @@ export async function POST(req: NextRequest) {
 
       if (!investment) {
         let plan = await prisma.plan.findFirst({
-          where: { name: 'PRIME PLAN' },
+          where: { name: 'STARTER PLAN' },
         });
 
         if (!plan) {
           plan = await prisma.plan.create({
             data: {
-              name: 'PRIME PLAN',
-              tag: 'PRIME PLAN',
-              minDeposit: 1000,
+              name: 'STARTER PLAN',
+              tag: 'STARTER PLAN',
+              minDeposit: 10,
               dailyROI: 0.01,
-              duration: 45,
+              duration: 9999,
             },
           });
         }

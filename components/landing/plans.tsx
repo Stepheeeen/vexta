@@ -14,36 +14,11 @@ export function InvestmentPlans() {
       tag: 'STARTER PLAN',
       minDeposit: '$10',
       dailyROI: '1.0%',
-      duration: t('plansDuration30'),
-      totalReturn: '30%',
-      featured: false,
-      color: 'border-slate-200/80 hover:border-violet-500/30 hover:shadow-lg hover:shadow-slate-100/50',
-      badgeColor: 'bg-slate-100 text-slate-600',
-      descriptionKey: 'planADesc',
-    },
-    {
-      name: 'PRIME PLAN',
-      tag: 'PRIME PLAN',
-      minDeposit: '$1,000',
-      dailyROI: '1.0%',
-      duration: t('plansDuration45'),
-      totalReturn: '45%',
+      totalReturn: '300%',
       featured: true,
       color: 'border-violet-500/30 hover:border-violet-500/60 hover:shadow-lg hover:shadow-violet-500/5',
       badgeColor: 'bg-violet-100 text-violet-600',
-      descriptionKey: 'planBDesc',
-    },
-    {
-      name: 'ULTRA PLAN',
-      tag: 'ULTRA PLAN',
-      minDeposit: '$3,000',
-      dailyROI: '1.0%',
-      duration: t('plansDuration60'),
-      totalReturn: '60%',
-      featured: false,
-      color: 'border-slate-200/80 hover:border-blue-500/30 hover:shadow-lg hover:shadow-slate-100/50',
-      badgeColor: 'bg-blue-50 text-blue-600',
-      descriptionKey: 'planCDesc',
+      descriptionKey: 'planADesc',
     },
   ];
   return (
@@ -61,11 +36,11 @@ export function InvestmentPlans() {
         </div>
 
         {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="flex justify-center">
           {plans.map((plan) => (
             <div
               key={plan.name}
-              className={`relative flex flex-col rounded-2xl border bg-white p-8 transition-all duration-300 group shadow-sm shadow-slate-100/50 ${plan.color} ${
+              className={`relative flex flex-col rounded-2xl border bg-white p-8 transition-all duration-300 group shadow-sm shadow-slate-100/50 max-w-md w-full ${plan.color} ${
                 plan.featured ? 'scale-[1.02] md:scale-105' : ''
               }`}
             >
@@ -87,22 +62,18 @@ export function InvestmentPlans() {
               </div>
 
               {/* Stats grid */}
-              <div className="grid grid-cols-2 gap-4 mb-8 p-4 bg-slate-50 rounded-xl border border-slate-100">
+              <div className="grid grid-cols-3 gap-2 mb-8 p-4 bg-slate-50 rounded-xl border border-slate-100 text-center">
                 <div className="flex flex-col">
-                  <span className="text-xs text-slate-400 uppercase tracking-wider mb-1">{t('plansMinDeposit')}</span>
-                  <span className="text-lg font-bold text-slate-800">{plan.minDeposit}</span>
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">{t('plansMinDeposit')}</span>
+                  <span className="text-sm sm:text-base font-bold text-slate-800">{plan.minDeposit}</span>
+                </div>
+                <div className="flex flex-col border-x border-slate-200">
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">{t('plansDailyRoi')}</span>
+                  <span className="text-sm sm:text-base font-bold text-slate-800">{plan.dailyROI}</span>
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs text-slate-400 uppercase tracking-wider mb-1">{t('plansDailyRoi')}</span>
-                  <span className="text-lg font-bold text-slate-800">{plan.dailyROI}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs text-slate-400 uppercase tracking-wider mb-1">{t('plansDuration')}</span>
-                  <span className="text-lg font-bold text-slate-800">{plan.duration}</span>
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs text-slate-400 uppercase tracking-wider mb-1">{t('plansTotalReturn')}</span>
-                  <span className="text-lg font-bold text-slate-800">{plan.totalReturn}</span>
+                  <span className="text-[10px] text-slate-400 uppercase tracking-wider mb-1">{t('plansTotalReturn')}</span>
+                  <span className="text-sm sm:text-base font-bold text-slate-800">{plan.totalReturn}</span>
                 </div>
               </div>
 

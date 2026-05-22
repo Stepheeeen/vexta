@@ -178,20 +178,19 @@ function ArbitrageEngine() {
 function ProfitCalculator() {
   const { t } = useTranslation();
   const [calcAmount, setCalcAmount] = useState(1000);
-  const [calcDays, setCalcDays] = useState(30);
 
   const getCalcDetails = () => {
     const amount = Number(calcAmount) || 0;
-    const days = Number(calcDays) || 0;
     let tier = 'STARTER PLAN';
     let bonusPct = 0;
-    if (amount >= 3000) { tier = 'ULTRA PLAN'; bonusPct = 0.30; }
-    else if (amount >= 1000) { tier = 'PRIME PLAN'; bonusPct = 0.10; }
+    if (amount >= 3000) { bonusPct = 0.30; }
+    else if (amount >= 1000) { bonusPct = 0.10; }
     const bonusAmt = amount * bonusPct;
     const startingCapital = amount + bonusAmt;
-    const endingBalance = startingCapital * Math.pow(1 + 0.01, days);
+    const dailyReturn = startingCapital * 0.01;
+    const endingBalance = startingCapital * 3.0;
     const netProfit = endingBalance - amount;
-    return { tier, bonusPct: (bonusPct * 100).toFixed(0) + '%', bonusAmt, startingCapital, endingBalance, netProfit };
+    return { tier, bonusPct: (bonusPct * 100).toFixed(0) + '%', bonusAmt, startingCapital, dailyReturn, endingBalance, netProfit };
   };
 
   const calc = getCalcDetails();
@@ -204,7 +203,7 @@ function ProfitCalculator() {
         </div>
         <div>
           <h2 className="text-sm font-bold text-slate-900 dark:text-white">{t('calcTitle') || 'Profit Calculator'}</h2>
-          <p className="text-xs text-slate-600 dark:text-zinc-300 font-semibold font-mono mt-0.5">Compound ROI Simulator · 1% Daily</p>
+          <p className="text-xs text-slate-600 dark:text-zinc-300 font-semibold font-mono mt-0.5">Vexta HFT Arbitrage Calculator · 1% Daily</p>
         </div>
       </div>
 
@@ -238,30 +237,14 @@ function ProfitCalculator() {
           </div>
         </div>
 
-        {/* Days slider */}
-        <div>
-          <div className="flex justify-between items-center mb-1.5">
-            <label className="text-xs font-bold font-mono text-slate-700 dark:text-zinc-300 uppercase tracking-wider">
-              {t('calcDays') || 'Duration'}
-            </label>
-            <span className="text-sm font-black font-mono text-slate-900 dark:text-white">{calcDays} days</span>
-          </div>
-          <input
-            type="range" min={1} max={365} step={1} value={calcDays}
-            onChange={e => setCalcDays(Number(e.target.value))}
-            className="w-full h-1.5 bg-slate-200 dark:bg-white/10 rounded-full appearance-none cursor-pointer accent-violet-600"
-          />
-          <div className="flex justify-between text-xs text-slate-550 dark:text-zinc-400 font-bold font-mono mt-1">
-            <span>1 day</span><span>365 days</span>
-          </div>
-        </div>
-
         {/* Results */}
         <div className="bg-slate-50 dark:bg-white/3 rounded-2xl p-4 space-y-2.5 border border-slate-200 dark:border-white/5">
           {[
-            { label: 'Plan Tier', value: `${calc.tier} · 1%/day` },
-            { label: 'Signup Bonus', value: `+${calc.bonusPct} (+$${calc.bonusAmt.toFixed(2)})`, color: 'text-emerald-600 dark:text-emerald-400' },
-            { label: 'Operating Capital', value: `$${calc.startingCapital.toFixed(2)}` },
+            { label: 'Plan Tier', value: calc.tier + " · 1.0%/day" },
+            { label: 'Signup Bonus', value: "+" + calc.bonusPct + " (+$" + calc.bonusAmt.toFixed(2) + ")", color: 'text-emerald-600 dark:text-emerald-400' },
+            { label: 'Operating Capital', value: "$" + calc.startingCapital.toFixed(2) },
+            { label: 'Daily Return', value: "$" + calc.dailyReturn.toFixed(2) + " / day", color: 'text-emerald-600 dark:text-emerald-400' },
+            { label: 'Payout Limit', value: '300.0% ROI' },
           ].map(({ label, value, color }) => (
             <div key={label} className="flex justify-between items-center text-xs">
               <span className="text-slate-600 dark:text-zinc-400 font-semibold font-mono">{label}</span>
@@ -271,15 +254,15 @@ function ProfitCalculator() {
 
           <div className="border-t border-slate-200 dark:border-white/5 pt-2.5 space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-slate-600 dark:text-zinc-300 font-bold font-mono">Ending Balance</span>
+              <span className="text-xs text-slate-600 dark:text-zinc-300 font-bold font-mono">Max Potential Return</span>
               <span className="text-base font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400">
-                ${calc.endingBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                {"$" + calc.endingBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-xs text-slate-650 dark:text-zinc-300 font-bold font-mono">Net Profit</span>
+              <span className="text-xs text-slate-655 dark:text-zinc-300 font-bold font-mono">Net Profit Cap</span>
               <span className="text-sm font-black font-mono text-emerald-600 dark:text-emerald-400">
-                +${calc.netProfit.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                {"+" + calc.netProfit.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </span>
             </div>
           </div>
@@ -289,7 +272,7 @@ function ProfitCalculator() {
           href={`/dashboard/deposit?amount=${calcAmount}`}
           className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white text-xs font-bold shadow-lg shadow-violet-600/20 transition-all hover:scale-[1.01] flex items-center justify-center gap-2"
         >
-          Deposit ${calcAmount.toLocaleString()} Now
+          {"Deposit $" + calcAmount.toLocaleString() + " Now"}
           <ChevronRight className="w-4 h-4" />
         </Link>
       </div>
@@ -297,7 +280,6 @@ function ProfitCalculator() {
   );
 }
 
-// ── Main Dashboard Component ──────────────────────────────────────────────────
 export default function Dashboard() {
   const { t } = useTranslation();
   const { toast } = useToast();

@@ -609,15 +609,7 @@ export default function ArbitragePage() {
                     if (plan.plan.toUpperCase().includes('PRIME')) pair = 'ETH/USD';
                     if (plan.plan.toUpperCase().includes('ULTRA')) pair = 'SOL/USD';
                     
-                    const start = new Date(plan.startDate).getTime();
-                    const end = new Date(plan.endDate).getTime();
-                    const now = new Date().getTime();
-                    
-                    let durationStr = 'Completed';
-                    if (active) {
-                      const daysLeft = Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
-                      durationStr = `${daysLeft} ${t('daysLeft')}`;
-                    }
+                    const earnedPct = plan.amount > 0 ? (plan.totalEarned / plan.amount) * 100 : 0;
 
                     return (
                       <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-all text-left">
@@ -627,9 +619,8 @@ export default function ArbitragePage() {
                           </div>
                           <div className="min-w-0">
                             <p className="text-sm sm:text-base font-bold text-slate-900 dark:text-white font-mono">{pair} ({plan.plan})</p>
-                            <div className="flex items-center gap-2 mt-0.5">
-                              <Clock className="w-3.5 h-3.5 text-slate-555 dark:text-zinc-400" />
-                              <span className="text-xs font-bold text-slate-600 dark:text-zinc-300 font-mono">{durationStr}</span>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-xs font-bold text-slate-600 dark:text-zinc-300 font-mono">Progress: {earnedPct.toFixed(1)}% / 300.0%</span>
                             </div>
                           </div>
                         </div>
@@ -724,20 +715,20 @@ export default function ArbitragePage() {
                   {matchingPlan ? (
                     <div className="p-4 bg-violet-500/5 border border-violet-500/10 rounded-xl space-y-2.5 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-slate-650 dark:text-zinc-400 font-bold font-mono">Plan Detected:</span>
+                        <span className="text-slate-600 dark:text-zinc-400 font-bold font-mono">Plan Detected:</span>
                         <span className="font-extrabold text-violet-600 dark:text-violet-400 font-mono">{matchingPlan.name}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-655 dark:text-zinc-400 font-bold font-mono">Daily Yield ROI:</span>
+                        <span className="text-slate-600 dark:text-zinc-400 font-bold font-mono">Daily Yield ROI:</span>
                         <span className="font-extrabold text-green-500 dark:text-green-400 font-mono">+{(matchingPlan.dailyROI * 100).toFixed(2)}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-656 dark:text-zinc-400 font-bold font-mono">Contract Period:</span>
-                        <span className="font-extrabold text-slate-900 dark:text-white font-mono">{matchingPlan.duration} days</span>
+                        <span className="text-slate-600 dark:text-zinc-400 font-bold font-mono">Payout Limit:</span>
+                        <span className="font-extrabold text-slate-900 dark:text-white font-mono">300.0% Return</span>
                       </div>
                       <div className="flex justify-between pt-1.5 border-t border-slate-200/50 dark:border-white/5">
-                        <span className="text-slate-657 dark:text-zinc-400 font-bold font-mono">Projected Total Profit:</span>
-                        <span className="font-extrabold text-[#00FF88] font-mono">+${((amountNum || 0) * matchingPlan.dailyROI * matchingPlan.duration).toFixed(2)}</span>
+                        <span className="text-slate-600 dark:text-zinc-400 font-bold font-mono">Projected Total Return:</span>
+                        <span className="font-extrabold text-[#00FF88] font-mono">+${((amountNum || 0) * 3.0).toFixed(2)}</span>
                       </div>
                     </div>
                   ) : investAmount && amountNum < 10 ? (

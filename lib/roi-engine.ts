@@ -10,12 +10,12 @@ export function calculateDailyROI(principal: number, dailyRate: number): number 
 
 /** Calculate total return over the full plan duration (with daily compounding) */
 export function calculateTotalReturn(principal: number, dailyRate: number, days: number): number {
-  return +(principal * (Math.pow(1 + dailyRate, days) - 1)).toFixed(2);
+  return +(principal * 3.0).toFixed(2);
 }
 
 /** Calculate total return as a percentage (with daily compounding) */
 export function calculateTotalROIPercent(dailyRate: number, days: number): number {
-  return +((Math.pow(1 + dailyRate, days) - 1) * 100).toFixed(1);
+  return 300.0;
 }
 
 /**
@@ -59,37 +59,54 @@ export async function processDailyROI(): Promise<{ processed: number; totalPaid:
     const compoundedBase = inv.amount + (inv.bonusAmount || 0) + inv.totalEarned;
     const dailyAmount = calculateDailyROI(compoundedBase, inv.plan.dailyROI);
 
-    // Record the daily ROI entry
-    await prisma.dailyROIEntry.create({
-      data: {
-        investmentId: inv.id,
-        amount: dailyAmount,
-        date: today,
-      },
-    });
+    // Calculate new total earned and cap it at 300% of the invested principal amount
+    const newTotalEarned = inv.totalEarned + dailyAmount;
+    const maxEarnings = inv.amount * 3.0; // 300%
 
-    // Update total earned on investment
-    await prisma.investment.update({
-      where: { id: inv.id },
-      data: { totalEarned: { increment: dailyAmount } },
-    });
+    let finalDailyAmount = dailyAmount;
+    let completed = false;
+    if (newTotalEarned >= maxEarnings) {
+      finalDailyAmount = Math.max(0, maxEarnings - inv.totalEarned);
+      completed = true;
+    }
 
-    // Record transaction
-    await prisma.transaction.create({
-      data: {
-        userId: inv.userId,
-        type: 'roi',
-        amount: dailyAmount,
-        status: 'completed',
-        description: `Daily ROI — ${inv.plan.name}`,
-        reference: inv.id,
-      },
-    });
+    if (finalDailyAmount <= 0 && !completed) {
+      completed = true;
+    }
 
-    totalPaid += dailyAmount;
+    if (finalDailyAmount > 0) {
+      // Record the daily ROI entry
+      await prisma.dailyROIEntry.create({
+        data: {
+          investmentId: inv.id,
+          amount: finalDailyAmount,
+          date: today,
+        },
+      });
 
-    // Mark completed if end date reached
-    if (new Date() >= new Date(inv.endDate)) {
+      // Update total earned on investment
+      await prisma.investment.update({
+        where: { id: inv.id },
+        data: { totalEarned: { increment: finalDailyAmount } },
+      });
+
+      // Record transaction
+      await prisma.transaction.create({
+        data: {
+          userId: inv.userId,
+          type: 'roi',
+          amount: finalDailyAmount,
+          status: 'completed',
+          description: `Daily ROI — ${inv.plan.name}`,
+          reference: inv.id,
+        },
+      });
+
+      totalPaid += finalDailyAmount;
+    }
+
+    // Mark completed if end date reached or max 300% ROI reached
+    if (completed || new Date() >= new Date(inv.endDate)) {
       await prisma.investment.update({
         where: { id: inv.id },
         data: { status: 'completed' },
@@ -114,4 +131,11 @@ export async function upsertPlans() {
       },
     });
   }
+
+  // Deactivate other plans
+  const activePlanNames = Object.values(PLAN_RATES).map(p => p.name);
+  await prisma.plan.updateMany({
+    where: { name: { notIn: activePlanNames } },
+    data: { isActive: false },
+  });
 }
