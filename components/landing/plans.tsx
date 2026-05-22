@@ -10,8 +10,8 @@ export function InvestmentPlans() {
 
   const plans = [
     {
-      name: 'Plan A',
-      tag: t('planAStarter'),
+      name: 'STARTER PLAN',
+      tag: 'STARTER PLAN',
       minDeposit: '$10',
       dailyROI: '1.0%',
       duration: t('plansDuration30'),
@@ -22,8 +22,8 @@ export function InvestmentPlans() {
       descriptionKey: 'planADesc',
     },
     {
-      name: 'Plan B',
-      tag: t('planBPopular'),
+      name: 'PRIME PLAN',
+      tag: 'PRIME PLAN',
       minDeposit: '$1,000',
       dailyROI: '1.0%',
       duration: t('plansDuration45'),
@@ -34,8 +34,8 @@ export function InvestmentPlans() {
       descriptionKey: 'planBDesc',
     },
     {
-      name: 'Plan C',
-      tag: t('planCAdvanced'),
+      name: 'ULTRA PLAN',
+      tag: 'ULTRA PLAN',
       minDeposit: '$3,000',
       dailyROI: '1.0%',
       duration: t('plansDuration60'),

@@ -31,29 +31,29 @@ describe('ROI Engine', () => {
   });
 
   describe('calculateTotalReturn', () => {
-    it('Plan A: $100 at 1.0% for 30 days = $34.78 (compounded)', () => {
+    it('STARTER PLAN: $100 at 1.0% for 30 days = $34.78 (compounded)', () => {
       expect(calculateTotalReturn(100, 0.01, 30)).toBe(34.78);
     });
 
-    it('Plan B: $500 at 1.0% for 45 days = $282.41 (compounded)', () => {
+    it('PRIME PLAN: $500 at 1.0% for 45 days = $282.41 (compounded)', () => {
       expect(calculateTotalReturn(500, 0.01, 45)).toBe(282.41);
     });
 
-    it('Plan C: $2000 at 1.0% for 60 days = $1633.39 (compounded)', () => {
+    it('ULTRA PLAN: $2000 at 1.0% for 60 days = $1633.39 (compounded)', () => {
       expect(calculateTotalReturn(2000, 0.01, 60)).toBe(1633.39);
     });
   });
 
   describe('calculateTotalROIPercent', () => {
-    it('Plan A: 1.0% x 30 days = 34.8% (compounded)', () => {
+    it('STARTER PLAN: 1.0% x 30 days = 34.8% (compounded)', () => {
       expect(calculateTotalROIPercent(0.01, 30)).toBe(34.8);
     });
 
-    it('Plan B: 1.0% x 45 days = 56.5% (compounded)', () => {
+    it('PRIME PLAN: 1.0% x 45 days = 56.5% (compounded)', () => {
       expect(calculateTotalROIPercent(0.01, 45)).toBe(56.5);
     });
 
-    it('Plan C: 1.0% x 60 days = 81.7% (compounded)', () => {
+    it('ULTRA PLAN: 1.0% x 60 days = 81.7% (compounded)', () => {
       expect(calculateTotalROIPercent(0.01, 60)).toBe(81.7);
     });
   });

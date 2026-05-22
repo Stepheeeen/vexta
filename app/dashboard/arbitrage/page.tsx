@@ -312,7 +312,7 @@ export default function ArbitragePage() {
     if (!matching) {
       toast({
         title: 'Validation Error',
-        description: 'Amount must be at least $10.00 to match Starter Plan.',
+        description: 'Amount must be at least $10.00 to match STARTER PLAN.',
         variant: 'destructive',
       });
       return;
@@ -606,8 +606,8 @@ export default function ArbitragePage() {
                   data.investments.map((plan, idx) => {
                     const active = plan.status === 'active';
                     let pair = 'BTC/USD';
-                    if (plan.plan.includes('B')) pair = 'ETH/USD';
-                    if (plan.plan.includes('C')) pair = 'SOL/USD';
+                    if (plan.plan.toUpperCase().includes('PRIME')) pair = 'ETH/USD';
+                    if (plan.plan.toUpperCase().includes('ULTRA')) pair = 'SOL/USD';
                     
                     const start = new Date(plan.startDate).getTime();
                     const end = new Date(plan.endDate).getTime();
@@ -742,7 +742,7 @@ export default function ArbitragePage() {
                     </div>
                   ) : investAmount && amountNum < 10 ? (
                     <div className="p-3 bg-red-500/5 border border-red-500/10 rounded-xl text-center">
-                      <span className="text-xs font-bold font-mono text-red-500">Minimum investment is $10.00 (Starter Plan)</span>
+                      <span className="text-xs font-bold font-mono text-red-500">Minimum investment is $10.00 (STARTER PLAN)</span>
                     </div>
                   ) : null}
 

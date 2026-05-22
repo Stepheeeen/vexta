@@ -35,24 +35,24 @@ interface DepositTx {
 
 function PlanCard({ plan, onSelect }: { plan: Plan; onSelect: (amount: number) => void }) {
   const icons: Record<string, React.ReactNode> = {
-    Starter: <Zap className="w-5 h-5 text-emerald-400" />,
-    Popular: <Star className="w-5 h-5 text-amber-400" />,
-    Advanced: <Rocket className="w-5 h-5 text-violet-400" />,
+    'STARTER PLAN': <Zap className="w-5 h-5 text-emerald-400" />,
+    'PRIME PLAN': <Star className="w-5 h-5 text-amber-400" />,
+    'ULTRA PLAN': <Rocket className="w-5 h-5 text-violet-400" />,
   };
   const colors: Record<string, string> = {
-    Starter: 'from-emerald-600/20 to-emerald-600/5 border-emerald-500/20',
-    Popular: 'from-amber-500/20 to-amber-500/5 border-amber-500/20',
-    Advanced: 'from-violet-600/25 to-violet-600/5 border-violet-500/30',
+    'STARTER PLAN': 'from-emerald-600/20 to-emerald-600/5 border-emerald-500/20',
+    'PRIME PLAN': 'from-amber-500/20 to-amber-500/5 border-amber-500/20',
+    'ULTRA PLAN': 'from-violet-600/25 to-violet-600/5 border-violet-500/30',
   };
   const colorBadge: Record<string, string> = {
-    Starter: 'bg-emerald-500/20 text-emerald-400',
-    Popular: 'bg-amber-500/20 text-amber-400',
-    Advanced: 'bg-violet-500/20 text-violet-400',
+    'STARTER PLAN': 'bg-emerald-500/20 text-emerald-400',
+    'PRIME PLAN': 'bg-amber-500/20 text-amber-400',
+    'ULTRA PLAN': 'bg-violet-500/20 text-violet-400',
   };
 
   return (
     <div className={`relative flex flex-col p-5 rounded-2xl border bg-gradient-to-br ${colors[plan.tag] || 'from-white/5 to-white/2 border-white/10'} transition-all hover:scale-[1.01] hover:shadow-lg group`}>
-      {plan.tag === 'Popular' && (
+      {plan.tag === 'PRIME PLAN' && (
         <div className="absolute -top-2.5 right-4 bg-amber-500 text-white text-[9px] font-bold px-3 py-0.5 rounded-full uppercase tracking-wider shadow">
           Most Popular
         </div>

@@ -3,7 +3,7 @@
 import { DashboardLayout } from '@/components/dashboard-layout';
 import Link from 'next/link';
 import {
-  TrendingUp, Eye, EyeOff, Copy, ArrowUpRight, ArrowDownRight,
+  TrendingUp, Eye, EyeOff, Copy, Check, ArrowUpRight, ArrowDownRight,
   Zap, RefreshCw, Settings, Loader2, Wallet, ArrowLeftRight, Percent,
   Activity, Radio, ChevronRight
 } from 'lucide-react';
@@ -183,10 +183,10 @@ function ProfitCalculator() {
   const getCalcDetails = () => {
     const amount = Number(calcAmount) || 0;
     const days = Number(calcDays) || 0;
-    let tier = 'Starter';
+    let tier = 'STARTER PLAN';
     let bonusPct = 0;
-    if (amount >= 3000) { tier = 'Ultra'; bonusPct = 0.30; }
-    else if (amount >= 1000) { tier = 'Prime'; bonusPct = 0.10; }
+    if (amount >= 3000) { tier = 'ULTRA PLAN'; bonusPct = 0.30; }
+    else if (amount >= 1000) { tier = 'PRIME PLAN'; bonusPct = 0.10; }
     const bonusAmt = amount * bonusPct;
     const startingCapital = amount + bonusAmt;
     const endingBalance = startingCapital * Math.pow(1 + 0.01, days);
@@ -215,7 +215,18 @@ function ProfitCalculator() {
             <label className="text-xs font-bold font-mono text-slate-700 dark:text-zinc-300 uppercase tracking-wider">
               {t('calcAmount') || 'Investment Amount'}
             </label>
-            <span className="text-sm font-black font-mono text-slate-900 dark:text-white">${calcAmount.toLocaleString()}</span>
+            <div className="flex items-center text-sm font-black font-mono text-slate-900 dark:text-white bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-lg px-2 py-0.5 shadow-inner">
+              <span className="text-slate-400 mr-0.5">$</span>
+              <input
+                type="number"
+                value={calcAmount || ''}
+                onChange={e => {
+                  const val = e.target.value === '' ? 0 : Number(e.target.value);
+                  setCalcAmount(val);
+                }}
+                className="w-20 bg-transparent text-right font-black font-mono focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              />
+            </div>
           </div>
           <input
             type="range" min={10} max={50000} step={10} value={calcAmount}
@@ -295,6 +306,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [userFirstName, setUserFirstName] = useState('User');
   const [referralCode, setReferralCode] = useState('VEXTA_CODE');
+  const [copiedReferral, setCopiedReferral] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // P2P states
@@ -496,9 +508,19 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="flex items-center justify-between gap-3 p-4 bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl mb-5">
-                <p className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400 font-mono tracking-wider">{referralCode}</p>
-                <button onClick={() => navigator.clipboard.writeText(referralCode)} className="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all">
-                  <Copy className="w-4 h-4" />
+                <p className="text-xs font-bold text-slate-800 dark:text-zinc-300 font-mono truncate select-all">
+                  {`https://www.vexta.network/?ref=${referralCode}`}
+                </p>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(`https://www.vexta.network/?ref=${referralCode}`);
+                    setCopiedReferral(true);
+                    setTimeout(() => setCopiedReferral(false), 2000);
+                    toast({ title: 'Copied', description: 'Referral link copied to clipboard!' });
+                  }}
+                  className="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all shrink-0"
+                >
+                  {copiedReferral ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
                 </button>
               </div>
               <div className="space-y-3">

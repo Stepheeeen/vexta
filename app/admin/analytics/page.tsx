@@ -121,7 +121,7 @@ export default function AdminAnalytics() {
           <div className="space-y-4">
             <div>
               <div className="flex justify-between mb-2">
-                <span className="text-slate-500 dark:text-gray-400">{t('adminAnalyticsPlanStarter') || 'Plan A — Starter'} (45%)</span>
+                <span className="text-slate-500 dark:text-gray-400">{t('adminAnalyticsPlanStarter') || 'STARTER PLAN'} (45%)</span>
                 <span className="text-violet-600 dark:text-violet-400 font-bold">{t('adminAnalyticsActive') || 'Active'}</span>
               </div>
               <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-3">
@@ -130,7 +130,7 @@ export default function AdminAnalytics() {
             </div>
             <div>
               <div className="flex justify-between mb-2">
-                <span className="text-slate-500 dark:text-gray-400">{t('adminAnalyticsPlanPopular') || 'Plan B — Popular'} (35%)</span>
+                <span className="text-slate-500 dark:text-gray-400">{t('adminAnalyticsPlanPopular') || 'PRIME PLAN'} (35%)</span>
                 <span className="text-emerald-600 dark:text-emerald-400 font-bold">{t('adminAnalyticsActive') || 'Active'}</span>
               </div>
               <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-3">
@@ -139,7 +139,7 @@ export default function AdminAnalytics() {
             </div>
             <div>
               <div className="flex justify-between mb-2">
-                <span className="text-slate-500 dark:text-gray-400">{t('adminAnalyticsPlanAdvanced') || 'Plan C — Advanced'} (20%)</span>
+                <span className="text-slate-500 dark:text-gray-400">{t('adminAnalyticsPlanAdvanced') || 'ULTRA PLAN'} (20%)</span>
                 <span className="text-amber-600 dark:text-amber-400 font-bold">{t('adminAnalyticsActive') || 'Active'}</span>
               </div>
               <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-3">

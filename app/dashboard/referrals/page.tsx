@@ -1,7 +1,7 @@
 'use client';
 
 import { DashboardLayout } from '@/components/dashboard-layout';
-import { Users, Copy, ChevronRight, Loader2 } from 'lucide-react';
+import { Users, Copy, Check, ChevronRight, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
@@ -32,6 +32,7 @@ export default function ReferralsPage() {
   const [data, setData] = useState<ReferralData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -60,7 +61,7 @@ export default function ReferralsPage() {
   }, []);
 
   const referralCode = data?.referralCode || 'VEXTA_CODE';
-  const referralLink = typeof window !== 'undefined' ? `${window.location.origin}/signup?ref=${referralCode}` : `https://vexta.app/signup?ref=${referralCode}`;
+  const referralLink = `https://www.vexta.network/?ref=${referralCode}`;
 
   const stats = [
     { label: t('referralsStat1'), value: `${data?.totals.level1Count ?? 0}`,        sub: t('referralsStat1Sub') },
@@ -144,33 +145,31 @@ export default function ReferralsPage() {
                 <h2 className="text-sm font-semibold text-slate-950 dark:text-white">{t('referralsYourLink')}</h2>
               </div>
 
-              {/* Code */}
-              <div className="flex items-center justify-between gap-3 p-4 bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl mb-4">
-                <p className="text-sm font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400 font-mono tracking-wider truncate">
-                  {referralCode}
+              {/* Share URL */}
+              <div className="flex items-center justify-between gap-3 p-4 bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl mb-5">
+                <p className="text-xs font-bold text-slate-800 dark:text-zinc-300 font-mono truncate select-all">
+                  {referralLink}
                 </p>
                 <button
-                  onClick={() => navigator.clipboard.writeText(referralCode)}
+                  onClick={() => {
+                    navigator.clipboard.writeText(referralLink);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                    toast({
+                      description: t('copiedToClipboard') || 'Copied to clipboard!',
+                    });
+                  }}
                   className="p-2 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all flex-shrink-0"
                 >
-                  <Copy className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Share URL */}
-              <div className="flex items-center justify-between gap-3 p-3 bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl mb-5">
-                <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono truncate">{referralLink}</p>
-                <button
-                  onClick={() => navigator.clipboard.writeText(referralLink)}
-                  className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 transition-all flex-shrink-0"
-                >
-                  <Copy className="w-3.5 h-3.5" />
+                  {copied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
                 </button>
               </div>
 
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(referralLink);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
                   toast({
                     description: t('copiedToClipboard') || 'Copied to clipboard!',
                   });

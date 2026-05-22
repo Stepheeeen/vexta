@@ -12,7 +12,7 @@ import { CTABanner } from '@/components/landing/cta-banner';
 import { Footer } from '@/components/landing/footer';
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://vexta.app'),
+  metadataBase: new URL('https://www.vexta.network'),
   title: 'Vexta — AI-Powered High-Frequency Arbitrage (HFT) Platform',
   description:
     'Vexta is a financial infrastructure specialised in AI-driven high-frequency arbitrage (HFT). Earn daily returns, build a 13-level referral network, and withdraw with full transparency.',
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     description:
       'Earn daily returns through AI-driven HFT arbitrage and passive referral commissions. 13-level referral depth, transparent dashboard, prompt withdrawals.',
     type: 'website',
-    url: 'https://vexta.app',
+    url: 'https://www.vexta.network',
     siteName: 'Vexta',
     images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Vexta HFT Platform' }],
   },

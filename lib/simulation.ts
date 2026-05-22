@@ -73,9 +73,9 @@ export async function runSimulation(days = 30): Promise<{ message: string; stats
   if (!plans.length) throw new Error('No plans found. Run upsertPlans() first.');
 
   // 4. Create investments for each user
-  const planA = plans.find((p) => p.name === 'Starter Plan')!;
-  const planB = plans.find((p) => p.name === 'Prime Plan')!;
-  const planC = plans.find((p) => p.name === 'Ultra Plan')!;
+  const planA = plans.find((p) => p.name === 'STARTER PLAN')!;
+  const planB = plans.find((p) => p.name === 'PRIME PLAN')!;
+  const planC = plans.find((p) => p.name === 'ULTRA PLAN')!;
 
   const investmentConfig = [
     { userId: createdUsers[0].id, plan: planC, amount: 20000 }, // John — Ultra Plan

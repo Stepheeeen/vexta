@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { VextaLogoText } from '@/components/vexta-logo';
 import { BackgroundPattern } from '@/components/background-pattern';
 import { ArrowRight, Activity, Hexagon, Eye, EyeOff, Loader2 } from 'lucide-react';
@@ -23,6 +23,16 @@ export default function SignUp() {
     referralCode: '',
     acceptTerms: false,
   });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get('ref') || params.get('code') || localStorage.getItem('vexta_referred_by');
+      if (ref) {
+        setFormData(prev => ({ ...prev, referralCode: ref }));
+      }
+    }
+  }, []);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -297,7 +307,7 @@ export default function SignUp() {
                 <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 relative overflow-hidden">
                   <Hexagon className="absolute -right-4 -bottom-4 w-24 h-24 text-slate-900/5 dark:text-white/5" />
                   <p className="text-[10px] text-slate-400 dark:text-white/50 font-mono tracking-widest uppercase mb-2">{t('signupYourLink')}</p>
-                  <p className="text-xl font-light text-slate-900 dark:text-[#FFFFFF] font-mono tracking-wider">vexta.app/ref/N8K2L9</p>
+                  <p className="text-lg font-light text-slate-900 dark:text-[#FFFFFF] font-mono tracking-wider">vexta.network/?ref=N8K2L9</p>
                   <p className="text-[10px] text-slate-500 dark:text-[#808A9D] mt-2 font-mono uppercase">{t('signupShareHint')}</p>
                 </div>
 

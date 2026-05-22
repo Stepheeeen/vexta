@@ -28,18 +28,18 @@ export async function POST(req: NextRequest) {
     }
 
     if (action === 'arbitrage') {
-      // Find or upsert Plan B (Popular)
+      // Find or upsert PRIME PLAN (Popular)
       let plan = await prisma.plan.findFirst({
-        where: { name: 'Plan B' },
+        where: { name: 'PRIME PLAN' },
       });
 
       if (!plan) {
         plan = await prisma.plan.create({
           data: {
-            name: 'Plan B',
-            tag: 'Popular',
-            minDeposit: 500,
-            dailyROI: 0.02,
+            name: 'PRIME PLAN',
+            tag: 'PRIME PLAN',
+            minDeposit: 1000,
+            dailyROI: 0.01,
             duration: 45,
           },
         });
@@ -82,14 +82,14 @@ export async function POST(req: NextRequest) {
           type: 'deposit',
           amount: 2000.00,
           status: 'completed',
-          description: 'Investment activated — Plan B',
+          description: 'Investment activated — PRIME PLAN',
           reference: investment.id,
         },
       });
 
       return NextResponse.json({
         success: true,
-        message: 'Demo Arbitrage Plan B ($2,000 position) activated successfully!',
+        message: 'Demo Arbitrage PRIME PLAN ($2,000 position) activated successfully!',
         investment,
         transactionDeposit,
         transactionInvest,
@@ -105,16 +105,16 @@ export async function POST(req: NextRequest) {
 
       if (!investment) {
         let plan = await prisma.plan.findFirst({
-          where: { name: 'Plan B' },
+          where: { name: 'PRIME PLAN' },
         });
 
         if (!plan) {
           plan = await prisma.plan.create({
             data: {
-              name: 'Plan B',
-              tag: 'Popular',
-              minDeposit: 500,
-              dailyROI: 0.02,
+              name: 'PRIME PLAN',
+              tag: 'PRIME PLAN',
+              minDeposit: 1000,
+              dailyROI: 0.01,
               duration: 45,
             },
           });
