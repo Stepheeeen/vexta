@@ -27,7 +27,7 @@ export function CTABanner() {
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-4 tracking-tight">
             {t('ctaSubtitle')}
           </h2>
-          <p className="text-slate-600 dark:text-slate-350 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
+          <p className="text-slate-600 dark:text-slate-300 text-lg mb-10 max-w-xl mx-auto leading-relaxed">
             {t('ctaDescription')}
           </p>
 
@@ -45,7 +45,7 @@ export function CTABanner() {
                 e.preventDefault();
                 document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-slate-600 dark:text-slate-350 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10 hover:border-slate-350 dark:hover:border-white/20 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all duration-200"
+              className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all duration-200"
             >
               {t('ctaBtnExplore')}
             </a>

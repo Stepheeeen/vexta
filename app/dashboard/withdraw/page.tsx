@@ -51,73 +51,77 @@ function P2PTransferPanel({ balance, onSuccess }: { balance: number; onSuccess: 
   };
 
   return (
-    <div className="relative mb-6 rounded-2xl border border-emerald-400/30 bg-gradient-to-br from-emerald-950/40 via-green-950/20 to-[#0A0F14] overflow-hidden shadow-xl shadow-emerald-900/20">
+    <div className="relative mb-6 rounded-3xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-[#0f1420]/60 backdrop-blur-xl p-6 shadow-xl overflow-hidden">
       {/* Ambient glow */}
-      <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none" />
-      <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-green-500/8 blur-2xl pointer-events-none" />
+      <div className="absolute -top-8 -right-8 w-45 h-45 rounded-full bg-violet-600/10 blur-2xl pointer-events-none" />
+      <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-indigo-500/5 blur-2xl pointer-events-none" />
 
-      <div className="relative z-10 p-6">
+      <div className="relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shadow-md shadow-emerald-500/10">
-              <Users className="w-5 h-5 text-emerald-400" />
+            <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shadow-md">
+              <Users className="w-5 h-5 text-violet-600 dark:text-violet-400" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm sm:text-base font-extrabold text-white">P2P Internal Transfer</h3>
-                <span className="text-[10px] font-extrabold bg-emerald-500 text-white px-2.5 py-0.5 rounded-full uppercase tracking-widest">0% FEE</span>
+                <h3 className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">P2P Internal Transfer</h3>
+                <span className="text-[10px] font-extrabold bg-violet-500/10 text-violet-700 dark:text-violet-400 border border-violet-500/25 px-2.5 py-0.5 rounded-full uppercase tracking-wider">0% FEE</span>
               </div>
-              <p className="text-xs sm:text-sm text-emerald-300 font-semibold font-mono mt-1">Transfer to any Vexta user — zero deductions, instant settlement</p>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">Transfer directly to any Vexta user with zero deductions and instant settlement</p>
             </div>
           </div>
-          <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono text-emerald-300/80">
+          <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-mono font-bold text-violet-600 dark:text-violet-400">
             <div className="relative w-1.5 h-1.5">
-              <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-60" />
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              <div className="absolute inset-0 rounded-full bg-violet-500 animate-ping opacity-60" />
+              <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />
             </div>
             LIVE
           </div>
         </div>
 
         {/* Fee comparison mini banner */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-3.5 bg-black/40 rounded-xl border border-white/10 mb-5 text-xs font-mono">
-          <span className="text-orange-300 font-extrabold">External withdrawal: up to 6% fee</span>
-          <span className="text-slate-400 mx-1 hidden sm:inline">vs</span>
-          <span className="text-emerald-300 font-extrabold">P2P transfer: 0% fee always</span>
-          <span className="sm:ml-auto text-emerald-300 text-[10px] sm:text-xs bg-emerald-500/25 px-2.5 py-1 rounded-full border border-emerald-400/30 font-bold shadow-sm shadow-emerald-500/10">Save up to $60 per $1,000</span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white/70 dark:bg-black/30 rounded-2xl border border-slate-200 dark:border-white/5 mb-5 text-xs">
+          <div className="flex flex-wrap items-center gap-2 font-mono">
+            <span className="text-red-650 dark:text-red-400 font-bold">External withdrawal: up to 6% fee</span>
+            <span className="text-slate-400 dark:text-slate-600">vs</span>
+            <span className="text-violet-700 dark:text-violet-400 font-bold">P2P: 0% fee always</span>
+          </div>
+          <span className="self-start sm:self-auto text-violet-700 dark:text-violet-400 text-[10px] bg-violet-500/10 px-3 py-1 rounded-xl border border-violet-500/20 font-bold uppercase tracking-wider">
+            Save up to $60 per $1,000
+          </span>
         </div>
 
         {done ? (
-          <div className="flex items-center justify-center gap-3 py-6">
-            <CheckCircle2 className="w-8 h-8 text-emerald-400" />
+          <div className="flex items-center justify-center gap-3 py-6 bg-violet-500/5 border border-violet-500/10 rounded-2xl">
+            <CheckCircle2 className="w-8 h-8 text-violet-500" />
             <div>
-              <p className="text-sm font-bold text-white">Transfer complete!</p>
-              <p className="text-xs text-emerald-400/70 font-mono">Recipient balance updated instantly · 0% deducted</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-white">Transfer complete!</p>
+              <p className="text-xs text-violet-500/80 font-mono">Recipient balance updated instantly · 0% deducted</p>
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="grid sm:grid-cols-5 gap-3 items-end">
+          <form onSubmit={handleSubmit} className="grid sm:grid-cols-5 gap-4 items-end">
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-[10px] font-bold font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                 Recipient (email or referral code)
               </label>
               <input
                 type="text"
                 value={recipient}
                 onChange={e => setRecipient(e.target.value)}
-                placeholder="email@example.com · VEXTA_CODE"
+                placeholder="email@example.com or VEXTA_CODE"
                 disabled={submitting}
-                className="w-full bg-black/40 border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 dark:placeholder-zinc-500 focus:outline-none focus:border-emerald-400 transition-all font-mono"
+                className="w-full bg-white dark:bg-white/3 border border-slate-300 dark:border-white/8 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-zinc-400 focus:outline-none focus:border-violet-500/50 focus:bg-white/5 transition-all font-mono"
               />
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-[10px] font-bold font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                 Amount (USDT)
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-300 font-bold text-sm">$</span>
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 font-bold text-sm">$</span>
                 <input
                   type="number"
                   step="any"
@@ -125,7 +129,7 @@ function P2PTransferPanel({ balance, onSuccess }: { balance: number; onSuccess: 
                   onChange={e => setAmount(e.target.value)}
                   placeholder="0.00"
                   disabled={submitting}
-                  className="w-full pl-8 bg-black/40 border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 dark:placeholder-zinc-500 focus:outline-none focus:border-emerald-400 transition-all font-mono"
+                  className="w-full pl-8 bg-white dark:bg-white/3 border border-slate-300 dark:border-white/8 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-zinc-400 focus:outline-none focus:border-violet-500/50 focus:bg-white/5 transition-all font-mono"
                 />
               </div>
             </div>
@@ -134,12 +138,15 @@ function P2PTransferPanel({ balance, onSuccess }: { balance: number; onSuccess: 
               <button
                 type="submit"
                 disabled={submitting || !recipient.trim() || !amount}
-                className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-bold shadow-lg shadow-emerald-600/25 transition-all hover:scale-[1.02] flex items-center justify-center gap-1.5"
+                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 disabled:opacity-50 text-white text-xs font-bold shadow-lg shadow-violet-600/10 hover:shadow-violet-600/20 hover:scale-[1.01] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                {submitting
-                  ? <Loader2 className="w-4 h-4 animate-spin" />
-                  : <><Send className="w-3.5 h-3.5" /> Send</>
-                }
+                {submitting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <Send className="w-3.5 h-3.5" /> Send
+                  </>
+                )}
               </button>
             </div>
           </form>

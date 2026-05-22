@@ -68,7 +68,7 @@ export function Hero() {
                   e.preventDefault();
                   document.getElementById('plans')?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-semibold text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-350 hover:bg-slate-50 rounded-xl transition-all duration-200"
+                className="inline-flex items-center gap-2 px-7 py-3.5 text-sm font-semibold text-slate-600 hover:text-slate-900 border border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-xl transition-all duration-200"
               >
                 {t('heroViewPlans')}
               </a>

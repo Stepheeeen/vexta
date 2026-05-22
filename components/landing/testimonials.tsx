@@ -63,7 +63,7 @@ export function Testimonials() {
         <div className="text-center mb-16">
           <p className="text-sm font-semibold text-violet-600 uppercase tracking-widest mb-3">{t('testimonialsSubtitle')}</p>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-4">{t('testimonialsTitle')}</h2>
-          <p className="text-slate-650 text-lg max-w-xl mx-auto">
+          <p className="text-slate-600 text-lg max-w-xl mx-auto">
             {t('testimonialsDescription')}
           </p>
         </div>
@@ -73,7 +73,7 @@ export function Testimonials() {
           {testimonials.map(({ nameKey, locPlanKey, withdrawn, textKey, initials, color }) => (
             <div
               key={nameKey}
-              className="flex flex-col p-6 rounded-2xl bg-white border border-slate-200 shadow-sm shadow-slate-100 hover:border-slate-350 transition-all duration-300"
+              className="flex flex-col p-6 rounded-2xl bg-white border border-slate-200 shadow-sm shadow-slate-100 hover:border-slate-300 transition-all duration-300"
             >
               {/* Stars */}
               <div className="flex gap-1 mb-4">
@@ -83,7 +83,7 @@ export function Testimonials() {
               </div>
 
               {/* Quote */}
-              <p className="text-slate-650 text-sm leading-relaxed mb-6 flex-grow">"{t(textKey)}"</p>
+              <p className="text-slate-600 text-sm leading-relaxed mb-6 flex-grow">"{t(textKey)}"</p>
 
               {/* Footer */}
               <div className="flex items-center gap-3 pt-4 border-t border-slate-100">

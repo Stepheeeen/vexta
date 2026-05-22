@@ -253,18 +253,38 @@ export default function HandoverPage() {
 
   /* Scroll spy */
   useEffect(() => {
-    const onScroll = () => {
+    const handleScroll = () => {
       setShowBackToTop(window.scrollY > 500);
-      for (const s of [...SECTIONS].reverse()) {
-        const el = document.getElementById(s.id);
-        if (el && window.scrollY >= el.offsetTop - 140) {
-          setActiveSection(s.id);
-          break;
-        }
-      }
     };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    const observers: { observer: IntersectionObserver; el: HTMLElement }[] = [];
+
+    SECTIONS.forEach((s) => {
+      const el = document.getElementById(s.id);
+      if (el) {
+        const observer = new IntersectionObserver(
+          ([entry]) => {
+            if (entry.isIntersecting) {
+              setActiveSection(s.id);
+            }
+          },
+          {
+            rootMargin: '-20% 0px -60% 0px',
+            threshold: 0,
+          }
+        );
+        observer.observe(el);
+        observers.push({ observer, el });
+      }
+    });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      observers.forEach(({ observer, el }) => {
+        observer.unobserve(el);
+      });
+    };
   }, []);
 
   return (

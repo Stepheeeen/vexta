@@ -75,18 +75,37 @@ export function Navbar() {
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
-
-      const sections = ['how-it-works', 'plans', 'why-us', 'faq'];
-      for (const id of sections.reverse()) {
-        const el = document.getElementById(id);
-        if (el && window.scrollY >= el.offsetTop - 120) {
-          setActive(id);
-          break;
-        }
-      }
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    const sections = ['how-it-works', 'plans', 'why-us', 'faq'];
+    const observers: { observer: IntersectionObserver; el: HTMLElement }[] = [];
+
+    sections.forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        const observer = new IntersectionObserver(
+          ([entry]) => {
+            if (entry.isIntersecting) {
+              setActive(id);
+            }
+          },
+          {
+            rootMargin: '-30% 0px -50% 0px',
+            threshold: 0,
+          }
+        );
+        observer.observe(el);
+        observers.push({ observer, el });
+      }
+    });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      observers.forEach(({ observer, el }) => {
+        observer.unobserve(el);
+      });
+    };
   }, []);
 
   // Fetch session & notifications on mount
@@ -184,7 +203,7 @@ export function Navbar() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-slate-950/95 dark:bg-[#090C10]/95 backdrop-blur-xl border-b border-slate-850 dark:border-white/5 shadow-lg'
+          ? 'bg-slate-950/95 dark:bg-[#090C10]/95 backdrop-blur-xl border-b border-slate-900 dark:border-white/5 shadow-lg'
           : 'bg-transparent'
       }`}
     >
@@ -193,7 +212,7 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <VextaLogo className="h-8 w-8 transition-transform duration-300 group-hover:scale-105" />
-            <span className={`text-xl font-bold tracking-tight transition-colors ${scrolled ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
+            <span className="text-xl font-bold tracking-tight transition-colors text-white">
               {SYSTEM_CONFIG.brand.name}
             </span>
           </Link>
@@ -210,9 +229,7 @@ export function Navbar() {
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       pathname === '/handover'
                         ? 'text-white bg-violet-600/40 dark:text-violet-400 dark:bg-violet-500/10'
-                        : scrolled
-                        ? 'text-violet-400 bg-white/5 hover:bg-white/10'
-                        : 'text-violet-600 bg-violet-50/60 dark:text-violet-400 dark:bg-violet-500/10 hover:bg-violet-100/70 dark:hover:bg-violet-500/20'
+                        : 'text-violet-400 bg-white/5 hover:bg-white/10'
                     }`}
                   >
                     {item.label}
@@ -226,12 +243,8 @@ export function Navbar() {
                   onClick={(e) => handleNav(e, item.href)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     active === id
-                      ? scrolled
-                        ? 'text-violet-400 bg-white/5'
-                        : 'text-violet-600 bg-violet-50 dark:text-violet-450 dark:bg-white/5'
-                      : scrolled
-                      ? 'text-slate-300 hover:text-white hover:bg-white/5'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/50 dark:hover:bg-white/5'
+                      ? 'text-violet-400 bg-white/5'
+                      : 'text-slate-300 hover:text-white hover:bg-white/5'
                   }`}
                 >
                   {item.label}
@@ -245,9 +258,7 @@ export function Navbar() {
             {/* Theme Toggle */}
             <button
               onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-              className={`transition-all flex items-center justify-center cursor-pointer ${
-                scrolled ? 'text-slate-300 hover:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-              }`}
+              className="transition-all flex items-center justify-center cursor-pointer text-slate-300 hover:text-white"
               title="Toggle Theme"
             >
               {mounted ? (
@@ -262,9 +273,7 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={() => setShowLang(!showLang)}
-                className={`transition-all flex items-center justify-center cursor-pointer animate-fade-in ${
-                  scrolled ? 'text-slate-300 hover:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
+                className="transition-all flex items-center justify-center cursor-pointer animate-fade-in text-slate-300 hover:text-white"
                 title={t('navSelectLanguage')}
               >
                 <span className="text-base select-none">{flags[language]}</span>
@@ -283,7 +292,7 @@ export function Navbar() {
                         className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-left hover:bg-slate-100 dark:hover:bg-white/5 transition-all ${
                           language === lang
                             ? 'text-violet-600 bg-slate-50 dark:text-violet-400 dark:bg-white/5'
-                            : 'text-slate-700 dark:text-slate-350'
+                            : 'text-slate-700 dark:text-slate-300'
                         }`}
                       >
                         <span className="flex items-center gap-2">
@@ -304,9 +313,7 @@ export function Navbar() {
                 <div className="relative" ref={notifRef}>
                   <button
                     onClick={() => setShowNotif(!showNotif)}
-                    className={`relative transition-all flex items-center justify-center cursor-pointer ${
-                      scrolled ? 'text-slate-300 hover:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                    }`}
+                    className="relative transition-all flex items-center justify-center cursor-pointer text-slate-300 hover:text-white"
                   >
                     <Bell className="w-4 h-4" />
                     {unreadCount > 0 && (
@@ -337,19 +344,19 @@ export function Navbar() {
                               <div className={`w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0 ${notif.type === 'success' ? 'bg-green-500' : notif.type === 'alert' ? 'bg-red-500' : 'bg-blue-500'}`} />
                               <div className="flex-1 min-w-0">
                                 <p className="text-[11px] font-semibold text-slate-800 dark:text-white truncate">{notif.title}</p>
-                                <p className="text-[10px] text-slate-500 dark:text-slate-405 mt-0.5 leading-relaxed">{notif.message}</p>
+                                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">{notif.message}</p>
                                 <span className="text-[8px] text-slate-400 dark:text-slate-500 font-mono mt-1 block">{notif.time}</span>
                               </div>
                               <button
                                 onClick={() => clearNotification(notif.id)}
-                                className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 dark:text-slate-505 hover:text-slate-650 dark:hover:text-white transition-all"
+                                className="opacity-0 group-hover:opacity-100 p-0.5 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-white transition-all"
                               >
                                 <X className="w-3 h-3" />
                               </button>
                             </div>
                           ))
                         ) : (
-                          <p className="text-xs text-slate-405 font-mono py-8 text-center">{t('navNoNotifications')}</p>
+                          <p className="text-xs text-slate-400 font-mono py-8 text-center">{t('navNoNotifications')}</p>
                         )}
                       </div>
                     </div>
@@ -368,9 +375,7 @@ export function Navbar() {
 
                   <button
                     onClick={handleLogout}
-                    className={`transition-all flex items-center justify-center cursor-pointer ${
-                      scrolled ? 'text-slate-400 hover:text-red-400' : 'text-slate-400 dark:text-slate-550 hover:text-red-500 dark:hover:text-red-400'
-                    }`}
+                    className="transition-all flex items-center justify-center cursor-pointer text-slate-400 hover:text-red-400"
                     title={t('navSignOut')}
                   >
                     <LogOut className="w-4 h-4" />
@@ -381,9 +386,7 @@ export function Navbar() {
               <>
                 <Link
                   href="/login"
-                  className={`px-4 py-2 text-sm font-medium transition-colors ${
-                    scrolled ? 'text-slate-300 hover:text-white' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
+                  className="px-4 py-2 text-sm font-medium transition-colors text-slate-300 hover:text-white"
                 >
                   {t('navLogIn')}
                 </Link>
@@ -400,9 +403,7 @@ export function Navbar() {
           {/* Mobile menu toggle */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className={`md:hidden p-2 transition-colors ${
-              scrolled ? 'text-slate-300 hover:text-white' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-            }`}
+            className="md:hidden p-2 transition-colors text-slate-300 hover:text-white"
             aria-label="Toggle menu"
           >
             {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -413,7 +414,7 @@ export function Navbar() {
       {/* Mobile menu */}
       <div
         className={`md:hidden transition-all duration-300 overflow-hidden ${
-          isOpen ? 'max-h-[420px] opacity-100' : 'max-h-0 opacity-0'
+          isOpen ? 'max-h-[700px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
         <div className="bg-slate-950/95 dark:bg-[#090C10]/95 backdrop-blur-xl border-t border-slate-800 dark:border-white/5 px-4 py-4 space-y-1 shadow-lg shadow-slate-900/50 dark:shadow-none animate-fade-in-up">

@@ -37,7 +37,7 @@ export function FAQ() {
             <div
               key={i}
               className={`rounded-xl border transition-all duration-300 ${
-                open === i ? 'bg-violet-50/20 border-violet-500/30 shadow-sm shadow-slate-100/50' : 'bg-white border border-slate-200 hover:border-slate-350 shadow-sm shadow-slate-100/50'
+                open === i ? 'bg-violet-50/20 border-violet-500/30 shadow-sm shadow-slate-100/50' : 'bg-white border border-slate-200 hover:border-slate-300 shadow-sm shadow-slate-100/50'
               }`}
             >
               <button
@@ -57,7 +57,7 @@ export function FAQ() {
                   open === i ? 'max-h-60 opacity-100' : 'max-h-0 opacity-0'
                 }`}
               >
-                <p className="px-6 pb-5 text-sm text-slate-550 leading-relaxed">{a}</p>
+                <p className="px-6 pb-5 text-sm text-slate-500 leading-relaxed">{a}</p>
               </div>
             </div>
           ))}
