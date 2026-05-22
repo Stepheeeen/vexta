@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { TrendingUp, Eye, EyeOff, Copy, ArrowUpRight, ArrowDownRight, Zap, RefreshCw, Plus, Minus, Settings, Loader2, Wallet, ArrowLeftRight, Percent } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from '@/components/translation-provider';
-import { WelcomeTour } from '../components/WelcomeTour';
+// import { WelcomeTour } from '../components/WelcomeTour';
 import { useToast } from '@/hooks/use-toast';
 
 interface StatsData {
@@ -182,7 +182,7 @@ export default function Dashboard() {
 
   return (
     <DashboardLayout>
-      <WelcomeTour />
+      {/* <WelcomeTour /> */}
       {/* Page header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
         <div>

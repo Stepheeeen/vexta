@@ -145,7 +145,7 @@ model Withdrawal {
   userId        String    @db.ObjectId
   amount        Float
   walletAddress String
-  network       String    @default("TRC20")
+  network       String    @default("BEP20")
   status        String    @default("pending") // pending | approved | rejected
   note          String?
   createdAt     DateTime  @default(now())

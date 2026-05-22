@@ -66,6 +66,7 @@ export async function POST(req: NextRequest) {
         passwordHash: await hashPassword(password),
         referralCode: generateReferralCode(firstName, lastName),
         referredById,
+        uplineId: referredById,
         isVerified: false,
         verificationCode,
         verificationCodeExpires,

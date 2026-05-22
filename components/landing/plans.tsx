@@ -12,7 +12,7 @@ export function InvestmentPlans() {
     {
       name: 'Plan A',
       tag: t('planAStarter'),
-      minDeposit: '$100',
+      minDeposit: '$10',
       dailyROI: '1.5%',
       duration: t('plansDuration30'),
       totalReturn: '45%',

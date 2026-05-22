@@ -7,6 +7,7 @@ import { BackgroundPattern } from '@/components/background-pattern';
 import { ArrowRight, Activity, Hexagon, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useTranslation } from '@/components/translation-provider';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { countries } from '@/lib/countries';
 
 export default function SignUp() {
   const { t } = useTranslation();
@@ -200,17 +201,11 @@ export default function SignUp() {
                     className={`w-full bg-slate-50 dark:bg-white/5 border ${errors.country ? 'border-red-500/50 focus:ring-red-500/50' : 'border-slate-200 dark:border-white/5 focus:border-violet-500/50 dark:focus:border-[#00D9FF]/50 focus:ring-violet-500/50 dark:focus:ring-[#00D9FF]/50'} rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#FFFFFF] focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono text-sm`}
                   >
                     <option value="" className="text-slate-400 dark:text-white/30 bg-white dark:bg-[#0F1419]">Select Country</option>
-                    <option value="United States" className="bg-white dark:bg-[#0F1419]">United States</option>
-                    <option value="United Kingdom" className="bg-white dark:bg-[#0F1419]">United Kingdom</option>
-                    <option value="Canada" className="bg-white dark:bg-[#0F1419]">Canada</option>
-                    <option value="Vietnam" className="bg-white dark:bg-[#0F1419]">Vietnam</option>
-                    <option value="Thailand" className="bg-white dark:bg-[#0F1419]">Thailand</option>
-                    <option value="Brazil" className="bg-white dark:bg-[#0F1419]">Brazil</option>
-                    <option value="South Korea" className="bg-white dark:bg-[#0F1419]">South Korea</option>
-                    <option value="France" className="bg-white dark:bg-[#0F1419]">France</option>
-                    <option value="Germany" className="bg-white dark:bg-[#0F1419]">Germany</option>
-                    <option value="Spain" className="bg-white dark:bg-[#0F1419]">Spain</option>
-                    <option value="Australia" className="bg-white dark:bg-[#0F1419]">Australia</option>
+                    {countries.map((country) => (
+                      <option key={country} value={country} className="bg-white dark:bg-[#0F1419]">
+                        {country}
+                      </option>
+                    ))}
                   </select>
                   {errors.country && <p className="text-[10px] text-red-500 dark:text-red-400 mt-1 font-mono uppercase tracking-wider">{errors.country}</p>}
                 </div>

@@ -44,7 +44,7 @@ export default function WithdrawPage() {
   // Form states
   const [amount, setAmount] = useState('');
   const [walletAddress, setWalletAddress] = useState('');
-  const [network, setNetwork] = useState('TRC20');
+  const [network, setNetwork] = useState('BEP20');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -308,9 +308,7 @@ export default function WithdrawPage() {
                     onChange={(e) => setNetwork(e.target.value)}
                     className="w-full bg-white/3 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-violet-500/50 focus:bg-white/5 transition-all"
                   >
-                    <option value="TRC20">USDT (TRC20) — TRON Network</option>
                     <option value="BEP20">USDT (BEP20) — BNB Smart Chain</option>
-                    <option value="ERC20">USDT (ERC20) — Ethereum Network</option>
                   </select>
                 </div>
 

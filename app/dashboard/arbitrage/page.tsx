@@ -10,61 +10,71 @@ const getExchangeLogo = (name: string) => {
   const n = name.toLowerCase();
   if (n.includes('binance')) {
     return (
-      <div className="w-12 h-12 rounded-xl bg-[#F0B90B]/10 border border-[#F0B90B]/20 flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#F0B90B]/5">
-        <svg className="w-6 h-6 text-[#F0B90B]" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2L4 10l2.5 2.5L12 7l5.5 5.5L20 10zM4 14l8 8 8-8-2.5-2.5L12 17l-5.5-5.5zM12 9l-3 3 3 3 3-3z"/>
+      <div className="w-16 h-16 rounded-2xl bg-[#F0B90B]/10 border-2 border-[#F0B90B]/30 flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#F0B90B]/5">
+        <svg className="w-10 h-10 text-[#F0B90B]" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12.002 0l-3.32 3.321 3.32 3.32 3.32-3.32L12.002 0zm-7.666 4.346L1.015 7.667l3.321 3.321 3.32-3.321-3.32-3.321zm15.33 0l-3.321 3.321 3.32 3.321 3.321-3.321-3.32-3.321zM1.015 16.335l3.321 3.32 3.32-3.32-3.32-3.321-3.321 3.321zm21.97 0l-3.321-3.32-3.32 3.32 3.32 3.321 3.321-3.32zm-10.983.323l-3.32-3.32 3.32-3.321 3.321 3.32-3.32 3.321zM12.002 24l3.32-3.321-3.32-3.32-3.32 3.32L12.002 24z"/>
         </svg>
       </div>
     );
   }
   if (n.includes('bybit')) {
     return (
-      <div className="w-12 h-12 rounded-xl bg-[#FF9800]/10 border border-[#FF9800]/20 flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#FF9800]/5">
-        <svg className="w-6 h-6 text-[#FF9800]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
+      <div className="w-16 h-16 rounded-2xl bg-[#FF9800]/10 border-2 border-[#FF9800]/30 flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#FF9800]/5">
+        <svg className="w-10 h-10 text-[#FF9800]" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12.727 3.515a.91.91 0 00-1.286 0L4.35 10.606a.91.91 0 000 1.286l7.091 7.092a.91.91 0 001.286-1.286l-6.448-6.449 6.448-6.448a.91.91 0 000-1.286zm6.921 7.091l-7.091-7.091a.91.91 0 10-1.286 1.286l6.448 6.448-6.448 6.448a.91.91 0 101.286 1.286l7.091-7.091a.91.91 0 000-1.286z" />
         </svg>
       </div>
     );
   }
   if (n.includes('okx')) {
     return (
-      <div className="w-12 h-12 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center flex-shrink-0 shadow-lg shadow-white/5">
-        <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M3 3h7v7H3zm11 0h7v7h-7zM3 14h7v7H3zm11 0h7v7h-7z"/>
+      <div className="w-16 h-16 rounded-2xl bg-slate-900 border-2 border-slate-700 flex items-center justify-center flex-shrink-0 shadow-lg shadow-white/5">
+        <svg className="w-10 h-10 text-white" viewBox="0 0 24 24" fill="currentColor">
+          <rect x="2" y="2" width="5.5" height="5.5" rx="1" />
+          <rect x="9.25" y="2" width="5.5" height="5.5" rx="1" />
+          <rect x="16.5" y="2" width="5.5" height="5.5" rx="1" />
+          <rect x="2" y="9.25" width="5.5" height="5.5" rx="1" />
+          <rect x="16.5" y="9.25" width="5.5" height="5.5" rx="1" />
+          <rect x="2" y="16.5" width="5.5" height="5.5" rx="1" />
+          <rect x="9.25" y="16.5" width="5.5" height="5.5" rx="1" />
+          <rect x="16.5" y="16.5" width="5.5" height="5.5" rx="1" />
         </svg>
       </div>
     );
   }
   if (n.includes('bitget')) {
     return (
-      <div className="w-12 h-12 rounded-xl bg-[#00F0FF]/10 border border-[#00F0FF]/20 flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#00F0FF]/5">
-        <svg className="w-6 h-6 text-[#00F0FF]" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2L2 12h5v8h10v-8h5z" />
+      <div className="w-16 h-16 rounded-2xl bg-[#00F0FF]/10 border-2 border-[#00F0FF]/30 flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#00F0FF]/5">
+        <svg className="w-10 h-10 text-[#00F0FF]" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 5v8.5L10.5 5H19z" opacity="0.85" />
+          <path d="M5 19v-8.5L13.5 19H5z" />
         </svg>
       </div>
     );
   }
   if (n.includes('coinbase')) {
     return (
-      <div className="w-12 h-12 rounded-xl bg-[#0052FF]/10 border border-[#0052FF]/20 flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#0052FF]/5">
-        <svg className="w-6 h-6 text-[#0052FF]" viewBox="0 0 24 24" fill="currentColor">
+      <div className="w-16 h-16 rounded-2xl bg-[#0052FF]/10 border-2 border-[#0052FF]/30 flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#0052FF]/5">
+        <svg className="w-10 h-10 text-[#0052FF]" viewBox="0 0 24 24" fill="currentColor">
           <circle cx="12" cy="12" r="10" />
+          <path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5c2.04 0 3.79-1.22 4.54-3h-2.22c-.54.96-1.57 1.6-2.76 1.6-1.74 0-3.15-1.41-3.15-3.15S10.26 8.85 12 8.85c1.19 0 2.22.64 2.76 1.6h2.22c-.75-1.78-2.5-3-4.54-3z" fill="white" />
         </svg>
       </div>
     );
   }
   if (n.includes('kucoin')) {
     return (
-      <div className="w-12 h-12 rounded-xl bg-[#00E676]/10 border border-[#00E676]/20 flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#00E676]/5">
-        <svg className="w-6 h-6 text-[#00E676]" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2l10 6v12l-10 6-10-6V8z" />
+      <div className="w-16 h-16 rounded-2xl bg-[#00E676]/10 border-2 border-[#00E676]/30 flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#00E676]/5">
+        <svg className="w-10 h-10 text-[#00E676]" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M4 4h4.5l5.5 8-5.5 8H4l5.5-8L4 4z" />
+          <path d="M10 4h4.5l5.5 8-5.5 8H10l5.5-8L10 4z" opacity="0.8" />
         </svg>
       </div>
     );
   }
   return (
-    <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center flex-shrink-0">
-      <svg className="w-6 h-6 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
+    <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-white/5 border-2 border-slate-200 dark:border-white/10 flex items-center justify-center flex-shrink-0">
+      <svg className="w-10 h-10 text-gray-400" viewBox="0 0 24 24" fill="currentColor">
         <circle cx="12" cy="12" r="10" />
       </svg>
     </div>
@@ -102,7 +112,7 @@ export default function ArbitragePage() {
 
   // Terminal Console Logs state
   const [logs, setLogs] = useState<string[]>([]);
-  const logsEndRef = useRef<HTMLDivElement | null>(null);
+  const consoleContainerRef = useRef<HTMLDivElement | null>(null);
 
   // New states for investment card and live routing
   const [plans, setPlans] = useState<any[]>([]);
@@ -277,7 +287,9 @@ export default function ArbitragePage() {
   }, []);
 
   useEffect(() => {
-    logsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (consoleContainerRef.current) {
+      consoleContainerRef.current.scrollTop = consoleContainerRef.current.scrollHeight;
+    }
   }, [logs]);
 
   const handleInvest = async (e: React.FormEvent) => {
@@ -481,22 +493,22 @@ export default function ArbitragePage() {
             </div>
 
             {/* Visual routing diagram */}
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6 p-6 bg-slate-50 dark:bg-white/2 rounded-2xl border border-slate-200/50 dark:border-white/5">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-8 p-10 bg-slate-50/50 dark:bg-white/2 rounded-3xl border border-slate-200 dark:border-white/5 shadow-inner">
               {/* Buy Exchange Card */}
-              <div className="flex-1 w-full p-4 bg-white dark:bg-[#0A0F14]/80 rounded-xl border border-slate-200/60 dark:border-white/5 text-center flex flex-col items-center justify-center">
-                <span className="text-[9px] font-mono text-green-500 font-bold uppercase tracking-wider mb-2">BUY FROM</span>
+              <div className="flex-1 w-full p-8 bg-white dark:bg-[#0A0F14]/80 rounded-2xl border border-slate-200 dark:border-white/5 text-center flex flex-col items-center justify-center shadow-md dark:shadow-none hover:scale-[1.03] transition-all duration-300">
+                <span className="text-[11px] font-mono text-green-500 font-bold uppercase tracking-widest mb-3">BUY FROM</span>
                 {getExchangeLogo(activeTrade.buyExchange)}
-                <span className="text-sm font-bold text-slate-900 dark:text-white font-mono mt-2 tracking-wide uppercase">{activeTrade.buyExchange}</span>
-                <span className="text-xs text-slate-400 font-mono mt-1">$63,450.20</span>
+                <span className="text-lg font-extrabold text-slate-900 dark:text-white font-mono mt-3 tracking-wide uppercase">{activeTrade.buyExchange}</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400 font-mono mt-1">$63,450.20</span>
               </div>
 
               {/* Glowing flow direction arrow paths */}
-              <div className="flex-[1.5] w-full flex flex-col items-center justify-center">
-                <span className="text-[9px] font-mono text-slate-400 mb-1">LIQUIDITY PATH</span>
-                <div className="relative w-full flex items-center justify-center my-1.5">
-                  <svg className="w-full h-8 text-violet-500/20 dark:text-violet-400/20" viewBox="0 0 100 20" preserveAspectRatio="none" fill="none">
-                    <path d="M 0 10 L 100 10" stroke="currentColor" strokeWidth="2" strokeDasharray="3 3" />
-                    <path d="M 0 10 L 100 10" stroke="url(#flow-gradient)" strokeWidth="3" className="animate-flow-right" />
+              <div className="flex-[1.5] w-full flex flex-col items-center justify-center py-4">
+                <span className="text-xs font-mono text-slate-400 tracking-wider mb-2">LIQUIDITY PATH</span>
+                <div className="relative w-full flex items-center justify-center my-3">
+                  <svg className="w-full h-16 text-violet-500/20 dark:text-violet-400/20" viewBox="0 0 100 20" preserveAspectRatio="none" fill="none">
+                    <path d="M 0 10 L 100 10" stroke="currentColor" strokeWidth="2.5" strokeDasharray="3 3" />
+                    <path d="M 0 10 L 100 10" stroke="url(#flow-gradient)" strokeWidth="3.5" className="animate-flow-right" />
                     <defs>
                       <linearGradient id="flow-gradient" x1="0" y1="0" x2="1" y2="0">
                         <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.8" />
@@ -505,20 +517,20 @@ export default function ArbitragePage() {
                       </linearGradient>
                     </defs>
                   </svg>
-                  <div className="absolute px-3 py-1 bg-violet-600/10 border border-violet-500/30 rounded-full text-[10px] font-bold font-mono text-violet-600 dark:text-violet-400 flex items-center gap-1.5 backdrop-blur-sm">
+                  <div className="absolute px-5 py-2.5 bg-violet-600/10 border-2 border-violet-500/30 rounded-full text-xs font-extrabold font-mono text-violet-700 dark:text-violet-300 flex items-center gap-2.5 backdrop-blur-md shadow-lg shadow-violet-500/10">
                     <span>{activeTrade.pair}</span>
                     <span className="text-[#00FF88] font-black">+{activeTrade.spread}%</span>
                   </div>
                 </div>
-                <span className="text-[9px] font-mono text-[#00FF88] mt-1 animate-pulse">MATCHED SPREAD FOUND</span>
+                <span className="text-xs font-mono text-[#00FF88] mt-2 animate-pulse tracking-wide font-semibold">MATCHED SPREAD FOUND</span>
               </div>
 
               {/* Sell Exchange Card */}
-              <div className="flex-1 w-full p-4 bg-white dark:bg-[#0A0F14]/80 rounded-xl border border-slate-200/60 dark:border-white/5 text-center flex flex-col items-center justify-center">
-                <span className="text-[9px] font-mono text-cyan-500 font-bold uppercase tracking-wider mb-2">SELL TO</span>
+              <div className="flex-1 w-full p-8 bg-white dark:bg-[#0A0F14]/80 rounded-2xl border border-slate-200 dark:border-white/5 text-center flex flex-col items-center justify-center shadow-md dark:shadow-none hover:scale-[1.03] transition-all duration-300">
+                <span className="text-[11px] font-mono text-cyan-500 font-bold uppercase tracking-widest mb-3">SELL TO</span>
                 {getExchangeLogo(activeTrade.sellExchange)}
-                <span className="text-sm font-bold text-slate-900 dark:text-white font-mono mt-2 tracking-wide uppercase">{activeTrade.sellExchange}</span>
-                <span className="text-xs text-slate-400 font-mono mt-1">$64,524.80</span>
+                <span className="text-lg font-extrabold text-slate-900 dark:text-white font-mono mt-3 tracking-wide uppercase">{activeTrade.sellExchange}</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400 font-mono mt-1">$64,524.80</span>
               </div>
             </div>
 
@@ -768,7 +780,10 @@ export default function ArbitragePage() {
                 </div>
 
                 {/* Console log window */}
-                <div className="flex-1 overflow-y-auto font-mono text-[10px] space-y-2 pr-1 custom-scrollbar text-left scroll-smooth">
+                <div 
+                  ref={consoleContainerRef}
+                  className="flex-1 overflow-y-auto font-mono text-[10px] space-y-2 pr-1 custom-scrollbar text-left scroll-smooth"
+                >
                   {logs.map((log, index) => {
                     let colorClass = 'text-green-400';
                     if (log.includes('[SYSTEM]')) colorClass = 'text-slate-400';
@@ -781,7 +796,6 @@ export default function ArbitragePage() {
                       </div>
                     );
                   })}
-                  <div ref={logsEndRef} />
                 </div>
 
                 {/* Console footer */}

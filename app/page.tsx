@@ -9,7 +9,6 @@ import { Testimonials } from '@/components/landing/testimonials';
 import { FAQ } from '@/components/landing/faq';
 import { CTABanner } from '@/components/landing/cta-banner';
 import { Footer } from '@/components/landing/footer';
-import { ForceLightMode } from '@/components/landing/force-light-mode';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://vexta.app'),
@@ -48,7 +47,6 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-[#0F1419] text-slate-900 dark:text-white font-sans antialiased">
-      <ForceLightMode />
       <Navbar />
       <main>
         <Hero />

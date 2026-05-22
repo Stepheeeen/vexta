@@ -10,9 +10,9 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 const plans = [
-  { name: 'Starter Plan', tag: 'Starter',  minDeposit: 10,   dailyROI: 0.010, duration: 30 },
-  { name: 'Prime Plan',   tag: 'Popular',  minDeposit: 1000, dailyROI: 0.010, duration: 45 },
-  { name: 'Ultra Plan',   tag: 'Advanced', minDeposit: 3000, dailyROI: 0.010, duration: 60 },
+  { name: 'Starter Plan', tag: 'Starter',  minDeposit: 10,   dailyROI: 0.015, duration: 30 },
+  { name: 'Prime Plan',   tag: 'Popular',  minDeposit: 500,  dailyROI: 0.020, duration: 45 },
+  { name: 'Ultra Plan',   tag: 'Advanced', minDeposit: 2000, dailyROI: 0.025, duration: 60 },
 ];
 
 async function seed() {

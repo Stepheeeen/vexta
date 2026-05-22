@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutGrid, TrendingUp, Users, Wallet, BarChart3, Settings, LogOut, Bell, X, Check, Globe, ArrowUpRight, ArrowDownRight, FileText, AlertTriangle } from 'lucide-react';
+import { LayoutGrid, TrendingUp, Users, Wallet, BarChart3, Settings, LogOut, Bell, X, Check, Globe, ArrowUpRight, ArrowDownRight, FileText, AlertTriangle, Sun, Moon } from 'lucide-react';
 import { BackgroundPattern } from '@/components/background-pattern';
 import { VextaLogo } from '@/components/vexta-logo';
 import { useTranslation } from '@/components/translation-provider';
 import { useState, useEffect, useRef } from 'react';
+import { useTheme } from 'next-themes';
 
 interface NotificationItem {
   id: string;
@@ -63,6 +64,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const notifRef = useRef<HTMLDivElement>(null);
   const langRef = useRef<HTMLDivElement>(null);
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const navItems = [
     { href: '/dashboard',            icon: LayoutGrid,     labelKey: 'overview',  exact: true },
@@ -184,6 +191,19 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         </Link>
 
         <div className="flex items-center gap-5 relative">
+          {/* Theme Toggle */}
+          <button
+            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+            className="text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white transition-all flex items-center justify-center"
+            title="Toggle theme"
+          >
+            {mounted ? (
+              resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />
+            ) : (
+              <span className="w-4 h-4" />
+            )}
+          </button>
+
           {/* Language Switcher (Standalone Icon - No container/radius) */}
           <div className="relative" ref={langRef}>
             <button
@@ -323,6 +343,19 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <span className="text-sm font-bold text-slate-900 dark:text-white tracking-widest font-sans uppercase">vexta</span>
         </Link>
         <div className="flex items-center gap-2">
+          {/* Mobile Theme Toggle */}
+          <button
+            onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+            className="relative text-slate-500 hover:text-slate-950 dark:text-gray-400 dark:hover:text-white transition-all flex items-center justify-center"
+            title="Toggle theme"
+          >
+            {mounted ? (
+              resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />
+            ) : (
+              <span className="w-4 h-4" />
+            )}
+          </button>
+
           {/* Mobile Bell (Standalone Icon - No container/radius) */}
           <button
             onClick={() => setShowNotif(!showNotif)}

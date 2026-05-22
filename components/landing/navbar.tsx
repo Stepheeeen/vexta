@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { Menu, X, Bell, LogOut, Check, Globe } from 'lucide-react';
+import { Menu, X, Bell, LogOut, Check, Globe, Sun, Moon } from 'lucide-react';
 import { VextaLogo } from '@/components/vexta-logo';
 import { useTranslation, Language } from '@/components/translation-provider';
 import { useRouter, usePathname } from 'next/navigation';
+import { useTheme } from 'next-themes';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,6 +26,12 @@ export function Navbar() {
   const { language, setLanguage, t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const navLinks = [
     { label: t('navHowItWorks'), href: '/#how-it-works' },
@@ -232,6 +239,21 @@ export function Navbar() {
 
           {/* CTA buttons / Session Actions */}
           <div className="hidden md:flex items-center gap-5">
+            {/* Theme Toggle */}
+            <button
+              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+              className={`transition-all flex items-center justify-center cursor-pointer ${
+                scrolled ? 'text-slate-300 hover:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+              title="Toggle Theme"
+            >
+              {mounted ? (
+                resolvedTheme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />
+              ) : (
+                <span className="w-4 h-4" />
+              )}
+            </button>
+
             {/* Language Switcher */}
             <div className="relative" ref={langRef}>
               <button
@@ -404,6 +426,25 @@ export function Navbar() {
           ))}
 
           <div className="pt-3 flex flex-col gap-2 border-t border-slate-800 dark:border-white/5">
+            {/* Mobile Theme selector */}
+            <button
+              type="button"
+              onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+              className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-slate-300 bg-white/5 border border-slate-800 dark:border-white/5 rounded-xl hover:bg-white/10 transition-all"
+            >
+              <span className="flex items-center gap-2">
+                {mounted && resolvedTheme === 'dark' ? (
+                  <Sun className="w-3.5 h-3.5 text-slate-400" />
+                ) : (
+                  <Moon className="w-3.5 h-3.5 text-slate-400" />
+                )}
+                <span>Theme</span>
+              </span>
+              <span className="text-xs uppercase text-slate-400 font-medium">
+                {mounted ? (resolvedTheme === 'dark' ? 'Dark' : 'Light') : ''}
+              </span>
+            </button>
+
             {/* Mobile Language selector */}
             <div className="relative">
               <button

@@ -59,6 +59,13 @@ export async function runSimulation(days = 30): Promise<{ message: string; stats
       update: {},
       create: link,
     });
+    await prisma.user.update({
+      where: { id: link.referredId },
+      data: {
+        uplineId: link.referrerId,
+        referredById: link.referrerId,
+      },
+    });
   }
 
   // 3. Get plans

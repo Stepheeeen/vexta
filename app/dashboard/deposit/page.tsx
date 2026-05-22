@@ -7,7 +7,7 @@ import { useTranslation } from '@/components/translation-provider';
 
 export default function DepositPage() {
   const { t } = useTranslation();
-  const [network, setNetwork] = useState('USDT_TRC20');
+  const [network, setNetwork] = useState('USDT_BEP20');
   const [amount, setAmount] = useState('');
   const [txHash, setTxHash] = useState('');
   const [copied, setCopied] = useState(false);
@@ -18,9 +18,7 @@ export default function DepositPage() {
   const [success, setSuccess] = useState<string | null>(null);
 
   const walletAddresses: Record<string, string> = {
-    USDT_TRC20: 'TY2vDkYx9M5N3JpUqZqR4vH8sP6wD3n9K1',
-    USDT_ERC20: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
-    BTC: '1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa',
+    USDT_BEP20: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F',
   };
 
   const handleCopy = () => {
@@ -103,9 +101,7 @@ export default function DepositPage() {
               <label className="block text-sm font-semibold text-slate-900 dark:text-white mb-3">{t('depSelectNetwork')}</label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {[
-                  { id: 'USDT_TRC20', name: 'USDT', desc: 'TRC20 (Tron)' },
-                  { id: 'USDT_ERC20', name: 'USDT', desc: 'ERC20 (Ethereum)' },
-                  { id: 'BTC', name: 'Bitcoin', desc: 'Native BTC' }
+                  { id: 'USDT_BEP20', name: 'USDT', desc: 'BEP20 (BNB Smart Chain)' }
                 ].map((net) => (
                   <button
                     key={net.id}

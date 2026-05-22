@@ -21,6 +21,9 @@ async function main() {
   await prisma.transaction.deleteMany({
     where: { user: { email: { in: emails } } }
   });
+  await prisma.referralLink.deleteMany({
+    where: { referred: { email: { in: emails } } }
+  });
   // Disconnect uplines to prevent referential integrity check failures on delete
   await prisma.user.updateMany({
     where: { email: { in: emails } },
@@ -33,7 +36,7 @@ async function main() {
   const passwordHash = await bcrypt.hash('Password@123', 12);
 
   const createUser = async (email, firstName, lastName, referralCode, uplineId = null) => {
-    return prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         email,
         passwordHash,
@@ -41,6 +44,7 @@ async function main() {
         lastName,
         referralCode,
         uplineId,
+        referredById: uplineId,
         isVerified: true,
         balance: 0.0,
         activeDeposit: 0.0,
@@ -49,6 +53,17 @@ async function main() {
         totalCommission: 0.0,
       }
     });
+
+    if (uplineId) {
+      await prisma.referralLink.create({
+        data: {
+          referrerId: uplineId,
+          referredId: user.id
+        }
+      });
+    }
+
+    return user;
   };
 
   // Create chain

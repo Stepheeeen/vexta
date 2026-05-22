@@ -6,7 +6,7 @@ import { distributeUnilevelCommission } from '@/server/services/commission.servi
 
 const schema = z.object({
   amount: z.number().positive().min(10, 'Minimum deposit is $10'),
-  network: z.string().optional(),
+  network: z.enum(['USDT BEP20']).optional().default('USDT BEP20'),
   txHash: z.string().optional(),
   instant: z.boolean().default(false),
 });

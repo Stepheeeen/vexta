@@ -7,7 +7,7 @@ import { getAvailableBalance } from '@/lib/balance';
 const schema = z.object({
   amount:        z.number().positive().min(5, 'Minimum withdrawal is $5'),
   walletAddress: z.string().min(10, 'Invalid wallet address'),
-  network:       z.enum(['TRC20', 'BEP20', 'ERC20']).default('TRC20'),
+  network:       z.enum(['BEP20']).default('BEP20'),
 });
 
 // GET /api/withdrawals
