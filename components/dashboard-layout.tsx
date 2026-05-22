@@ -316,13 +316,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     <div className="flex bg-slate-100 dark:bg-white/5 p-0.5 rounded-lg border border-slate-200/50 dark:border-white/5">
                       <button
                         onClick={() => setTheme('light')}
-                        className={`p-1.5 rounded-md transition-all ${resolvedTheme === 'light' ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 dark:text-gray-500'}`}
+                        className={`p-1.5 rounded-md transition-all ${(mounted && resolvedTheme === 'light') ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 dark:text-gray-500'}`}
                       >
                         <Sun className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => setTheme('dark')}
-                        className={`p-1.5 rounded-md transition-all ${resolvedTheme === 'dark' ? 'bg-[#09090f] text-violet-400 shadow-sm' : 'text-slate-400 dark:text-gray-500'}`}
+                        className={`p-1.5 rounded-md transition-all ${(mounted && resolvedTheme === 'dark') ? 'bg-[#09090f] text-violet-400 shadow-sm' : 'text-slate-400 dark:text-gray-500'}`}
                       >
                         <Moon className="w-3.5 h-3.5" />
                       </button>
@@ -534,13 +534,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <div className="flex bg-slate-100 dark:bg-white/5 p-0.5 rounded-xl border border-slate-200/50 dark:border-white/5">
                 <button
                   onClick={() => setTheme('light')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${resolvedTheme === 'light' ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 dark:text-gray-500'}`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${(mounted && resolvedTheme === 'light') ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 dark:text-gray-500'}`}
                 >
                   <Sun className="w-3.5 h-3.5 inline mr-1" /> Light
                 </button>
                 <button
                   onClick={() => setTheme('dark')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${resolvedTheme === 'dark' ? 'bg-[#09090f] text-violet-400 shadow-sm' : 'text-slate-400 dark:text-gray-500'}`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${(mounted && resolvedTheme === 'dark') ? 'bg-[#09090f] text-violet-400 shadow-sm' : 'text-slate-400 dark:text-gray-500'}`}
                 >
                   <Moon className="w-3.5 h-3.5 inline mr-1" /> Dark
                 </button>

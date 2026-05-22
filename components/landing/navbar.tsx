@@ -34,6 +34,8 @@ export function Navbar() {
     setMounted(true);
   }, []);
 
+  const isLightHeader = mounted && resolvedTheme === 'light' && (pathname !== '/' || scrolled);
+
   const navLinks = [
     { label: t('navHowItWorks'), href: '/#how-it-works' },
     { label: t('navPlans'), href: '/#plans' },
@@ -76,10 +78,12 @@ export function Navbar() {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
+
     window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
 
     const sections = ['how-it-works', 'plans', 'why-us', 'faq'];
-    const observers: { observer: IntersectionObserver; el: HTMLElement }[] = [];
+    const sectionObservers: { observer: IntersectionObserver; el: HTMLElement }[] = [];
 
     sections.forEach((id) => {
       const el = document.getElementById(id);
@@ -96,13 +100,13 @@ export function Navbar() {
           }
         );
         observer.observe(el);
-        observers.push({ observer, el });
+        sectionObservers.push({ observer, el });
       }
     });
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      observers.forEach(({ observer, el }) => {
+      sectionObservers.forEach(({ observer, el }) => {
         observer.unobserve(el);
       });
     };
@@ -186,7 +190,11 @@ export function Navbar() {
     }
   };
 
-  const handleNav = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+  const handleNav = (e: React.MouseEvent<HTMLAnchorElement>, href: string, external?: boolean) => {
+    if (external) {
+      setIsOpen(false);
+      return;
+    }
     if (pathname === '/') {
       e.preventDefault();
       const id = href.replace('/#', '').replace('#', '');
@@ -201,9 +209,11 @@ export function Navbar() {
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? 'bg-slate-950/95 dark:bg-[#090C10]/95 backdrop-blur-xl border-b border-slate-900 dark:border-white/5 shadow-lg'
+      className={`fixed top-0 left-0 right-0 z-[999] isolate transition-all duration-300 ${
+        scrolled || isOpen
+          ? isLightHeader
+            ? 'bg-white/95 border-b border-slate-200 shadow-md'
+            : 'bg-slate-950/95 dark:bg-[#090C10]/95 backdrop-blur-xl border-b border-slate-900 dark:border-white/5 shadow-lg'
           : 'bg-transparent'
       }`}
     >
@@ -212,7 +222,9 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <VextaLogo className="h-8 w-8 transition-transform duration-300 group-hover:scale-105" />
-            <span className="text-xl font-bold tracking-tight transition-colors text-white">
+            <span className={`text-xl font-bold tracking-tight transition-colors ${
+              isLightHeader ? 'text-slate-900' : 'text-white'
+            }`}>
               {SYSTEM_CONFIG.brand.name}
             </span>
           </Link>
@@ -228,8 +240,12 @@ export function Navbar() {
                     href={item.href}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       pathname === '/handover'
-                        ? 'text-white bg-violet-600/40 dark:text-violet-400 dark:bg-violet-500/10'
-                        : 'text-violet-400 bg-white/5 hover:bg-white/10'
+                        ? isLightHeader
+                          ? 'text-violet-650 bg-violet-50'
+                          : 'text-white bg-violet-600/40 dark:text-violet-400 dark:bg-violet-500/10'
+                        : isLightHeader
+                          ? 'text-violet-600 bg-slate-100 hover:bg-slate-200'
+                          : 'text-violet-400 bg-white/5 hover:bg-white/10'
                     }`}
                   >
                     {item.label}
@@ -240,11 +256,15 @@ export function Navbar() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  onClick={(e) => handleNav(e, item.href)}
+                  onClick={(e) => handleNav(e, item.href, item.external)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     active === id
-                      ? 'text-violet-400 bg-white/5'
-                      : 'text-slate-300 hover:text-white hover:bg-white/5'
+                      ? isLightHeader
+                        ? 'text-violet-600 bg-slate-100'
+                        : 'text-violet-400 bg-white/5'
+                      : isLightHeader
+                        ? 'text-slate-650 hover:text-slate-900 hover:bg-slate-100'
+                        : 'text-slate-300 hover:text-white hover:bg-white/5'
                   }`}
                 >
                   {item.label}
@@ -258,7 +278,9 @@ export function Navbar() {
             {/* Theme Toggle */}
             <button
               onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-              className="transition-all flex items-center justify-center cursor-pointer text-slate-300 hover:text-white"
+              className={`transition-all flex items-center justify-center cursor-pointer ${
+                isLightHeader ? 'text-slate-600 hover:text-slate-900' : 'text-slate-300 hover:text-white'
+              }`}
               title="Toggle Theme"
             >
               {mounted ? (
@@ -273,7 +295,9 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={() => setShowLang(!showLang)}
-                className="transition-all flex items-center justify-center cursor-pointer animate-fade-in text-slate-300 hover:text-white"
+                className={`transition-all flex items-center justify-center cursor-pointer animate-fade-in ${
+                  isLightHeader ? 'text-slate-600 hover:text-slate-900' : 'text-slate-300 hover:text-white'
+                }`}
                 title={t('navSelectLanguage')}
               >
                 <span className="text-base select-none">{flags[language]}</span>
@@ -313,7 +337,9 @@ export function Navbar() {
                 <div className="relative" ref={notifRef}>
                   <button
                     onClick={() => setShowNotif(!showNotif)}
-                    className="relative transition-all flex items-center justify-center cursor-pointer text-slate-300 hover:text-white"
+                    className={`relative transition-all flex items-center justify-center cursor-pointer ${
+                      isLightHeader ? 'text-slate-600 hover:text-slate-900' : 'text-slate-300 hover:text-white'
+                    }`}
                   >
                     <Bell className="w-4 h-4" />
                     {unreadCount > 0 && (
@@ -364,10 +390,16 @@ export function Navbar() {
                 </div>
 
                 {/* Profile initials & Logout */}
-                <div className="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-white/10">
+                <div className={`flex items-center gap-3 pl-3 border-l ${
+                  isLightHeader ? 'border-slate-200' : 'border-slate-200 dark:border-white/10'
+                }`}>
                   <Link
                     href={user.role === 'admin' ? '/admin' : '/dashboard'}
-                    className="w-8 h-8 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase hover:bg-violet-500/30 transition-all"
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold uppercase transition-all ${
+                      isLightHeader
+                        ? 'bg-violet-100 border border-violet-200 text-violet-650 hover:bg-violet-200'
+                        : 'bg-violet-500/20 border border-violet-500/30 text-violet-600 dark:text-violet-400 hover:bg-violet-500/30'
+                    }`}
                     title={t('navGoToDashboard')}
                   >
                     {userInitials}
@@ -375,7 +407,9 @@ export function Navbar() {
 
                   <button
                     onClick={handleLogout}
-                    className="transition-all flex items-center justify-center cursor-pointer text-slate-400 hover:text-red-400"
+                    className={`transition-all flex items-center justify-center cursor-pointer ${
+                      isLightHeader ? 'text-slate-500 hover:text-red-600' : 'text-slate-400 hover:text-red-400'
+                    }`}
                     title={t('navSignOut')}
                   >
                     <LogOut className="w-4 h-4" />
@@ -386,7 +420,9 @@ export function Navbar() {
               <>
                 <Link
                   href="/login"
-                  className="px-4 py-2 text-sm font-medium transition-colors text-slate-300 hover:text-white"
+                  className={`px-4 py-2 text-sm font-medium transition-colors ${
+                    isLightHeader ? 'text-slate-600 hover:text-slate-900' : 'text-slate-300 hover:text-white'
+                  }`}
                 >
                   {t('navLogIn')}
                 </Link>
@@ -402,8 +438,11 @@ export function Navbar() {
 
           {/* Mobile menu toggle */}
           <button
+            type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 transition-colors text-slate-300 hover:text-white"
+            className={`md:hidden p-3 transition-colors cursor-pointer relative z-50 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 ${
+              isLightHeader ? 'text-slate-600 hover:text-slate-900' : 'text-slate-300 hover:text-white'
+            }`}
             aria-label="Toggle menu"
           >
             {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -414,27 +453,39 @@ export function Navbar() {
       {/* Mobile menu */}
       <div
         className={`md:hidden transition-all duration-300 overflow-hidden ${
-          isOpen ? 'max-h-[700px] opacity-100' : 'max-h-0 opacity-0'
+          isOpen ? 'max-h-[700px] opacity-100 pointer-events-auto' : 'max-h-0 opacity-0 pointer-events-none'
         }`}
       >
-        <div className="bg-slate-950/95 dark:bg-[#090C10]/95 backdrop-blur-xl border-t border-slate-800 dark:border-white/5 px-4 py-4 space-y-1 shadow-lg shadow-slate-900/50 dark:shadow-none animate-fade-in-up">
-          {navLinks.map(({ label, href }) => (
+        <div className={`backdrop-blur-xl border-t px-4 py-4 space-y-1 shadow-lg animate-fade-in-up transition-all ${
+          isLightHeader
+            ? 'bg-white/95 border-slate-200 text-slate-800'
+            : 'bg-slate-950/95 dark:bg-[#090C10]/95 border-slate-800 dark:border-white/5 shadow-slate-900/50 dark:shadow-none'
+        }`}>
+          {navLinks.map(({ label, href, external }) => (
             <Link
               key={href}
               href={href}
-              onClick={(e) => handleNav(e, href)}
-              className="block px-4 py-3 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-all"
+              onClick={(e) => handleNav(e, href, external)}
+              className={`block px-4 py-3 rounded-lg text-sm font-medium transition-all ${
+                isLightHeader
+                  ? 'text-slate-650 hover:text-slate-900 hover:bg-slate-100'
+                  : 'text-slate-300 hover:text-white hover:bg-white/5'
+              }`}
             >
               {label}
             </Link>
           ))}
 
-          <div className="pt-3 flex flex-col gap-2 border-t border-slate-800 dark:border-white/5">
+          <div className={`pt-3 flex flex-col gap-2 border-t ${isLightHeader ? 'border-slate-200' : 'border-slate-800 dark:border-white/5'}`}>
             {/* Mobile Theme selector */}
             <button
               type="button"
               onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-              className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-slate-300 bg-white/5 border border-slate-800 dark:border-white/5 rounded-xl hover:bg-white/10 transition-all"
+              className={`w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium border rounded-xl transition-all cursor-pointer ${
+                isLightHeader
+                  ? 'text-slate-700 bg-slate-50 border-slate-200 hover:bg-slate-100'
+                  : 'text-slate-300 bg-white/5 border-slate-800 dark:border-white/5 hover:bg-white/10'
+              }`}
             >
               <span className="flex items-center gap-2">
                 {mounted && resolvedTheme === 'dark' ? (
@@ -454,7 +505,11 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={() => setShowLang(!showLang)}
-                className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-slate-300 bg-white/5 border border-slate-800 dark:border-white/5 rounded-xl hover:bg-white/10 transition-all"
+                className={`w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium border rounded-xl transition-all cursor-pointer ${
+                  isLightHeader
+                    ? 'text-slate-700 bg-slate-50 border-slate-200 hover:bg-slate-100'
+                    : 'text-slate-300 bg-white/5 border-slate-800 dark:border-white/5 hover:bg-white/10'
+                }`}
               >
                 <span className="flex items-center gap-2">
                   <Globe className="w-3.5 h-3.5 text-slate-400" />
@@ -463,7 +518,11 @@ export function Navbar() {
                 <span>{flags[language]}</span>
               </button>
               {showLang && (
-                <div className="mt-1 border border-slate-800 dark:border-white/5 rounded-xl overflow-hidden bg-slate-900 shadow-md max-h-48 overflow-y-auto">
+                <div className={`mt-1 border rounded-xl overflow-hidden shadow-md max-h-48 overflow-y-auto ${
+                  isLightHeader
+                    ? 'bg-white border-slate-200'
+                    : 'bg-slate-900 border-slate-800 dark:border-white/5'
+                }`}>
                   {(Object.keys(flags) as Array<Language>).map((lang) => (
                     <button
                       type="button"
@@ -472,7 +531,15 @@ export function Navbar() {
                         setLanguage(lang);
                         setShowLang(false);
                       }}
-                      className={`w-full flex items-center justify-between px-4 py-2 text-xs font-medium text-left hover:bg-white/5 transition-all ${language === lang ? 'text-violet-450 bg-white/5' : 'text-slate-300'}`}
+                      className={`w-full flex items-center justify-between px-4 py-2 text-xs font-medium text-left transition-all cursor-pointer ${
+                        isLightHeader
+                          ? language === lang
+                            ? 'text-violet-650 bg-slate-100'
+                            : 'text-slate-700 hover:bg-slate-50'
+                          : language === lang
+                            ? 'text-violet-450 bg-white/5'
+                            : 'text-slate-300 hover:bg-white/5'
+                      }`}
                     >
                       <span className="flex items-center gap-2">
                         <span>{flags[lang]}</span>
@@ -488,13 +555,21 @@ export function Navbar() {
             {user ? (
               <div className="space-y-3 pt-1">
                 {/* Mobile User Profile details */}
-                <div className="flex items-center gap-3 px-4 py-2.5 bg-white/5 rounded-xl">
-                  <div className="w-9 h-9 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center text-xs font-bold text-violet-400 uppercase">
+                <div className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border ${
+                  isLightHeader
+                    ? 'bg-slate-50 border-slate-200'
+                    : 'bg-white/5 border-slate-800 dark:border-white/5'
+                }`}>
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold uppercase ${
+                    isLightHeader
+                      ? 'bg-violet-100 text-violet-600 border border-violet-200'
+                      : 'bg-violet-500/20 border border-violet-500/30 text-violet-400'
+                  }`}>
                     {userInitials}
                   </div>
                   <div>
-                    <p className="text-xs font-semibold text-white">{user.firstName} {user.lastName}</p>
-                    <p className="text-[10px] text-slate-400 font-mono">{user.email}</p>
+                    <p className={`text-xs font-semibold ${isLightHeader ? 'text-slate-800' : 'text-white'}`}>{user.firstName} {user.lastName}</p>
+                    <p className={`text-[10px] font-mono ${isLightHeader ? 'text-slate-500' : 'text-slate-400'}`}>{user.email}</p>
                   </div>
                 </div>
 
@@ -502,13 +577,18 @@ export function Navbar() {
                 <Link
                   href={user.role === 'admin' ? '/admin' : '/dashboard'}
                   onClick={() => setIsOpen(false)}
-                  className="block w-full px-4 py-2.5 text-center text-xs font-semibold text-violet-450 bg-violet-500/10 border border-violet-500/20 rounded-xl hover:bg-violet-500/20 transition-all"
+                  className={`block w-full px-4 py-2.5 text-center text-xs font-semibold rounded-xl border transition-all ${
+                    isLightHeader
+                      ? 'text-violet-600 bg-violet-50 border-violet-100 hover:bg-violet-100'
+                      : 'text-violet-450 bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20'
+                  }`}
                 >
                   {t('navGoToDashboard')}
                 </Link>
 
                 {/* Mobile Sign Out */}
                 <button
+                  type="button"
                   onClick={() => {
                     handleLogout();
                     setIsOpen(false);
@@ -521,7 +601,14 @@ export function Navbar() {
               </div>
             ) : (
               <div className="flex flex-col gap-2 mt-1">
-                <Link href="/login" className="block px-4 py-3 text-center text-sm font-medium text-slate-300 border border-white/5 rounded-lg transition-all hover:bg-white/5">
+                <Link
+                  href="/login"
+                  className={`block px-4 py-3 text-center text-sm font-medium border rounded-lg transition-all ${
+                    isLightHeader
+                      ? 'text-slate-700 border-slate-200 hover:bg-slate-100'
+                      : 'text-slate-300 border-white/5 hover:bg-white/5'
+                  }`}
+                >
                   {t('navLogIn')}
                 </Link>
                 <Link href="/signup" className="block px-4 py-3 text-center text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-lg transition-all">

@@ -106,7 +106,7 @@ export function InvestmentPlans() {
                   className={`group/btn w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
                     plan.featured
                       ? 'bg-violet-600 hover:bg-violet-700 text-white shadow-md shadow-violet-600/15'
-                      : 'border border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-white/5'
+                      : 'bg-slate-100 hover:bg-slate-200 text-slate-900 dark:bg-white/10 dark:hover:bg-white/15 dark:text-white shadow-sm'
                   }`}
                 >
                   {t('plansInvestNow')}
