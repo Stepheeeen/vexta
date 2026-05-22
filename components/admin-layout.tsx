@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutGrid, Users, CreditCard, BarChart3, Settings, LogOut, Bell, X, Check, ArrowDownRight, AlertTriangle, FileText } from 'lucide-react';
+import { LayoutGrid, Users, CreditCard, BarChart3, Settings, LogOut, Bell, X, Check, ArrowDownRight, AlertTriangle, FileText, Sun, Moon } from 'lucide-react';
 import { BackgroundPattern } from '@/components/background-pattern';
 import { VextaLogo } from '@/components/vexta-logo';
 import { SYSTEM_CONFIG } from '@/lib/config/system';
 import { useTranslation } from '@/components/translation-provider';
 import { useState, useEffect, useRef } from 'react';
+import { useTheme } from 'next-themes';
 
 const flags = {
   en: '🇺🇸',
@@ -112,6 +113,13 @@ const adminTranslations = {
   }
 };
 
+interface NavItem {
+  href: string;
+  icon: any;
+  labelKey: keyof typeof adminTranslations['en'];
+  exact?: boolean;
+}
+
 function isActive(pathname: string, href: string, exact = false) {
   if (exact) return pathname === href;
   return pathname.startsWith(href) && href !== '/admin';
@@ -123,26 +131,40 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { language, setLanguage, t } = useTranslation();
   const [showNotif, setShowNotif] = useState(false);
   const [showLang, setShowLang] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const [adminName, setAdminName] = useState('Admin');
+  const [adminEmail, setAdminEmail] = useState('');
   const [adminInitials, setAdminInitials] = useState('AD');
   const [notifications, setNotifications] = useState<any[]>([]);
   const notifRef = useRef<HTMLDivElement>(null);
   const langRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const getAdminLabel = (key: keyof typeof adminTranslations['en']) => {
     return (adminTranslations as any)[language]?.[key] || adminTranslations['en'][key] || key;
   };
 
-  const navItems = [
-    { href: '/admin',             icon: LayoutGrid,     labelKey: 'dashboard' as const,   exact: true },
-    { href: '/admin/users',        icon: Users,          labelKey: 'users' as const },
-    { href: '/admin/deposits',     icon: ArrowDownRight, labelKey: 'deposits' as const },
-    { href: '/admin/transactions', icon: CreditCard,     labelKey: 'transactions' as const },
-    { href: '/admin/withdrawals',  icon: BarChart3,      labelKey: 'withdrawals' as const },
-    { href: '/admin/analytics',    icon: BarChart3,      labelKey: 'analytics' as const },
-    { href: '/admin/resources',    icon: FileText,       labelKey: 'resources' as const },
-    { href: '/admin/settings',     icon: Settings,       labelKey: 'settings' as const },
+  const coreNavItems: NavItem[] = [
+    { href: '/admin',             icon: LayoutGrid,     labelKey: 'dashboard',   exact: true },
+    { href: '/admin/users',        icon: Users,          labelKey: 'users' },
+    { href: '/admin/deposits',     icon: ArrowDownRight, labelKey: 'deposits' },
+    { href: '/admin/withdrawals',  icon: BarChart3,      labelKey: 'withdrawals' },
+    { href: '/admin/analytics',    icon: BarChart3,      labelKey: 'analytics' },
   ];
+
+  const extraNavItems: NavItem[] = [
+    { href: '/admin/transactions', icon: CreditCard,     labelKey: 'transactions' },
+    { href: '/admin/resources',    icon: FileText,       labelKey: 'resources' },
+    { href: '/admin/settings',     icon: Settings,       labelKey: 'settings' },
+  ];
+
+  const allNavItems = [...coreNavItems, ...extraNavItems];
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -152,6 +174,9 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       }
       if (langRef.current && !langRef.current.contains(event.target as Node)) {
         setShowLang(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setShowProfile(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -175,6 +200,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           setAdminInitials(
             ((first ? first.charAt(0) : '') + (last ? last.charAt(0) : '')) || 'AD'
           );
+          setAdminEmail(meJson.user.email || '');
         } else {
           router.push('/login');
           return;
@@ -234,44 +260,11 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </Link>
 
         <div className="flex items-center gap-5 relative">
-          {/* Language Switcher (Standalone Icon - No container/radius) */}
-          <div className="relative" ref={langRef}>
-            <button
-              onClick={() => setShowLang(!showLang)}
-              className="text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white transition-all flex items-center justify-center"
-              title={t('selectLanguage') || 'Select Language'}
-            >
-              <span className="text-base select-none">{flags[language]}</span>
-            </button>
-            {showLang && (
-              <div className="absolute right-0 top-9 w-40 bg-white dark:bg-[#0A0F14]/95 border border-slate-200 dark:border-white/10 rounded-xl shadow-xl z-50 overflow-hidden font-sans">
-                <div className="py-1">
-                  {(Object.keys(flags) as Array<keyof typeof flags>).map((lang) => (
-                    <button
-                      key={lang}
-                      onClick={() => {
-                        setLanguage(lang);
-                        setShowLang(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-left hover:bg-slate-100 dark:hover:bg-white/5 transition-all ${language === lang ? 'text-violet-600 dark:text-violet-400' : 'text-slate-700 dark:text-gray-300'}`}
-                    >
-                      <span className="flex items-center gap-2">
-                        <span>{flags[lang]}</span>
-                        <span>{langNames[lang]}</span>
-                      </span>
-                      {language === lang && <Check className="w-3.5 h-3.5" />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
           {/* Notification bell (Standalone Icon - No container/radius) */}
           <div className="relative" ref={notifRef}>
             <button
               onClick={() => setShowNotif(!showNotif)}
-              className="relative text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white transition-all flex items-center justify-center"
+              className="relative text-slate-500 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white transition-all flex items-center justify-center cursor-pointer"
             >
               <Bell className="w-4 h-4" />
               {unreadCount > 0 && (
@@ -307,20 +300,118 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             )}
           </div>
 
-          {/* User Profile initials & Logout */}
-          <div className="flex items-center gap-3 pl-3 border-l border-slate-200 dark:border-white/5">
-            <div className="w-8 h-8 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase">
-              {adminInitials}
-            </div>
-            
-            {/* Logout (Standalone Icon - No container/radius) */}
+          {/* User Profile initials & Dropdown */}
+          <div className="flex items-center pl-3 border-l border-slate-200 dark:border-white/5 relative" ref={profileRef}>
             <button
-              onClick={handleLogout}
-              className="text-slate-400 hover:text-red-500 transition-all flex items-center justify-center"
-              title={t('signOut') || 'Sign out'}
+              onClick={() => setShowProfile(!showProfile)}
+              className="w-8 h-8 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase hover:ring-2 hover:ring-violet-500/50 transition-all cursor-pointer"
             >
-              <LogOut className="w-4 h-4" />
+              {adminInitials}
             </button>
+            {showProfile && (
+              <div className="absolute right-0 top-10 w-72 bg-white/95 dark:bg-[#0A0F14]/95 backdrop-blur-2xl border border-slate-200 dark:border-white/10 rounded-2xl shadow-2xl z-50 p-4 space-y-4 font-sans">
+                {/* Admin Info */}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center text-xs font-bold text-violet-600 dark:text-violet-400 uppercase">
+                    {adminInitials}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{adminName}</p>
+                    <p className="text-[10px] text-slate-500 dark:text-gray-400 truncate">{adminEmail}</p>
+                  </div>
+                </div>
+                
+                <div className="border-t border-slate-100 dark:border-white/5" />
+
+                {/* Extra Links */}
+                <div className="space-y-1">
+                  {extraNavItems.map(({ href, icon: Icon, labelKey }) => (
+                    <Link
+                      key={href}
+                      href={href}
+                      onClick={() => setShowProfile(false)}
+                      className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                        isActive(pathname, href)
+                          ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400'
+                          : 'text-slate-600 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/5'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4 shrink-0" />
+                      <span>{getAdminLabel(labelKey)}</span>
+                    </Link>
+                  ))}
+                </div>
+
+                <div className="border-t border-slate-100 dark:border-white/5" />
+
+                {/* Preferences */}
+                <div className="space-y-3">
+                  {/* Theme */}
+                  <div className="flex items-center justify-between text-xs text-slate-600 dark:text-gray-300">
+                    <span className="font-semibold">Theme</span>
+                    <div className="flex bg-slate-100 dark:bg-white/5 p-0.5 rounded-lg border border-slate-200/50 dark:border-white/5">
+                      <button
+                        onClick={() => setTheme('light')}
+                        className={`p-1.5 rounded-md transition-all ${(mounted && resolvedTheme === 'light') ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 dark:text-gray-500'}`}
+                      >
+                        <Sun className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setTheme('dark')}
+                        className={`p-1.5 rounded-md transition-all ${(mounted && resolvedTheme === 'dark') ? 'bg-[#09090f] text-violet-400 shadow-sm' : 'text-slate-400 dark:text-gray-500'}`}
+                      >
+                        <Moon className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Language */}
+                  <div className="flex items-center justify-between text-xs text-slate-600 dark:text-gray-300">
+                    <span className="font-semibold">Language</span>
+                    <div className="relative" ref={langRef}>
+                      <button
+                        onClick={() => setShowLang(!showLang)}
+                        className="flex items-center gap-1 bg-slate-100 dark:bg-white/5 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-white/5 hover:bg-slate-200 dark:hover:bg-white/10 transition-all text-[11px] font-bold"
+                      >
+                        <span>{flags[language]}</span>
+                        <span>{langNames[language]}</span>
+                      </button>
+                      {showLang && (
+                        <div className="absolute right-0 bottom-7 mb-1 w-36 bg-white dark:bg-[#0A0F14]/95 border border-slate-200 dark:border-white/10 rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto">
+                          {(Object.keys(flags) as Array<keyof typeof flags>).map((lang) => (
+                            <button
+                              key={lang}
+                              onClick={() => {
+                                setLanguage(lang);
+                                setShowLang(false);
+                              }}
+                              className={`w-full flex items-center justify-between px-2.5 py-1.5 text-[10px] font-semibold text-left hover:bg-slate-100 dark:hover:bg-white/5 transition-all ${language === lang ? 'text-violet-600 dark:text-violet-400' : 'text-slate-700 dark:text-gray-300'}`}
+                            >
+                              <span className="flex items-center gap-1.5">
+                                <span>{flags[lang]}</span>
+                                <span>{langNames[lang]}</span>
+                              </span>
+                              {language === lang && <Check className="w-3.5 h-3.5" />}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-slate-100 dark:border-white/5" />
+
+                {/* Logout */}
+                <button
+                  onClick={handleLogout}
+                  className="w-full flex items-center justify-center gap-2 py-2 rounded-xl text-xs font-bold text-red-500 hover:bg-red-500/10 border border-red-500/20 hover:border-red-500/30 transition-all cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>{t('signOut') || 'Sign Out'}</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -328,7 +419,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       {/* ── Desktop Left Slim Sidebar (links only) ───────────── */}
       <aside className="hidden md:flex fixed top-14 bottom-0 left-0 z-40 w-20 flex-col items-center py-6 bg-white/80 dark:bg-[#09090f]/80 backdrop-blur-xl border-r border-slate-200/50 dark:border-white/5">
         <nav className="flex flex-col items-center gap-3.5 w-full px-2">
-          {navItems.map(({ href, icon: Icon, labelKey, exact }) => {
+          {allNavItems.map(({ href, icon: Icon, labelKey, exact }) => {
             const active = isActive(pathname, href, exact);
             return (
               <Link
@@ -367,7 +458,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           {/* Mobile Bell (Standalone Icon - No container/radius) */}
           <button
             onClick={() => setShowNotif(!showNotif)}
-            className="relative text-slate-500 hover:text-slate-950 dark:text-gray-400 dark:hover:text-white transition-all flex items-center justify-center"
+            className="relative text-slate-500 hover:text-slate-955 dark:text-gray-400 dark:hover:text-white transition-all flex items-center justify-center cursor-pointer"
           >
             <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
@@ -376,7 +467,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           </button>
           
           {showNotif && (
-            <div className="absolute right-4 top-12 w-72 bg-white dark:bg-[#0A0F14]/95 border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl z-50 overflow-hidden font-sans">
+            <div className="absolute right-4 top-12 w-72 bg-white dark:bg-[#0A0F14]/95 border border-slate-200/10 rounded-2xl shadow-xl z-50 overflow-hidden font-sans">
               <div className="p-3 border-b border-slate-200 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-white/2">
                 <span className="text-xs font-semibold text-slate-800 dark:text-white">{t('adminAlerts') || 'Admin Alerts'}</span>
               </div>
@@ -398,11 +489,133 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
             </div>
           )}
 
-          <div className="w-7 h-7 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase">
+          {/* Clickable Profile Initials Button to toggle Mobile profile drawer */}
+          <button
+            onClick={() => setShowProfile(!showProfile)}
+            className="w-7 h-7 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center text-[10px] font-bold text-violet-600 dark:text-violet-400 uppercase hover:scale-105 active:scale-95 transition-transform cursor-pointer"
+          >
             {adminInitials}
-          </div>
+          </button>
         </div>
       </header>
+
+      {/* Mobile Profile Drawer Backdrop */}
+      {showProfile && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] transition-opacity"
+          onClick={() => setShowProfile(false)}
+        />
+      )}
+
+      {/* Mobile Profile Drawer Panel */}
+      <div
+        className={`md:hidden fixed inset-y-0 right-0 w-80 bg-white/95 dark:bg-[#0c0d14]/95 backdrop-blur-2xl border-l border-slate-200 dark:border-white/10 shadow-2xl z-[101] transform transition-transform duration-300 ease-out p-6 flex flex-col justify-between ${
+          showProfile ? 'translate-x-0' : 'translate-x-full'
+        }`}
+      >
+        <div className="flex flex-col h-full gap-5">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center text-sm font-bold text-violet-600 dark:text-violet-400 uppercase">
+                {adminInitials}
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{adminName}</p>
+                <p className="text-[10px] text-slate-500 dark:text-gray-400 truncate">{adminEmail}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowProfile(false)}
+              className="p-1.5 rounded-xl bg-slate-100 dark:bg-white/5 border border-slate-200/50 dark:border-white/5 text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="border-t border-slate-150 dark:border-white/5" />
+
+          {/* Extra Links */}
+          <div className="flex-1 space-y-1.5 overflow-y-auto">
+            <p className="text-[10px] font-mono text-slate-400 uppercase tracking-widest pl-2 mb-1">Menu Options</p>
+            {extraNavItems.map(({ href, icon: Icon, labelKey }) => (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setShowProfile(false)}
+                className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  isActive(pathname, href)
+                    ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20'
+                    : 'text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/5'
+                }`}
+              >
+                <Icon className="w-4 h-4 shrink-0" />
+                <span>{getAdminLabel(labelKey)}</span>
+              </Link>
+            ))}
+          </div>
+
+          <div className="border-t border-slate-150 dark:border-white/5" />
+
+          {/* Preferences */}
+          <div className="space-y-4">
+            <p className="text-[10px] font-mono text-slate-400 uppercase tracking-widest pl-2">Preferences</p>
+            
+            {/* Theme */}
+            <div className="flex items-center justify-between text-xs text-slate-700 dark:text-gray-300 px-2">
+              <span className="font-semibold">Dark Theme</span>
+              <div className="flex bg-slate-100 dark:bg-white/5 p-0.5 rounded-xl border border-slate-200/50 dark:border-white/5">
+                <button
+                  onClick={() => setTheme('light')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${(mounted && resolvedTheme === 'light') ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 dark:text-gray-500'}`}
+                >
+                  <Sun className="w-3.5 h-3.5 inline mr-1" /> Light
+                </button>
+                <button
+                  onClick={() => setTheme('dark')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${(mounted && resolvedTheme === 'dark') ? 'bg-[#09090f] text-violet-400 shadow-sm' : 'text-slate-400 dark:text-gray-500'}`}
+                >
+                  <Moon className="w-3.5 h-3.5 inline mr-1" /> Dark
+                </button>
+              </div>
+            </div>
+
+            {/* Language Selection Grid */}
+            <div className="space-y-2">
+              <span className="text-xs font-semibold text-slate-700 dark:text-gray-300 px-2 block">Language</span>
+              <div className="grid grid-cols-2 gap-1.5 max-h-40 overflow-y-auto p-1 bg-slate-50 dark:bg-white/2 rounded-2xl border border-slate-150 dark:border-white/5">
+                {(Object.keys(flags) as Array<keyof typeof flags>).map((lang) => (
+                  <button
+                    key={lang}
+                    onClick={() => {
+                      setLanguage(lang);
+                    }}
+                    className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl text-[10px] font-bold transition-all ${
+                      language === lang
+                        ? 'bg-violet-600 text-white shadow'
+                        : 'bg-white dark:bg-white/5 text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/10'
+                    }`}
+                  >
+                    <span>{flags[lang]}</span>
+                    <span>{langNames[lang]}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="border-t border-slate-150 dark:border-white/5" />
+
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold text-red-500 hover:bg-red-500/10 border border-red-500/20 hover:border-red-500/30 transition-all shrink-0 mb-4 cursor-pointer"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>{t('signOut') || 'Sign Out'}</span>
+          </button>
+        </div>
+      </div>
 
       {/* ── Page Content ───────────────────────────────────── */}
       <main className="relative z-10 pt-14 pb-20 md:pb-4 min-h-screen md:pl-20">
@@ -421,18 +634,18 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
       {/* ── Mobile Bottom Navigation Bar ───────────────────── */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-16 bg-white/95 dark:bg-[#09090f]/90 backdrop-blur-xl border-t border-slate-200/60 dark:border-white/5 flex items-center justify-around px-2">
-        {navItems.map(({ href, icon: Icon, labelKey, exact }) => {
+        {coreNavItems.map(({ href, icon: Icon, labelKey, exact }) => {
           const active = isActive(pathname, href, exact);
           return (
             <Link
               key={href}
               href={href}
-              className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[48px] ${
-                active ? 'text-violet-600 dark:text-violet-400' : 'text-slate-500 dark:text-gray-600 hover:text-gray-350'
+              className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[52px] ${
+                active ? 'text-violet-600 dark:text-violet-400' : 'text-slate-500 dark:text-gray-600 hover:text-gray-300'
               }`}
             >
-              <Icon className={`w-4 h-4 transition-all ${active ? 'scale-110' : ''}`} />
-              <span className="text-[8px] font-medium tracking-wide">{getAdminLabel(labelKey)}</span>
+              <Icon className={`w-5 h-5 transition-all ${active ? 'scale-110' : ''}`} />
+              <span className="text-[9px] font-medium tracking-wide">{getAdminLabel(labelKey)}</span>
               {active && (
                 <div className="w-1 h-1 rounded-full bg-violet-600 dark:bg-violet-400 -mt-0.5" />
               )}

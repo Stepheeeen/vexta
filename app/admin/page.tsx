@@ -3,13 +3,14 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { AdminLayout } from '@/components/admin-layout';
-import { Users, DollarSign, AlertTriangle, TrendingUp, Loader2 } from 'lucide-react';
+import { Users, DollarSign, AlertTriangle, TrendingUp, Loader2, Wallet } from 'lucide-react';
 import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
 
 interface Stats {
   totalUsers: number;
   totalVolume: number;
+  totalWithdrawals: number;
   pendingWithdrawalsCount: number;
   pendingDepositsCount: number;
   platformROI: number;
@@ -128,6 +129,7 @@ export default function AdminDashboard() {
   const systemStats = [
     { label: t('adminMetricTotalUsers'), value: stats?.totalUsers.toString() || '0', icon: Users, change: t('adminMetricTotalUsersSub') },
     { label: t('adminMetricTotalVol'), value: `$${stats?.totalVolume.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` || '$0.00', icon: DollarSign, change: t('adminMetricTotalVolSub') },
+    { label: t('adminMetricTotalWithdrawals'), value: `$${stats?.totalWithdrawals.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` || '$0.00', icon: Wallet, change: t('adminMetricTotalWithdrawalsSub') },
     { label: t('adminMetricPendingDeps'), value: stats?.pendingDepositsCount?.toString() || '0', icon: AlertTriangle, change: t('adminMetricPendingDepsSub') },
     { label: t('adminMetricPendingWiths'), value: stats?.pendingWithdrawalsCount.toString() || '0', icon: AlertTriangle, change: t('adminMetricPendingWithsSub') },
     { label: t('adminMetricRoiAvg'), value: `${((stats?.platformROI ?? 0) * 100).toFixed(1)}%` || '0.0%', icon: TrendingUp, change: t('adminMetricRoiAvgSub') },
@@ -141,7 +143,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* System Metrics */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
         {systemStats.map((stat) => {
           const Icon = stat.icon;
           return (

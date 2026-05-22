@@ -241,7 +241,7 @@ export function Navbar() {
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       pathname === '/handover'
                         ? isLightHeader
-                          ? 'text-violet-650 bg-violet-50'
+                          ? 'text-violet-600 bg-violet-50'
                           : 'text-white bg-violet-600/40 dark:text-violet-400 dark:bg-violet-500/10'
                         : isLightHeader
                           ? 'text-violet-600 bg-slate-100 hover:bg-slate-200'
@@ -263,7 +263,7 @@ export function Navbar() {
                         ? 'text-violet-600 bg-slate-100'
                         : 'text-violet-400 bg-white/5'
                       : isLightHeader
-                        ? 'text-slate-650 hover:text-slate-900 hover:bg-slate-100'
+                        ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                         : 'text-slate-300 hover:text-white hover:bg-white/5'
                   }`}
                 >
@@ -397,7 +397,7 @@ export function Navbar() {
                     href={user.role === 'admin' ? '/admin' : '/dashboard'}
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-[10px] font-bold uppercase transition-all ${
                       isLightHeader
-                        ? 'bg-violet-100 border border-violet-200 text-violet-650 hover:bg-violet-200'
+                        ? 'bg-violet-100 border border-violet-200 text-violet-600 hover:bg-violet-200'
                         : 'bg-violet-500/20 border border-violet-500/30 text-violet-600 dark:text-violet-400 hover:bg-violet-500/30'
                     }`}
                     title={t('navGoToDashboard')}
@@ -468,7 +468,7 @@ export function Navbar() {
               onClick={(e) => handleNav(e, href, external)}
               className={`block px-4 py-3 rounded-lg text-sm font-medium transition-all ${
                 isLightHeader
-                  ? 'text-slate-650 hover:text-slate-900 hover:bg-slate-100'
+                  ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                   : 'text-slate-300 hover:text-white hover:bg-white/5'
               }`}
             >
@@ -534,10 +534,10 @@ export function Navbar() {
                       className={`w-full flex items-center justify-between px-4 py-2 text-xs font-medium text-left transition-all cursor-pointer ${
                         isLightHeader
                           ? language === lang
-                            ? 'text-violet-650 bg-slate-100'
+                            ? 'text-violet-600 bg-slate-100'
                             : 'text-slate-700 hover:bg-slate-50'
                           : language === lang
-                            ? 'text-violet-450 bg-white/5'
+                            ? 'text-violet-400 bg-white/5'
                             : 'text-slate-300 hover:bg-white/5'
                       }`}
                     >
@@ -580,7 +580,7 @@ export function Navbar() {
                   className={`block w-full px-4 py-2.5 text-center text-xs font-semibold rounded-xl border transition-all ${
                     isLightHeader
                       ? 'text-violet-600 bg-violet-50 border-violet-100 hover:bg-violet-100'
-                      : 'text-violet-450 bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20'
+                      : 'text-violet-400 bg-violet-500/10 border border-violet-500/20 hover:bg-violet-500/20'
                   }`}
                 >
                   {t('navGoToDashboard')}

@@ -8,6 +8,7 @@ import { useTranslation } from '@/components/translation-provider';
 interface Stats {
   totalUsers: number;
   totalVolume: number;
+  totalWithdrawals: number;
 }
 
 const localeMap = {
@@ -67,30 +68,56 @@ export default function AdminAnalytics() {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
-          <p className="text-slate-500 dark:text-gray-400 text-sm font-medium mb-1">{t('adminMetricTotalUsers') || 'Total Users'}</p>
-          <p className="text-3xl font-bold text-violet-600 dark:text-violet-400 mb-2">{stats?.totalUsers ?? 0}</p>
-          <p className="text-xs text-emerald-600 dark:text-emerald-400 font-mono">+12.5% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+          <div>
+            <p className="text-slate-500 dark:text-gray-400 text-xs font-medium mb-1 truncate">{t('adminMetricTotalUsers') || 'Total Users'}</p>
+            <p className="text-2xl font-bold text-violet-600 dark:text-violet-400 mb-2 truncate">{stats?.totalUsers ?? 0}</p>
+          </div>
+          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono truncate">+12.5% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
         </div>
-        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
-          <p className="text-slate-500 dark:text-gray-400 text-sm font-medium mb-1">{t('adminMetricTotalVol') || 'Total Volume'}</p>
-          <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">
-            ${stats?.totalVolume.toLocaleString(undefined, { maximumFractionDigits: 0 }) ?? '0'}
-          </p>
-          <p className="text-xs text-emerald-600 dark:text-emerald-400 font-mono">+18.2% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
+        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+          <div>
+            <p className="text-slate-500 dark:text-gray-400 text-xs font-medium mb-1 truncate">{t('adminAnalyticsTotalSales') || 'Total Sales'}</p>
+            <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mb-2 truncate">
+              ${stats?.totalVolume != null ? stats.totalVolume.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '0'}
+            </p>
+          </div>
+          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono truncate">+18.2% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
         </div>
-        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
-          <p className="text-slate-500 dark:text-gray-400 text-sm font-medium mb-1">{t('adminAnalyticsAvgDeposit') || 'Avg. Deposit'}</p>
-          <p className="text-3xl font-bold text-violet-600 dark:text-violet-400 mb-2">
-            ${stats && stats.totalUsers > 0 ? (stats.totalVolume / stats.totalUsers).toLocaleString(undefined, { maximumFractionDigits: 0 }) : '0'}
-          </p>
-          <p className="text-xs text-emerald-600 dark:text-emerald-400 font-mono">+5.3% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
+        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+          <div>
+            <p className="text-slate-500 dark:text-gray-400 text-xs font-medium mb-1 truncate">{t('adminAnalyticsTotalPayments') || 'Total Payments'}</p>
+            <p className="text-2xl font-bold text-rose-500 dark:text-rose-400 mb-2 truncate">
+              ${stats?.totalWithdrawals != null ? stats.totalWithdrawals.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '0'}
+            </p>
+          </div>
+          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono truncate">+14.1% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
         </div>
-        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
-          <p className="text-slate-500 dark:text-gray-400 text-sm font-medium mb-1">{t('adminAnalyticsRetention') || 'Retention Rate'}</p>
-          <p className="text-3xl font-bold text-violet-600 dark:text-violet-400 mb-2">98.4%</p>
-          <p className="text-xs text-emerald-600 dark:text-emerald-400 font-mono">+2.1% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
+        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+          <div>
+            <p className="text-slate-500 dark:text-gray-400 text-xs font-medium mb-1 truncate">{t('adminMetricTotalVol') || 'Total Volume'}</p>
+            <p className="text-2xl font-bold text-violet-600 dark:text-violet-400 mb-2 truncate">
+              ${stats?.totalVolume != null ? stats.totalVolume.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '0'}
+            </p>
+          </div>
+          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono truncate">+18.2% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
+        </div>
+        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+          <div>
+            <p className="text-slate-500 dark:text-gray-400 text-xs font-medium mb-1 truncate">{t('adminAnalyticsAvgDeposit') || 'Avg. Deposit'}</p>
+            <p className="text-2xl font-bold text-violet-600 dark:text-violet-400 mb-2 truncate">
+              ${stats && stats.totalUsers > 0 ? (stats.totalVolume / stats.totalUsers).toLocaleString(undefined, { maximumFractionDigits: 0 }) : '0'}
+            </p>
+          </div>
+          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono truncate">+5.3% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
+        </div>
+        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+          <div>
+            <p className="text-slate-500 dark:text-gray-400 text-xs font-medium mb-1 truncate">{t('adminAnalyticsRetention') || 'Retention Rate'}</p>
+            <p className="text-2xl font-bold text-violet-600 dark:text-violet-400 mb-2 truncate">98.4%</p>
+          </div>
+          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono truncate">+2.1% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
         </div>
       </div>
 

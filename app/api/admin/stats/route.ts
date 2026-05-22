@@ -26,6 +26,12 @@ export async function GET(req: NextRequest) {
     });
     const totalVolume = deposits.reduce((sum, tx) => sum + tx.amount, 0);
 
+    const approvedWithdrawals = await prisma.withdrawal.findMany({
+      where: { status: 'approved' },
+      select: { amount: true }
+    });
+    const totalWithdrawals = approvedWithdrawals.reduce((sum, w) => sum + w.amount, 0);
+
     // 3. System ROI average
     // Get average dailyROI from all plans
     const plans = await prisma.plan.findMany({ select: { dailyROI: true } });
@@ -147,6 +153,7 @@ export async function GET(req: NextRequest) {
       stats: {
         totalUsers,
         totalVolume,
+        totalWithdrawals,
         pendingWithdrawalsCount,
         pendingDepositsCount,
         platformROI: avgDailyROI

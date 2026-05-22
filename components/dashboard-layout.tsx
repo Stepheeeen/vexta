@@ -54,6 +54,13 @@ const langNames = {
   de: 'Deutsch'
 };
 
+interface NavItem {
+  href: string;
+  icon: any;
+  labelKey: string;
+  exact?: boolean;
+}
+
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -75,7 +82,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  const coreNavItems = [
+  const coreNavItems: NavItem[] = [
     { href: '/dashboard',            icon: LayoutGrid,     labelKey: 'overview',  exact: true },
     { href: '/dashboard/portfolio',  icon: TrendingUp,     labelKey: 'portfolio' },
     { href: '/dashboard/arbitrage',  icon: BarChart3,      labelKey: 'arbitrage' },
@@ -83,7 +90,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { href: '/dashboard/withdraw',   icon: ArrowUpRight,   labelKey: 'withdraw' },
   ];
 
-  const extraNavItems = [
+  const extraNavItems: NavItem[] = [
     { href: '/dashboard/earnings',   icon: Wallet,         labelKey: 'earnings'  },
     { href: '/dashboard/referrals',  icon: Users,          labelKey: 'referrals' },
     { href: '/dashboard/resources',  icon: FileText,       labelKey: 'materials' },

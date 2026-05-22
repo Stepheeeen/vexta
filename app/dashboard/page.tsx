@@ -66,26 +66,26 @@ function ArbitrageEngine() {
   }, []);
 
   return (
-    <div className="relative h-full flex flex-col bg-[#040810] rounded-2xl overflow-hidden border border-violet-500/15 shadow-xl shadow-violet-900/10">
+    <div className="relative h-full flex flex-col bg-[#040810] rounded-2xl overflow-hidden border border-violet-500/15 shadow-xl shadow-violet-900/10 min-w-0">
       {/* Top Bar */}
-      <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/5 bg-gradient-to-r from-violet-950/60 to-blue-950/30">
-        <div className="flex items-center gap-2.5">
-          <div className="relative w-2 h-2">
+      <div className="flex items-center justify-between px-3 sm:px-5 py-3.5 border-b border-white/5 bg-gradient-to-r from-violet-950/60 to-blue-950/30 gap-2 min-w-0">
+        <div className="flex items-center gap-2 min-w-0 shrink">
+          <div className="relative w-2 h-2 shrink-0">
             <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-70" />
             <div className="w-2 h-2 rounded-full bg-emerald-400" />
           </div>
-          <span className="text-xs font-bold text-white font-mono tracking-wide">VEXTA HFT ARBITRAGE ENGINE</span>
-          <span className="text-[9px] bg-emerald-500/20 text-emerald-400 font-mono px-2 py-0.5 rounded-full">LIVE</span>
+          <span className="text-[10px] sm:text-xs font-bold text-white font-mono tracking-wide truncate">VEXTA HFT ENGINE</span>
+          <span className="text-[9px] bg-emerald-500/20 text-emerald-400 font-mono px-2 py-0.5 rounded-full shrink-0">LIVE</span>
         </div>
-        <div className="flex items-center gap-4 text-[10px] font-mono text-slate-400">
-          <span>SPREAD <span className="text-emerald-400 font-bold">{spread}</span></span>
+        <div className="flex items-center gap-2 sm:gap-4 text-[9px] sm:text-[10px] font-mono text-slate-400 shrink-0">
+          <span className="hidden sm:inline">SPREAD <span className="text-emerald-400 font-bold">{spread}</span></span>
           <span>EXEC <span className="text-violet-400 font-bold">{execCount}</span></span>
           <span>PnL <span className="text-emerald-400 font-bold">+${totalPnL.toFixed(2)}</span></span>
         </div>
       </div>
 
       {/* Exchange Routing Diagram */}
-      <div className="px-5 pt-4 pb-2">
+      <div className="px-3 sm:px-5 pt-4 pb-2">
         <div className="grid grid-cols-3 gap-2 text-center">
           {EXCHANGES.slice(0, 6).map((ex) => {
             const isActive = activePath?.buy === ex || activePath?.sell === ex;
@@ -136,20 +136,20 @@ function ArbitrageEngine() {
       </div>
 
       {/* Live Trade Ticker */}
-      <div className="flex-1 overflow-hidden px-5 pb-4">
+      <div className="flex-1 overflow-hidden px-3 sm:px-5 pb-4">
         <div className="text-[9px] font-mono text-slate-600 uppercase tracking-widest mb-2">Live Executed Trades</div>
         <div className="space-y-1.5 overflow-hidden" style={{ maxHeight: '200px' }}>
           {trades.map((trade, i) => (
             <div
               key={trade.id}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg text-[10px] font-mono transition-all duration-500 ${
+              className={`flex items-center gap-2 px-2 sm:px-3 py-2 rounded-lg text-[9px] sm:text-[10px] font-mono transition-all duration-500 min-w-0 ${
                 i === 0 ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-white/2 border border-white/5'
               }`}
               style={{ opacity: 1 - i * 0.1 }}
             >
-              <span className="text-emerald-400 font-bold w-16 flex-shrink-0">{trade.pair}</span>
+              <span className="text-emerald-400 font-bold w-12 sm:w-16 flex-shrink-0 truncate">{trade.pair}</span>
               <span className="text-violet-400 flex-shrink-0">↔</span>
-              <span className="text-slate-400 flex-1">{trade.buy} → {trade.sell}</span>
+              <span className="text-slate-400 flex-1 truncate min-w-0">{trade.buy} → {trade.sell}</span>
               <span className="text-amber-400 flex-shrink-0">Δ{trade.spread}%</span>
               <span className="text-emerald-400 font-bold flex-shrink-0">+${trade.profit}</span>
             </div>
@@ -260,7 +260,7 @@ function ProfitCalculator() {
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-xs text-slate-655 dark:text-zinc-300 font-bold font-mono">Net Profit Cap</span>
+              <span className="text-xs text-slate-600 dark:text-zinc-300 font-bold font-mono">Net Profit Cap</span>
               <span className="text-sm font-black font-mono text-emerald-600 dark:text-emerald-400">
                 {"+" + calc.netProfit.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </span>
@@ -421,10 +421,10 @@ export default function Dashboard() {
           {/* ── Metric Cards ────────────────────────────────────────────── */}
           <div id="tour-metrics" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {metrics.map(({ label, value, change }) => (
-              <div key={label} className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-5 shadow-sm dark:shadow-none">
-                <p className="text-xs font-bold font-mono text-slate-550 dark:text-zinc-400 uppercase tracking-widest mb-3">{label}</p>
-                <p className="text-xl font-black text-slate-950 dark:text-white mb-2 font-mono">{show ? value : '••••••'}</p>
-                <div className="inline-flex items-center gap-1 text-xs font-mono font-bold text-slate-600 dark:text-zinc-350">{change}</div>
+              <div key={label} className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-4 sm:p-5 shadow-sm dark:shadow-none overflow-hidden min-w-0">
+                <p className="text-[10px] sm:text-xs font-bold font-mono text-slate-550 dark:text-zinc-400 uppercase tracking-widest mb-3 truncate">{label}</p>
+                <p className="text-base sm:text-xl font-black text-slate-950 dark:text-white mb-2 font-mono truncate">{show ? value : '••••••'}</p>
+                <div className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-mono font-bold text-slate-600 dark:text-zinc-350 truncate">{change}</div>
               </div>
             ))}
           </div>
@@ -444,14 +444,14 @@ export default function Dashboard() {
           {/* ── Secondary Grid: Active Positions + Referral Code ────────── */}
           <div className="grid md:grid-cols-2 gap-5 mb-5">
             {/* Active Arbitrage Positions */}
-            <div id="tour-positions" className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none">
+            <div id="tour-positions" className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-4 sm:p-6 shadow-sm dark:shadow-none overflow-hidden min-w-0">
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
                   <TrendingUp className="w-4 h-4 text-green-500 dark:text-green-400" />
                 </div>
                 <div>
                   <h2 className="text-base font-bold text-slate-950 dark:text-white">{t('overviewActivePositions')}</h2>
-                  <p className="text-xs text-slate-650 dark:text-zinc-400 font-semibold font-mono mt-0.5">{t('overviewArbitrageContracts')}</p>
+                  <p className="text-xs text-slate-600 dark:text-zinc-400 font-semibold font-mono mt-0.5">{t('overviewArbitrageContracts')}</p>
                 </div>
                 <div className="ml-auto flex items-center gap-1.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
@@ -461,14 +461,14 @@ export default function Dashboard() {
               <div className="space-y-3">
                 {data && data.investments.length > 0 ? (
                   data.investments.filter(i => i.status === 'active').map((i, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5">
-                      <div>
-                        <p className="text-sm font-bold text-slate-900 dark:text-white font-mono">{i.plan}</p>
-                        <p className="text-xs text-slate-500 dark:text-zinc-400 font-semibold font-mono mt-0.5">Yield contract</p>
+                    <div key={idx} className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5 min-w-0">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white font-mono truncate">{i.plan}</p>
+                        <p className="text-[10px] sm:text-xs text-slate-500 dark:text-zinc-400 font-semibold font-mono mt-0.5">Yield contract</p>
                       </div>
-                      <div className="text-right">
-                        <p className="text-base font-black text-green-500 dark:text-green-400 font-mono">+{(i.dailyROI * 100).toFixed(1)}%</p>
-                        <span className="text-[10px] font-extrabold font-mono text-green-600 dark:text-green-400 bg-green-500/10 px-2.5 py-0.5 rounded-full">ACTIVE</span>
+                      <div className="text-right shrink-0">
+                        <p className="text-sm sm:text-base font-black text-green-500 dark:text-green-400 font-mono">+{(i.dailyROI * 100).toFixed(1)}%</p>
+                        <span className="text-[9px] sm:text-[10px] font-extrabold font-mono text-green-600 dark:text-green-400 bg-green-500/10 px-2 sm:px-2.5 py-0.5 rounded-full">ACTIVE</span>
                       </div>
                     </div>
                   ))
@@ -479,18 +479,18 @@ export default function Dashboard() {
             </div>
 
             {/* Referral Code */}
-            <div id="tour-referrals" className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none">
+            <div id="tour-referrals" className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-4 sm:p-6 shadow-sm dark:shadow-none overflow-hidden min-w-0">
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
                   <Zap className="w-4 h-4 text-violet-500 dark:text-violet-400" />
                 </div>
                 <div>
                   <h2 className="text-base font-bold text-slate-950 dark:text-white">{t('overviewReferralCode')}</h2>
-                  <p className="text-xs text-slate-650 dark:text-zinc-400 font-semibold font-mono mt-0.5">{t('overviewReferralSub')}</p>
+                  <p className="text-xs text-slate-600 dark:text-zinc-400 font-semibold font-mono mt-0.5">{t('overviewReferralSub')}</p>
                 </div>
               </div>
-              <div className="flex items-center justify-between gap-3 p-4 bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl mb-5">
-                <p className="text-xs font-bold text-slate-800 dark:text-zinc-300 font-mono truncate select-all">
+              <div className="flex items-center justify-between gap-2 p-3 sm:p-4 bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl mb-5 min-w-0">
+                <p className="text-[10px] sm:text-xs font-bold text-slate-800 dark:text-zinc-300 font-mono break-all select-all min-w-0">
                   {`https://www.vexta.network/?ref=${referralCode}`}
                 </p>
                 <button
@@ -511,9 +511,9 @@ export default function Dashboard() {
                   { label: t('overviewCommRate'), value: 'Level 1-13 (10% → 0.25%)', color: 'text-violet-600 dark:text-violet-400' },
                   { label: t('overviewTotalComm'), value: `$${(data?.stats.totalCommissions ?? 0).toFixed(2)}`, color: 'text-green-600 dark:text-green-400' },
                 ].map(({ label, value, color }) => (
-                  <div key={label} className="flex justify-between items-center text-xs">
+                  <div key={label} className="flex flex-wrap justify-between items-center gap-x-2 gap-y-0.5 text-xs">
                     <span className="text-slate-600 dark:text-zinc-400 font-semibold font-mono">{label}</span>
-                    <span className={`font-bold font-mono ${color}`}>{value}</span>
+                    <span className={`font-bold font-mono text-[10px] sm:text-xs ${color}`}>{value}</span>
                   </div>
                 ))}
               </div>
