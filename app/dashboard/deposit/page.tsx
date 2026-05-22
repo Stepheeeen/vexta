@@ -433,118 +433,123 @@ export default function DepositPage() {
             )}
           </section>
 
-          {/* ── Section 2: Deposit Stats + History ─────────────────────── */}
-          <section>
-            <div className="flex items-center gap-2 mb-5">
-              <History className="w-5 h-5 text-violet-500" />
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">Your Deposit History</h2>
-            </div>
+          {/* ── Section 2: Deposit Panel & History side-by-side ────────── */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            
+            {/* Left Column: Make a Deposit */}
+            <section className="lg:col-span-5 space-y-5">
+              <div className="flex items-center gap-2 mb-1">
+                <Wallet className="w-5 h-5 text-violet-500" />
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">Make a Deposit</h2>
+              </div>
 
-            {/* Stats row */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-              {[
-                { label: 'Total Deposited', value: `$${totalDeposited.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, sub: 'USDT BEP20' },
-                { label: 'Completed', value: deposits.filter(d => d.status === 'completed').length, sub: 'deposits' },
-                { label: 'Pending Review', value: deposits.filter(d => d.status === 'pending').length, sub: 'transactions' },
-                { label: 'Network', value: 'BEP20', sub: 'Binance Smart Chain' },
-              ].map((stat, i) => (
-                <div key={i} className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl p-4">
-                  <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1">{stat.label}</p>
-                  <p className="text-lg font-black text-slate-900 dark:text-white font-mono">{stat.value}</p>
-                  <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-0.5">{stat.sub}</p>
+              <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm space-y-5 w-full">
+                {/* Network badge */}
+                <div className="flex items-center gap-2 p-3 bg-violet-500/5 border border-violet-500/20 rounded-xl">
+                  <ShieldCheck className="w-4 h-4 text-violet-500" />
+                  <span className="text-[10px] font-mono font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider">
+                    USDT · BEP20 · Binance Smart Chain Only
+                  </span>
                 </div>
-              ))}
-            </div>
 
-            {/* History list */}
-            <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden">
-              {deposits.length === 0 ? (
-                <div className="py-12 text-center text-xs text-slate-400 dark:text-gray-500 font-mono">
-                  No deposit history yet. Make your first deposit below.
+                <div>
+                  <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                    Deposit Amount (USDT)
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">$</span>
+                    <input
+                      type="number"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      placeholder="0.00"
+                      min={10}
+                      className="w-full pl-8 pr-4 py-3.5 bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl text-slate-900 dark:text-white font-mono text-base focus:outline-none focus:border-violet-500 transition-all"
+                    />
+                  </div>
+                  <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-1.5 font-mono">
+                    Minimum: $10.00 USDT • No maximum limit
+                  </p>
                 </div>
-              ) : (
-                <div className="divide-y divide-slate-100 dark:divide-white/5">
-                  {deposits.map((dep) => (
-                    <div key={dep.id} className="flex items-center justify-between px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-white/1 transition-colors">
-                      <div>
-                        <p className="text-xs font-semibold text-slate-800 dark:text-white">{dep.description || 'Deposit'}</p>
-                        <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono mt-0.5">
-                          {new Date(dep.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className={`text-[9px] font-bold font-mono px-2 py-0.5 rounded-full ${statusColor[dep.status] || 'bg-slate-200 text-slate-600'}`}>
-                          {dep.status.toUpperCase()}
-                        </span>
-                        <span className="text-sm font-black text-slate-900 dark:text-white font-mono">
-                          +${dep.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                        </span>
-                      </div>
-                    </div>
+
+                {/* Quick amounts */}
+                <div className="flex flex-wrap gap-2">
+                  {[100, 500, 1000, 2500, 5000].map(amt => (
+                    <button
+                      key={amt}
+                      onClick={() => setAmount(String(amt))}
+                      className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-white/5 hover:bg-violet-600 hover:text-white text-slate-700 dark:text-gray-300 border border-slate-200 dark:border-white/5 hover:border-violet-600 transition-all"
+                    >
+                      ${amt.toLocaleString()}
+                    </button>
                   ))}
                 </div>
-              )}
-            </div>
-          </section>
 
-          {/* ── Section 3: Deposit Input + Proceed ─────────────────────── */}
-          <section>
-            <div className="flex items-center gap-2 mb-5">
-              <Wallet className="w-5 h-5 text-violet-500" />
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">Make a Deposit</h2>
-            </div>
+                <button
+                  onClick={handleProceed}
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white text-sm font-bold shadow-lg shadow-violet-600/25 transition-all hover:scale-[1.01] flex items-center justify-center gap-2"
+                >
+                  Proceed to Payment
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </section>
 
-            <div className="max-w-lg bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm space-y-5">
-              {/* Network badge */}
-              <div className="flex items-center gap-2 p-3 bg-violet-500/5 border border-violet-500/20 rounded-xl">
-                <ShieldCheck className="w-4 h-4 text-violet-500" />
-                <span className="text-[10px] font-mono font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider">
-                  USDT · BEP20 · Binance Smart Chain Only
-                </span>
+            {/* Right Column: Deposit Stats & History */}
+            <section className="lg:col-span-7 space-y-5">
+              <div className="flex items-center gap-2 mb-1">
+                <History className="w-5 h-5 text-violet-500" />
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">Your Deposit History</h2>
               </div>
 
-              <div>
-                <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                  Deposit Amount (USDT)
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">$</span>
-                  <input
-                    type="number"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    placeholder="0.00"
-                    min={10}
-                    className="w-full pl-8 pr-4 py-3.5 bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl text-slate-900 dark:text-white font-mono text-base focus:outline-none focus:border-violet-500 transition-all"
-                  />
-                </div>
-                <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-1.5 font-mono">
-                  Minimum: $10.00 USDT • No maximum limit
-                </p>
-              </div>
-
-              {/* Quick amounts */}
-              <div className="flex flex-wrap gap-2">
-                {[100, 500, 1000, 2500, 5000].map(amt => (
-                  <button
-                    key={amt}
-                    onClick={() => setAmount(String(amt))}
-                    className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-white/5 hover:bg-violet-600 hover:text-white text-slate-700 dark:text-gray-300 border border-slate-200 dark:border-white/5 hover:border-violet-600 transition-all"
-                  >
-                    ${amt.toLocaleString()}
-                  </button>
+              {/* Stats row */}
+              <div className="grid grid-cols-2 gap-4">
+                {[
+                  { label: 'Total Deposited', value: `$${totalDeposited.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, sub: 'USDT BEP20' },
+                  { label: 'Completed', value: deposits.filter(d => d.status === 'completed').length, sub: 'deposits' },
+                  { label: 'Pending Review', value: deposits.filter(d => d.status === 'pending').length, sub: 'transactions' },
+                  { label: 'Network', value: 'BEP20', sub: 'Binance Smart Chain' },
+                ].map((stat, i) => (
+                  <div key={i} className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl p-4">
+                    <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1">{stat.label}</p>
+                    <p className="text-lg font-black text-slate-900 dark:text-white font-mono">{stat.value}</p>
+                    <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-0.5">{stat.sub}</p>
+                  </div>
                 ))}
               </div>
 
-              <button
-                onClick={handleProceed}
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white text-sm font-bold shadow-lg shadow-violet-600/25 transition-all hover:scale-[1.01] flex items-center justify-center gap-2"
-              >
-                Proceed to Payment
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </section>
+              {/* History list */}
+              <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden">
+                {deposits.length === 0 ? (
+                  <div className="py-12 text-center text-xs text-slate-400 dark:text-gray-500 font-mono">
+                    No deposit history yet. Make your first deposit.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-slate-100 dark:divide-white/5">
+                    {deposits.map((dep) => (
+                      <div key={dep.id} className="flex items-center justify-between px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-white/1 transition-colors">
+                        <div>
+                          <p className="text-xs font-semibold text-slate-800 dark:text-white">{dep.description || 'Deposit'}</p>
+                          <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono mt-0.5">
+                            {new Date(dep.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className={`text-[9px] font-bold font-mono px-2 py-0.5 rounded-full ${statusColor[dep.status] || 'bg-slate-200 text-slate-600'}`}>
+                            {dep.status.toUpperCase()}
+                          </span>
+                          <span className="text-sm font-black text-slate-900 dark:text-white font-mono">
+                            +${dep.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
+
+          </div>
 
         </div>
       )}
