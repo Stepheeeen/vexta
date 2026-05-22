@@ -130,7 +130,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const langRef = useRef<HTMLDivElement>(null);
 
   const getAdminLabel = (key: keyof typeof adminTranslations['en']) => {
-    return adminTranslations[language]?.[key] || adminTranslations['en'][key] || key;
+    return (adminTranslations as any)[language]?.[key] || adminTranslations['en'][key] || key;
   };
 
   const navItems = [

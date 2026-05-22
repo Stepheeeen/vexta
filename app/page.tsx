@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Navbar } from '@/components/landing/navbar';
+import { HftHero } from '@/components/landing/hft-hero';
 import { Hero } from '@/components/landing/hero';
 import { HowItWorks } from '@/components/landing/how-it-works';
 import { InvestmentPlans } from '@/components/landing/plans';
@@ -12,51 +13,50 @@ import { Footer } from '@/components/landing/footer';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://vexta.app'),
-  title: 'Vexta — 13-Level Referral Investment Platform',
+  title: 'Vexta — AI-Powered High-Frequency Arbitrage (HFT) Platform',
   description:
-    'Grow your capital with Vexta\'s structured 13-level referral investment system. Earn daily returns, build a referral network, and withdraw with transparency.',
-  keywords: ['investment platform', 'MLM investment', 'referral system', 'passive income', 'daily returns', 'vexta'],
+    'Vexta is a financial infrastructure specialised in AI-driven high-frequency arbitrage (HFT). Earn daily returns, build a 13-level referral network, and withdraw with full transparency.',
+  keywords: [
+    'HFT arbitrage', 'AI trading', 'investment platform', 'high-frequency trading',
+    'referral system', 'passive income', 'daily returns', 'vexta', 'financial AI',
+  ],
   openGraph: {
-    title: 'Vexta — 13-Level Referral Investment Platform',
+    title: 'Vexta — AI-Powered High-Frequency Arbitrage',
     description:
-      'Earn daily returns and passive referral commissions on Vexta. 13-level referral depth, transparent dashboard, prompt withdrawals.',
+      'Earn daily returns through AI-driven HFT arbitrage and passive referral commissions. 13-level referral depth, transparent dashboard, prompt withdrawals.',
     type: 'website',
     url: 'https://vexta.app',
     siteName: 'Vexta',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'Vexta Investment Platform',
-      },
-    ],
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'Vexta HFT Platform' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Vexta — 13-Level Referral Investment Platform',
-    description: 'Structured daily returns + 13-level referral commissions. Transparent, secure, and prompt withdrawals.',
+    title: 'Vexta — AI-Powered HFT Platform',
+    description: 'AI-driven arbitrage + 13-level referral commissions. Transparent, secure, instant.',
     images: ['/og-image.png'],
   },
-  robots: {
-    index: true,
-    follow: true,
-  },
+  robots: { index: true, follow: true },
 };
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0F1419] text-slate-900 dark:text-white font-sans antialiased">
+    <div className="min-h-screen text-slate-900 dark:text-white font-sans antialiased">
       <Navbar />
       <main>
-        <Hero />
-        <HowItWorks />
-        <InvestmentPlans />
-        <ReferralSystem />
-        <WhyUs />
-        <Testimonials />
-        <FAQ />
-        <CTABanner />
+        {/* ── 1. HFT / AI Hero (from HTML reference — dark, full viewport) ── */}
+        <HftHero />
+
+        {/* ── 2. Light-mode sections scroll in below ───────────────────── */}
+        <div className="bg-white dark:bg-[#0F1419]">
+          <Hero />
+          <HowItWorks />
+          <InvestmentPlans />
+          <ReferralSystem />
+          <WhyUs />
+          <Testimonials />
+          <FAQ />
+          <CTABanner />
+        </div>
       </main>
       <Footer />
     </div>
