@@ -118,24 +118,50 @@ export async function processDailyROI(): Promise<{ processed: number; totalPaid:
 }
 
 export async function upsertPlans() {
+  const targetPlans: Record<string, any> = {};
   for (const [, plan] of Object.entries(PLAN_RATES)) {
-    await prisma.plan.upsert({
+    const res = await prisma.plan.upsert({
       where: { name: plan.name },
-      update: { dailyROI: plan.dailyROI, minDeposit: plan.minDeposit, duration: plan.duration, tag: plan.tag },
+      update: { dailyROI: plan.dailyROI, minDeposit: plan.minDeposit, duration: plan.duration, tag: plan.tag, isActive: true },
       create: {
         name: plan.name,
         tag: plan.tag,
         minDeposit: plan.minDeposit,
         dailyROI: plan.dailyROI,
         duration: plan.duration,
+        isActive: true,
       },
     });
+    targetPlans[plan.name] = res;
   }
 
-  // Deactivate other plans
+  // Find all other plans to clean them up completely
   const activePlanNames = Object.values(PLAN_RATES).map(p => p.name);
-  await prisma.plan.updateMany({
+  const legacyPlans = await prisma.plan.findMany({
     where: { name: { notIn: activePlanNames } },
-    data: { isActive: false },
   });
+
+  for (const p of legacyPlans) {
+    let targetName = 'STARTER PLAN';
+    const lowerName = p.name.toLowerCase();
+    if (lowerName.includes('ultra') || lowerName === 'plan c') {
+      targetName = 'ULTRA PLAN';
+    } else if (lowerName.includes('prime') || lowerName === 'plan b') {
+      targetName = 'PRIME PLAN';
+    } else if (lowerName.includes('starter') || lowerName === 'plan a') {
+      targetName = 'STARTER PLAN';
+    }
+
+    const targetPlan = targetPlans[targetName];
+    if (targetPlan) {
+      await prisma.investment.updateMany({
+        where: { planId: p.id },
+        data: { planId: targetPlan.id }
+      });
+    }
+
+    await prisma.plan.delete({
+      where: { id: p.id }
+    });
+  }
 }
