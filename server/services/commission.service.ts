@@ -1,4 +1,5 @@
 import { prisma } from '../../lib/prisma';
+import { SYSTEM_CONFIG } from '../../lib/config/system';
 
 /**
  * Distributes unilevel commissions up to 16 levels for a given deposit.
@@ -10,11 +11,7 @@ export async function distributeUnilevelCommission(depositUserId: string, deposi
   console.log(`[UNILEVEL] Starting commission distribution for user ${depositUserId}, amount: ${depositAmount}`);
   const client = tx || prisma;
 
-  const rates = [
-    0.10, 0.06, 0.03, 0.02, 0.02,         // L1 - L5
-    0.01, 0.01,                           // L6 - L7
-    0.0025, 0.0025, 0.0025, 0.0025, 0.0025, 0.0025 // L8 - L13
-  ];
+  const rates = SYSTEM_CONFIG.unilevel.rates;
 
   // 1. Fetch the depositing user to get the upline ID
   const depositor = await client.user.findUnique({

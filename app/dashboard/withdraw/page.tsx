@@ -1,11 +1,154 @@
 'use client';
 
 import { DashboardLayout } from '@/components/dashboard-layout';
-import { ArrowUpRight, ArrowDownRight, Wallet, Calendar, AlertCircle, Loader2, ArrowLeftRight, CheckCircle2, Play, HelpCircle } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Wallet, AlertCircle, Loader2, ArrowLeftRight, CheckCircle2, Play, HelpCircle, Send, Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
+
+// ── P2P Quick Transfer Panel ───────────────────────────────────────────────────
+function P2PTransferPanel({ balance, onSuccess }: { balance: number; onSuccess: () => void }) {
+  const { toast } = useToast();
+  const [recipient, setRecipient] = useState('');
+  const [amount, setAmount]       = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [done, setDone]           = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const amtNum = parseFloat(amount);
+    if (!recipient.trim()) {
+      toast({ title: 'Recipient required', variant: 'destructive' }); return;
+    }
+    if (isNaN(amtNum) || amtNum <= 0) {
+      toast({ title: 'Invalid amount', variant: 'destructive' }); return;
+    }
+    if (amtNum > balance) {
+      toast({ title: 'Insufficient balance', description: `Available: $${balance.toFixed(2)}`, variant: 'destructive' }); return;
+    }
+
+    setSubmitting(true);
+    try {
+      const res  = await fetch('/api/p2p/transfer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipientIdentifier: recipient.trim(), amount: amtNum }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Transfer failed');
+      toast({ title: '✅ Transfer Sent!', description: json.message || `$${amtNum.toFixed(2)} sent instantly with 0% fee.` });
+      setRecipient(''); setAmount('');
+      setDone(true);
+      setTimeout(() => setDone(false), 3000);
+      onSuccess();
+    } catch (err: any) {
+      toast({ title: 'Transfer Failed', description: err.message, variant: 'destructive' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="relative mb-6 rounded-2xl border border-emerald-400/30 bg-gradient-to-br from-emerald-950/40 via-green-950/20 to-[#0A0F14] overflow-hidden shadow-xl shadow-emerald-900/20">
+      {/* Ambient glow */}
+      <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none" />
+      <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-green-500/8 blur-2xl pointer-events-none" />
+
+      <div className="relative z-10 p-6">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center shadow-md shadow-emerald-500/10">
+              <Users className="w-5 h-5 text-emerald-400" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-white">P2P Internal Transfer</h3>
+                <span className="text-[8px] font-black bg-emerald-500 text-white px-2 py-0.5 rounded-full uppercase tracking-widest">0% FEE</span>
+              </div>
+              <p className="text-[10px] text-emerald-500/80 font-mono mt-0.5">Transfer to any Vexta user — zero deductions, instant settlement</p>
+            </div>
+          </div>
+          <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-mono text-emerald-400/60">
+            <div className="relative w-1.5 h-1.5">
+              <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-60" />
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            </div>
+            LIVE
+          </div>
+        </div>
+
+        {/* Fee comparison mini banner */}
+        <div className="flex items-center gap-2 p-3 bg-black/30 rounded-xl border border-white/5 mb-5 text-[10px] font-mono">
+          <span className="text-orange-400 font-bold">External withdrawal: up to 6% fee</span>
+          <span className="text-slate-600 mx-1">vs</span>
+          <span className="text-emerald-400 font-bold">P2P transfer: 0% fee always</span>
+          <span className="ml-auto text-emerald-400 text-[9px] bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">Save up to $60 per $1,000</span>
+        </div>
+
+        {done ? (
+          <div className="flex items-center justify-center gap-3 py-6">
+            <CheckCircle2 className="w-8 h-8 text-emerald-400" />
+            <div>
+              <p className="text-sm font-bold text-white">Transfer complete!</p>
+              <p className="text-xs text-emerald-400/70 font-mono">Recipient balance updated instantly · 0% deducted</p>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="grid sm:grid-cols-5 gap-3 items-end">
+            <div className="sm:col-span-2">
+              <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">
+                Recipient (email or referral code)
+              </label>
+              <input
+                type="text"
+                value={recipient}
+                onChange={e => setRecipient(e.target.value)}
+                placeholder="email@example.com · VEXTA_CODE"
+                disabled={submitting}
+                className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/50 transition-all font-mono"
+              />
+            </div>
+
+            <div className="sm:col-span-2">
+              <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">
+                Amount (USDT)
+              </label>
+              <div className="relative">
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">$</span>
+                <input
+                  type="number"
+                  step="any"
+                  value={amount}
+                  onChange={e => setAmount(e.target.value)}
+                  placeholder="0.00"
+                  disabled={submitting}
+                  className="w-full pl-8 bg-black/30 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/50 transition-all font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="sm:col-span-1">
+              <button
+                type="submit"
+                disabled={submitting || !recipient.trim() || !amount}
+                className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-bold shadow-lg shadow-emerald-600/25 transition-all hover:scale-[1.02] flex items-center justify-center gap-1.5"
+              >
+                {submitting
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : <><Send className="w-3.5 h-3.5" /> Send</>
+                }
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
 
 interface StatsData {
   stats: {
@@ -262,6 +405,94 @@ export default function WithdrawPage() {
               </button>
             </div>
           </div>
+
+          {/* ── Commission Comparison Block ──────────────────────────── */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+
+            {/* Card 1 — 6% fee (high, discouraging) */}
+            <div className="relative flex flex-col gap-2.5 p-5 rounded-2xl border border-orange-400/20 bg-gradient-to-br from-orange-500/8 via-red-500/5 to-transparent">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-orange-500/15 border border-orange-500/20 flex items-center justify-center flex-shrink-0">
+                  <span className="text-lg">💸</span>
+                </div>
+                <div>
+                  <p className="text-sm font-black text-orange-500 dark:text-orange-400 leading-tight">6% Commission</p>
+                  <p className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider">External withdrawal</p>
+                </div>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-gray-300 leading-relaxed">
+                Applies to withdrawals <span className="font-bold text-orange-500">under $600</span>. A processing fee is deducted before payout.
+              </p>
+              <div className="mt-auto flex items-center gap-1.5 pt-2 border-t border-orange-400/10">
+                <div className="w-1.5 h-1.5 rounded-full bg-orange-400 flex-shrink-0" />
+                <span className="text-[10px] font-mono text-orange-400/80">Higher cost tier</span>
+              </div>
+            </div>
+
+            {/* Card 2 — 2% fee (lower, still costs money) */}
+            <div className="relative flex flex-col gap-2.5 p-5 rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-500/8 via-teal-500/5 to-transparent">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/20 flex items-center justify-center flex-shrink-0">
+                  <span className="text-lg">📉</span>
+                </div>
+                <div>
+                  <p className="text-sm font-black text-cyan-500 dark:text-cyan-400 leading-tight">2% Commission</p>
+                  <p className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider">External withdrawal</p>
+                </div>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-gray-300 leading-relaxed">
+                Applies to withdrawals of <span className="font-bold text-cyan-500">$600 or more</span>. Reduced fee for larger amounts.
+              </p>
+              <div className="mt-auto flex items-center gap-1.5 pt-2 border-t border-cyan-400/10">
+                <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 flex-shrink-0" />
+                <span className="text-[10px] font-mono text-cyan-400/80">Reduced cost tier</span>
+              </div>
+            </div>
+
+            {/* Card 3 — FREE P2P (featured, glowing, recommended) */}
+            <div className="relative flex flex-col gap-2.5 p-5 rounded-2xl border border-emerald-400/40 bg-gradient-to-br from-emerald-500/15 via-green-500/8 to-emerald-600/5 shadow-lg shadow-emerald-500/10 overflow-hidden">
+              {/* Glow pulse behind card */}
+              <div className="absolute inset-0 rounded-2xl bg-emerald-500/5 animate-pulse pointer-events-none" />
+
+              {/* RECOMMENDED badge */}
+              <div className="absolute top-3 right-3 bg-emerald-500 text-white text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-md shadow-emerald-500/40 flex items-center gap-1">
+                <span>⭐</span> Recommended
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center flex-shrink-0 shadow-sm shadow-emerald-500/20">
+                  <span className="text-lg">🚀</span>
+                </div>
+                <div>
+                  <p className="text-base font-black text-emerald-400 leading-tight tracking-tight">FREE P2P</p>
+                  <p className="text-[10px] font-mono text-emerald-600 dark:text-emerald-500 uppercase tracking-wider font-bold">Zero fees · Instant</p>
+                </div>
+              </div>
+
+              <p className="text-xs text-slate-700 dark:text-gray-200 leading-relaxed relative z-10">
+                Transfer to any Vexta user <span className="font-bold text-emerald-400">instantly with 0% fee</span>. Keep value inside the network and grow together.
+              </p>
+
+              <div className="mt-auto flex items-center justify-between pt-2 border-t border-emerald-400/20 relative z-10">
+                <div className="flex items-center gap-1.5">
+                  <div className="relative w-1.5 h-1.5">
+                    <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-75" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  </div>
+                  <span className="text-[10px] font-mono text-emerald-400 font-bold">No deductions, ever</span>
+                </div>
+                <a
+                  href="/dashboard"
+                  className="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors"
+                >
+                  Use P2P →
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* ── P2P Quick Transfer Panel ─────────────────────────────── */}
+          <P2PTransferPanel balance={balance} onSuccess={fetchWithdrawalData} />
 
           <div className="grid lg:grid-cols-3 gap-6 items-start">
           {/* Form and info */}

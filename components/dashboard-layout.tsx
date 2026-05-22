@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { LayoutGrid, TrendingUp, Users, Wallet, BarChart3, Settings, LogOut, Bell, X, Check, Globe, ArrowUpRight, ArrowDownRight, FileText, AlertTriangle, Sun, Moon } from 'lucide-react';
 import { BackgroundPattern } from '@/components/background-pattern';
 import { VextaLogo } from '@/components/vexta-logo';
+import { SYSTEM_CONFIG } from '@/lib/config/system';
 import { useTranslation } from '@/components/translation-provider';
 import { useState, useEffect, useRef } from 'react';
 import { useTheme } from 'next-themes';
@@ -79,6 +80,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
     { href: '/dashboard/withdraw',   icon: ArrowUpRight,   labelKey: 'withdraw' },
     { href: '/dashboard/earnings',   icon: Wallet,         labelKey: 'earnings'  },
     { href: '/dashboard/referrals',  icon: Users,          labelKey: 'referrals' },
+    { href: '/dashboard/resources',  icon: FileText,       labelKey: 'materials' },
     { href: '/dashboard/settings',   icon: Settings,       labelKey: 'settings'  },
   ];
 
@@ -187,7 +189,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <header className="hidden md:flex fixed top-0 left-0 right-0 z-50 h-14 items-center justify-between px-6 bg-white/80 dark:bg-[#09090f]/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-white/5">
         <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0">
           <VextaLogo className="w-9 h-9" variant="transparent" />
-          <span className="text-sm font-bold text-slate-900 dark:text-white tracking-widest font-sans uppercase">vexta</span>
+          <span className="text-sm font-bold text-slate-900 dark:text-white tracking-widest font-sans uppercase">
+            {SYSTEM_CONFIG.brand.name}
+          </span>
         </Link>
 
         <div className="flex items-center gap-5 relative">
@@ -340,7 +344,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <header className="md:hidden fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-4 bg-white/85 dark:bg-[#09090f]/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/5" ref={notifRef}>
         <Link href="/dashboard" className="flex items-center gap-2">
           <VextaLogo className="w-9 h-9" variant="transparent" />
-          <span className="text-sm font-bold text-slate-900 dark:text-white tracking-widest font-sans uppercase">vexta</span>
+          <span className="text-sm font-bold text-slate-900 dark:text-white tracking-widest font-sans uppercase">
+            {SYSTEM_CONFIG.brand.name}
+          </span>
         </Link>
         <div className="flex items-center gap-2">
           {/* Mobile Theme Toggle */}

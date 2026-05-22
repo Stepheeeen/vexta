@@ -165,3 +165,16 @@ model Settings {
   withdrawalFee     Float     @default(6.0)
 }
 
+model Resource {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  url         String
+  fileType    String   // 'pdf' | 'video' | 'presentation' | 'business_explanation' | 'marketing'
+  language    String   // 'en' | 'es' | 'vi' | 'pt' | 'ko' | 'fr'
+  size        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+

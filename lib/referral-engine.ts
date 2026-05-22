@@ -1,27 +1,15 @@
-/**
- * Referral Commission Engine
- * Propagates commissions up the referral chain — up to 5 levels deep.
- */
-
 import { prisma } from './prisma';
+import { SYSTEM_CONFIG } from './config/system';
 
-export const COMMISSION_RATES: Record<number, number> = {
-  1: 0.10,   // 10%
-  2: 0.06,   // 6%
-  3: 0.03,   // 3%
-  4: 0.02,   // 2%
-  5: 0.02,   // 2%
-  6: 0.01,   // 1%
-  7: 0.01,   // 1%
-  8: 0.0025, // 0.25%
-  9: 0.0025, // 0.25%
-  10: 0.0025,// 0.25%
-  11: 0.0025,// 0.25%
-  12: 0.0025,// 0.25%
-  13: 0.0025,// 0.25%
-};
+export const COMMISSION_RATES: Record<number, number> = SYSTEM_CONFIG.unilevel.rates.reduce(
+  (acc, rate, index) => {
+    acc[index + 1] = rate;
+    return acc;
+  },
+  {} as Record<number, number>
+);
 
-export const MAX_LEVELS = 13;
+export const MAX_LEVELS = SYSTEM_CONFIG.unilevel.rates.length;
 
 /**
  * Walk up the referral chain from a given userId and distribute commissions

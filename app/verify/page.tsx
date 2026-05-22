@@ -4,6 +4,8 @@ import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { ArrowRight, ShieldCheck, Loader2 } from 'lucide-react';
 import { BackgroundPattern } from "@/components/background-pattern";
+import { VextaLogo } from '@/components/vexta-logo';
+import { SYSTEM_CONFIG } from '@/lib/config/system';
 import { useTranslation } from '@/components/translation-provider';
 import { LanguageSwitcher } from '@/components/language-switcher';
 
@@ -105,16 +107,12 @@ export default function VerifyPage() {
 
       {/* Header/Logo */}
       <div className="absolute top-8 left-8 z-10 flex flex-col items-center gap-4 w-full md:w-auto md:left-1/2 md:-translate-x-1/2">
-        <div className="flex items-center gap-2">
-          <div className="relative flex items-center justify-center">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-violet-600 dark:text-[#00D9FF]">
-              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-              <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-              <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <span className="text-xl font-bold tracking-widest text-slate-900 dark:text-white font-sans">VEXTA</span>
-        </div>
+        <Link href="/" className="flex items-center gap-2">
+          <VextaLogo className="h-8 w-8" />
+          <span className="text-xl font-bold tracking-widest text-slate-900 dark:text-white font-sans uppercase">
+            {SYSTEM_CONFIG.brand.name}
+          </span>
+        </Link>
       </div>
 
       <div className="w-full max-w-md relative z-10 animate-in fade-in zoom-in-95 duration-500">

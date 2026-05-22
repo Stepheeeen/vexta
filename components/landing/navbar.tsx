@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { Menu, X, Bell, LogOut, Check, Globe, Sun, Moon } from 'lucide-react';
 import { VextaLogo } from '@/components/vexta-logo';
+import { SYSTEM_CONFIG } from '@/lib/config/system';
 import { useTranslation, Language } from '@/components/translation-provider';
 import { useRouter, usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
@@ -192,7 +193,9 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <VextaLogo className="h-8 w-8 transition-transform duration-300 group-hover:scale-105" />
-            <span className={`text-xl font-bold tracking-tight transition-colors ${scrolled ? 'text-white' : 'text-slate-900 dark:text-white'}`}>vexta</span>
+            <span className={`text-xl font-bold tracking-tight transition-colors ${scrolled ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
+              {SYSTEM_CONFIG.brand.name}
+            </span>
           </Link>
 
           {/* Desktop nav */}

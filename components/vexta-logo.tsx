@@ -1,4 +1,5 @@
 import React from 'react';
+import { SYSTEM_CONFIG } from '@/lib/config/system';
 
 interface LogoProps {
   className?: string;
@@ -6,6 +7,17 @@ interface LogoProps {
 }
 
 export function VextaLogo({ className = "h-8 w-8", variant = "transparent" }: LogoProps) {
+  // If a custom logo image URL is configured, use it instead of the default SVG
+  if (SYSTEM_CONFIG.brand.logoUrl) {
+    return (
+      <img 
+        src={SYSTEM_CONFIG.brand.logoUrl} 
+        className={className} 
+        alt={SYSTEM_CONFIG.brand.name} 
+      />
+    );
+  }
+
   const bgClass = 
     variant === 'dark' ? 'bg-[#090C10] p-1 rounded-xl' :
     variant === 'light' ? 'bg-white p-1 rounded-xl border border-slate-200' :
@@ -176,7 +188,7 @@ export function VextaLogoText() {
     <div className="flex items-center gap-2">
       <VextaLogo className="h-10 w-10" />
       <span className="text-2xl font-bold text-slate-900 dark:text-[#FFFFFF] tracking-widest font-sans">
-        VEXTA
+        {SYSTEM_CONFIG.brand.name.toUpperCase()}
       </span>
     </div>
   );

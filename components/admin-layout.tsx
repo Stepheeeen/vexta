@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutGrid, Users, CreditCard, BarChart3, Settings, LogOut, Bell, X, Check, ArrowDownRight, AlertTriangle } from 'lucide-react';
+import { LayoutGrid, Users, CreditCard, BarChart3, Settings, LogOut, Bell, X, Check, ArrowDownRight, AlertTriangle, FileText } from 'lucide-react';
 import { BackgroundPattern } from '@/components/background-pattern';
 import { VextaLogo } from '@/components/vexta-logo';
+import { SYSTEM_CONFIG } from '@/lib/config/system';
 import { useTranslation } from '@/components/translation-provider';
 import { useState, useEffect, useRef } from 'react';
 
@@ -47,6 +48,7 @@ const adminTranslations = {
     withdrawals: 'Withdrawals',
     analytics: 'Analytics',
     settings: 'Settings',
+    resources: 'Resources',
   },
   es: {
     dashboard: 'Tablero',
@@ -56,6 +58,7 @@ const adminTranslations = {
     withdrawals: 'Retiros',
     analytics: 'Analítica',
     settings: 'Configuración',
+    resources: 'Recursos',
   },
   vi: {
     dashboard: 'Bảng điều khiển',
@@ -65,6 +68,7 @@ const adminTranslations = {
     withdrawals: 'Rút tiền',
     analytics: 'Phân tích',
     settings: 'Cài đặt',
+    resources: 'Tài nguyên',
   },
   th: {
     dashboard: 'แดชบอร์ด',
@@ -74,6 +78,7 @@ const adminTranslations = {
     withdrawals: 'การถอนเงิน',
     analytics: 'การวิเคราะห์',
     settings: 'การตั้งค่า',
+    resources: 'แหล่งข้อมูล',
   },
   pt: {
     dashboard: 'Painel',
@@ -83,6 +88,7 @@ const adminTranslations = {
     withdrawals: 'Saques',
     analytics: 'Análise',
     settings: 'Configurações',
+    resources: 'Recursos',
   },
   ko: {
     dashboard: '대시보드',
@@ -92,6 +98,7 @@ const adminTranslations = {
     withdrawals: '출금 관리',
     analytics: '통계 분석',
     settings: '설정',
+    resources: '자료실',
   },
   fr: {
     dashboard: 'Tableau de bord',
@@ -101,6 +108,7 @@ const adminTranslations = {
     withdrawals: 'Retraits',
     analytics: 'Analyses',
     settings: 'Paramètres',
+    resources: 'Ressources',
   }
 };
 
@@ -132,6 +140,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { href: '/admin/transactions', icon: CreditCard,     labelKey: 'transactions' as const },
     { href: '/admin/withdrawals',  icon: BarChart3,      labelKey: 'withdrawals' as const },
     { href: '/admin/analytics',    icon: BarChart3,      labelKey: 'analytics' as const },
+    { href: '/admin/resources',    icon: FileText,       labelKey: 'resources' as const },
     { href: '/admin/settings',     icon: Settings,       labelKey: 'settings' as const },
   ];
 
@@ -215,7 +224,9 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         <Link href="/admin" className="flex items-center gap-2 flex-shrink-0">
           <VextaLogo className="w-9 h-9" variant="transparent" />
           <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-slate-900 dark:text-white tracking-widest font-sans uppercase">vexta</span>
+            <span className="text-sm font-bold text-slate-900 dark:text-white tracking-widest font-sans uppercase">
+              {SYSTEM_CONFIG.brand.name}
+            </span>
             <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">
               {t('adminBadge') || 'Admin'}
             </span>
@@ -346,7 +357,9 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         <Link href="/admin" className="flex items-center gap-2">
           <VextaLogo className="w-9 h-9" variant="transparent" />
           <div className="flex items-center gap-1.5">
-            <span className="text-sm font-bold text-slate-900 dark:text-white tracking-widest font-sans uppercase">vexta</span>
+            <span className="text-sm font-bold text-slate-900 dark:text-white tracking-widest font-sans uppercase">
+              {SYSTEM_CONFIG.brand.name}
+            </span>
             <span className="px-1 py-0.5 rounded text-[7px] font-bold uppercase bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">{t('adminBadge') || 'Admin'}</span>
           </div>
         </Link>

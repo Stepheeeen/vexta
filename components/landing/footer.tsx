@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { VextaLogo } from '@/components/vexta-logo';
+import { SYSTEM_CONFIG } from '@/lib/config/system';
 import { useTranslation } from '@/components/translation-provider';
 
 export function Footer() {
@@ -43,7 +44,9 @@ export function Footer() {
           <div className="md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4 group">
               <VextaLogo className="h-8 w-8 transition-transform duration-300 group-hover:scale-105" />
-              <span className="text-xl font-bold text-slate-900 tracking-tight">vexta</span>
+              <span className="text-xl font-bold text-slate-900 tracking-tight">
+                {SYSTEM_CONFIG.brand.name}
+              </span>
             </Link>
             <p className="text-sm text-slate-600 leading-relaxed mb-4">
               {t('footerBrandDesc')}
@@ -77,7 +80,7 @@ export function Footer() {
         {/* Footer Bottom */}
         <div className="border-t border-slate-200/80 pt-8">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-            <p>&copy; {new Date().getFullYear()} Vexta. {t('footerRightsReserved')}</p>
+            <p>&copy; {new Date().getFullYear()} {SYSTEM_CONFIG.brand.name}. {t('footerRightsReserved')}</p>
           </div>
         </div>
       </div>

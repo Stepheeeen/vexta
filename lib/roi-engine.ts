@@ -1,16 +1,7 @@
-/**
- * ROI Engine
- * Calculates daily returns and manages investment lifecycle.
- * All rates stored as decimals: 2% = 0.02
- */
-
 import { prisma } from './prisma';
+import { SYSTEM_CONFIG } from './config/system';
 
-export const PLAN_RATES = {
-  STARTER: { dailyROI: 0.015, duration: 30, minDeposit: 10,  name: 'Starter Plan', tag: 'Starter'  },
-  PRIME:   { dailyROI: 0.020, duration: 45, minDeposit: 500, name: 'Prime Plan',   tag: 'Popular'  },
-  ULTRA:   { dailyROI: 0.025, duration: 60, minDeposit: 2000, name: 'Ultra Plan',   tag: 'Advanced' },
-} as const;
+export const PLAN_RATES = SYSTEM_CONFIG.plans;
 
 /** Calculate daily ROI amount for a given principal */
 export function calculateDailyROI(principal: number, dailyRate: number): number {

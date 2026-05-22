@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
     });
 
     const deposits = rawDeposits.map(d => {
-      let network = 'USDT (TRC20)';
+      let network = 'USDT (BEP20)';
       let txHash = d.reference || '';
       try {
         if (d.metadata) {
