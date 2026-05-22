@@ -79,7 +79,7 @@ export async function runSimulation(days = 30): Promise<{ message: string; stats
 
   const investmentConfig = [
     { userId: createdUsers[0].id, plan: planC, amount: 20000 }, // John — Ultra Plan
-    { userId: createdUsers[1].id, plan: planB, amount: 5000 },  // Marcus — Prime Plan
+    { userId: createdUsers[1].id, plan: planC, amount: 5000 },  // Marcus — Ultra Plan
     { userId: createdUsers[2].id, plan: planB, amount: 2000 },  // Fatima — Prime Plan
     { userId: createdUsers[3].id, plan: planA, amount: 500 },   // Liam — Starter Plan
     { userId: createdUsers[4].id, plan: planA, amount: 200 },   // Amira — Starter Plan

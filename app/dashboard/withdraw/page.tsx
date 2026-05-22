@@ -65,13 +65,13 @@ function P2PTransferPanel({ balance, onSuccess }: { balance: number; onSuccess: 
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-white">P2P Internal Transfer</h3>
-                <span className="text-[8px] font-black bg-emerald-500 text-white px-2 py-0.5 rounded-full uppercase tracking-widest">0% FEE</span>
+                <h3 className="text-sm sm:text-base font-extrabold text-white">P2P Internal Transfer</h3>
+                <span className="text-[10px] font-extrabold bg-emerald-500 text-white px-2.5 py-0.5 rounded-full uppercase tracking-widest">0% FEE</span>
               </div>
-              <p className="text-[10px] text-emerald-500/80 font-mono mt-0.5">Transfer to any Vexta user — zero deductions, instant settlement</p>
+              <p className="text-xs sm:text-sm text-emerald-300 font-semibold font-mono mt-1">Transfer to any Vexta user — zero deductions, instant settlement</p>
             </div>
           </div>
-          <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-mono text-emerald-400/60">
+          <div className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono text-emerald-300/80">
             <div className="relative w-1.5 h-1.5">
               <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-60" />
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
@@ -81,11 +81,11 @@ function P2PTransferPanel({ balance, onSuccess }: { balance: number; onSuccess: 
         </div>
 
         {/* Fee comparison mini banner */}
-        <div className="flex items-center gap-2 p-3 bg-black/30 rounded-xl border border-white/5 mb-5 text-[10px] font-mono">
-          <span className="text-orange-400 font-bold">External withdrawal: up to 6% fee</span>
-          <span className="text-slate-600 mx-1">vs</span>
-          <span className="text-emerald-400 font-bold">P2P transfer: 0% fee always</span>
-          <span className="ml-auto text-emerald-400 text-[9px] bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">Save up to $60 per $1,000</span>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 p-3.5 bg-black/40 rounded-xl border border-white/10 mb-5 text-xs font-mono">
+          <span className="text-orange-300 font-extrabold">External withdrawal: up to 6% fee</span>
+          <span className="text-slate-400 mx-1 hidden sm:inline">vs</span>
+          <span className="text-emerald-300 font-extrabold">P2P transfer: 0% fee always</span>
+          <span className="sm:ml-auto text-emerald-300 text-[10px] sm:text-xs bg-emerald-500/25 px-2.5 py-1 rounded-full border border-emerald-400/30 font-bold shadow-sm shadow-emerald-500/10">Save up to $60 per $1,000</span>
         </div>
 
         {done ? (
@@ -99,7 +99,7 @@ function P2PTransferPanel({ balance, onSuccess }: { balance: number; onSuccess: 
         ) : (
           <form onSubmit={handleSubmit} className="grid sm:grid-cols-5 gap-3 items-end">
             <div className="sm:col-span-2">
-              <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5">
                 Recipient (email or referral code)
               </label>
               <input
@@ -108,16 +108,16 @@ function P2PTransferPanel({ balance, onSuccess }: { balance: number; onSuccess: 
                 onChange={e => setRecipient(e.target.value)}
                 placeholder="email@example.com · VEXTA_CODE"
                 disabled={submitting}
-                className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/50 transition-all font-mono"
+                className="w-full bg-black/40 border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 dark:placeholder-zinc-500 focus:outline-none focus:border-emerald-400 transition-all font-mono"
               />
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold text-zinc-300 uppercase tracking-wider mb-1.5">
                 Amount (USDT)
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">$</span>
+                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-300 font-bold text-sm">$</span>
                 <input
                   type="number"
                   step="any"
@@ -125,7 +125,7 @@ function P2PTransferPanel({ balance, onSuccess }: { balance: number; onSuccess: 
                   onChange={e => setAmount(e.target.value)}
                   placeholder="0.00"
                   disabled={submitting}
-                  className="w-full pl-8 bg-black/30 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500/50 transition-all font-mono"
+                  className="w-full pl-8 bg-black/40 border border-white/15 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 dark:placeholder-zinc-500 focus:outline-none focus:border-emerald-400 transition-all font-mono"
                 />
               </div>
             </div>
@@ -171,7 +171,7 @@ interface WithdrawalItem {
 }
 
 const inputClass =
-  'w-full bg-white/3 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/50 focus:bg-white/5 transition-all font-mono';
+  'w-full bg-white/3 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-zinc-500 focus:outline-none focus:border-violet-500/50 focus:bg-white/5 transition-all font-mono';
 
 const sectionClass =
   'bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl p-6 mb-5';
@@ -339,7 +339,7 @@ export default function WithdrawPage() {
     <DashboardLayout>
       {/* Header */}
       <div className="mb-8">
-        <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">{t('withdraw')}</p>
+        <p className="text-xs font-extrabold text-violet-600 dark:text-violet-300 uppercase tracking-[0.2em] mb-1">{t('withdraw')}</p>
         <h1 className="text-2xl font-bold text-slate-950 dark:text-white tracking-tight">{t('withdraw')}</h1>
       </div>
 
@@ -357,32 +357,32 @@ export default function WithdrawPage() {
       ) : (
         <>
           {/* Step-by-Step Guideline Banner */}
-          <div className="bg-gradient-to-br from-violet-600/10 via-blue-600/5 to-transparent border border-violet-500/10 rounded-2xl p-6 mb-6 shadow-sm">
+          <div className="bg-gradient-to-br from-violet-600/10 via-blue-600/5 to-transparent border border-violet-500/15 rounded-2xl p-6 mb-6 shadow-sm">
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <HelpCircle className="w-5 h-5 text-violet-500 dark:text-violet-400" />
-                  <h3 className="text-sm font-semibold text-slate-950 dark:text-white">{t('withdrawGuideTitle')}</h3>
+                  <HelpCircle className="w-5 h-5 text-violet-600 dark:text-violet-300" />
+                  <h3 className="text-sm sm:text-base font-extrabold text-slate-950 dark:text-white">{t('withdrawGuideTitle')}</h3>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-gray-400 max-w-2xl leading-relaxed">
+                <p className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-zinc-300 max-w-2xl leading-relaxed">
                   {t('withdrawGuideDesc')}
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-slate-200/50 dark:border-white/5 text-[11px] font-mono">
-                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-violet-500 font-bold block mb-0.5">{t('withdrawGuideStep1Title')}</span>
-                    <span className="text-slate-400">{t('withdrawGuideStep1Sub')}</span>
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-slate-200/50 dark:border-white/5 text-xs font-mono">
+                  <div className="p-3 bg-slate-50 dark:bg-white/2 rounded-xl">
+                    <span className="text-xs sm:text-sm font-extrabold block mb-1 text-violet-600 dark:text-violet-300">{t('withdrawGuideStep1Title')}</span>
+                    <span className="text-slate-600 dark:text-zinc-300 font-semibold">{t('withdrawGuideStep1Sub')}</span>
                   </div>
-                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-violet-500 font-bold block mb-0.5">{t('withdrawGuideStep2Title')}</span>
-                    <span className="text-slate-400">{t('withdrawGuideStep2Sub')}</span>
+                  <div className="p-3 bg-slate-50 dark:bg-white/2 rounded-xl">
+                    <span className="text-xs sm:text-sm font-extrabold block mb-1 text-violet-600 dark:text-violet-300">{t('withdrawGuideStep2Title')}</span>
+                    <span className="text-slate-600 dark:text-zinc-300 font-semibold">{t('withdrawGuideStep2Sub')}</span>
                   </div>
-                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-violet-500 font-bold block mb-0.5">{t('withdrawGuideStep3Title')}</span>
-                    <span className="text-slate-400">{t('withdrawGuideStep3Sub')}</span>
+                  <div className="p-3 bg-slate-50 dark:bg-white/2 rounded-xl">
+                    <span className="text-xs sm:text-sm font-extrabold block mb-1 text-violet-600 dark:text-violet-300">{t('withdrawGuideStep3Title')}</span>
+                    <span className="text-slate-600 dark:text-zinc-300 font-semibold">{t('withdrawGuideStep3Sub')}</span>
                   </div>
-                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-violet-500 font-bold block mb-0.5">{t('withdrawGuideStep4Title')}</span>
-                    <span className="text-slate-400">{t('withdrawGuideStep4Sub')}</span>
+                  <div className="p-3 bg-slate-50 dark:bg-white/2 rounded-xl">
+                    <span className="text-xs sm:text-sm font-extrabold block mb-1 text-violet-600 dark:text-violet-300">{t('withdrawGuideStep4Title')}</span>
+                    <span className="text-slate-600 dark:text-zinc-300 font-semibold">{t('withdrawGuideStep4Sub')}</span>
                   </div>
                 </div>
               </div>
@@ -410,67 +410,67 @@ export default function WithdrawPage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
 
             {/* Card 1 — 6% fee (high, discouraging) */}
-            <div className="relative flex flex-col gap-2.5 p-5 rounded-2xl border border-orange-400/20 bg-gradient-to-br from-orange-500/8 via-red-500/5 to-transparent">
+            <div className="relative flex flex-col gap-3 p-5 rounded-2xl border border-orange-400/30 bg-gradient-to-br from-orange-500/10 via-red-500/5 to-transparent">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-500/15 border border-orange-500/20 flex items-center justify-center flex-shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center flex-shrink-0">
                   <span className="text-lg">💸</span>
                 </div>
                 <div>
-                  <p className="text-sm font-black text-orange-500 dark:text-orange-400 leading-tight">6% Commission</p>
-                  <p className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider">External withdrawal</p>
+                  <p className="text-base font-extrabold text-orange-500 dark:text-orange-400 leading-tight">6% Commission</p>
+                  <p className="text-[11px] font-mono text-slate-600 dark:text-zinc-400 uppercase tracking-wider font-semibold">External withdrawal</p>
                 </div>
               </div>
-              <p className="text-xs text-slate-600 dark:text-gray-300 leading-relaxed">
-                Applies to withdrawals <span className="font-bold text-orange-500">under $600</span>. A processing fee is deducted before payout.
+              <p className="text-xs sm:text-sm text-slate-700 dark:text-zinc-300 leading-relaxed font-medium">
+                Applies to withdrawals <span className="font-extrabold text-orange-600 dark:text-orange-400">under $600</span>. A processing fee is deducted before payout.
               </p>
               <div className="mt-auto flex items-center gap-1.5 pt-2 border-t border-orange-400/10">
                 <div className="w-1.5 h-1.5 rounded-full bg-orange-400 flex-shrink-0" />
-                <span className="text-[10px] font-mono text-orange-400/80">Higher cost tier</span>
+                <span className="text-xs font-mono text-orange-400 font-bold">Higher cost tier</span>
               </div>
             </div>
 
             {/* Card 2 — 2% fee (lower, still costs money) */}
-            <div className="relative flex flex-col gap-2.5 p-5 rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-500/8 via-teal-500/5 to-transparent">
+            <div className="relative flex flex-col gap-3 p-5 rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 via-teal-500/5 to-transparent">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-cyan-500/15 border border-cyan-500/20 flex items-center justify-center flex-shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
                   <span className="text-lg">📉</span>
                 </div>
                 <div>
-                  <p className="text-sm font-black text-cyan-500 dark:text-cyan-400 leading-tight">2% Commission</p>
-                  <p className="text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider">External withdrawal</p>
+                  <p className="text-base font-extrabold text-cyan-500 dark:text-cyan-400 leading-tight">2% Commission</p>
+                  <p className="text-[11px] font-mono text-slate-600 dark:text-zinc-400 uppercase tracking-wider font-semibold">External withdrawal</p>
                 </div>
               </div>
-              <p className="text-xs text-slate-600 dark:text-gray-300 leading-relaxed">
-                Applies to withdrawals of <span className="font-bold text-cyan-500">$600 or more</span>. Reduced fee for larger amounts.
+              <p className="text-xs sm:text-sm text-slate-700 dark:text-zinc-300 leading-relaxed font-medium">
+                Applies to withdrawals of <span className="font-extrabold text-cyan-600 dark:text-cyan-400">$600 or more</span>. Reduced fee for larger amounts.
               </p>
               <div className="mt-auto flex items-center gap-1.5 pt-2 border-t border-cyan-400/10">
                 <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 flex-shrink-0" />
-                <span className="text-[10px] font-mono text-cyan-400/80">Reduced cost tier</span>
+                <span className="text-xs font-mono text-cyan-400 font-bold">Reduced cost tier</span>
               </div>
             </div>
 
             {/* Card 3 — FREE P2P (featured, glowing, recommended) */}
-            <div className="relative flex flex-col gap-2.5 p-5 rounded-2xl border border-emerald-400/40 bg-gradient-to-br from-emerald-500/15 via-green-500/8 to-emerald-600/5 shadow-lg shadow-emerald-500/10 overflow-hidden">
+            <div className="relative flex flex-col gap-3 p-5 rounded-2xl border border-emerald-400/50 bg-gradient-to-br from-emerald-500/20 via-green-500/10 to-emerald-600/5 shadow-lg shadow-emerald-500/10 overflow-hidden">
               {/* Glow pulse behind card */}
               <div className="absolute inset-0 rounded-2xl bg-emerald-500/5 animate-pulse pointer-events-none" />
 
               {/* RECOMMENDED badge */}
-              <div className="absolute top-3 right-3 bg-emerald-500 text-white text-[8px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full shadow-md shadow-emerald-500/40 flex items-center gap-1">
+              <div className="absolute top-3 right-3 bg-emerald-500 text-white text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full shadow-md shadow-emerald-500/40 flex items-center gap-1">
                 <span>⭐</span> Recommended
               </div>
 
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center flex-shrink-0 shadow-sm shadow-emerald-500/20">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/45 flex items-center justify-center flex-shrink-0 shadow-sm shadow-emerald-500/20">
                   <span className="text-lg">🚀</span>
                 </div>
                 <div>
-                  <p className="text-base font-black text-emerald-400 leading-tight tracking-tight">FREE P2P</p>
-                  <p className="text-[10px] font-mono text-emerald-600 dark:text-emerald-500 uppercase tracking-wider font-bold">Zero fees · Instant</p>
+                  <p className="text-base font-black text-emerald-400 dark:text-emerald-300 leading-tight tracking-tight">FREE P2P</p>
+                  <p className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 uppercase tracking-wider font-extrabold">Zero fees · Instant</p>
                 </div>
               </div>
 
-              <p className="text-xs text-slate-700 dark:text-gray-200 leading-relaxed relative z-10">
-                Transfer to any Vexta user <span className="font-bold text-emerald-400">instantly with 0% fee</span>. Keep value inside the network and grow together.
+              <p className="text-xs sm:text-sm text-slate-800 dark:text-zinc-100 leading-relaxed font-semibold relative z-10">
+                Transfer to any Vexta user <span className="font-extrabold text-emerald-500 dark:text-emerald-400">instantly with 0% fee</span>. Keep value inside the network and grow together.
               </p>
 
               <div className="mt-auto flex items-center justify-between pt-2 border-t border-emerald-400/20 relative z-10">
@@ -479,11 +479,11 @@ export default function WithdrawPage() {
                     <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-75" />
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                   </div>
-                  <span className="text-[10px] font-mono text-emerald-400 font-bold">No deductions, ever</span>
+                  <span className="text-xs font-mono text-emerald-500 dark:text-emerald-400 font-extrabold">No deductions, ever</span>
                 </div>
                 <a
                   href="/dashboard"
-                  className="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition-colors"
+                  className="text-xs font-bold text-emerald-500 hover:text-emerald-400 underline underline-offset-2 transition-colors"
                 >
                   Use P2P →
                 </a>
@@ -501,8 +501,8 @@ export default function WithdrawPage() {
             <div className="bg-gradient-to-br from-violet-600/15 via-blue-600/5 to-transparent border border-violet-500/20 rounded-2xl p-6 relative overflow-hidden group shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-mono text-slate-400 dark:text-gray-400 uppercase tracking-widest mb-1">{t('withdrawAvailFunds')}</p>
-                  <p className="text-3xl font-bold text-slate-950 dark:text-white font-mono tracking-tight">
+                  <p className="text-xs font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-widest mb-1">{t('withdrawAvailFunds')}</p>
+                  <p className="text-3xl font-extrabold text-slate-950 dark:text-white font-mono tracking-tight">
                     ${balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
@@ -513,38 +513,38 @@ export default function WithdrawPage() {
             {/* Withdrawal Form */}
             <form onSubmit={handleSubmit} className={sectionClass}>
               <div className="flex items-center gap-3 mb-6">
-                <ArrowLeftRight className="w-5 h-5 text-violet-500 dark:text-violet-400 flex-shrink-0" />
-                <h2 className="text-sm font-semibold text-slate-950 dark:text-white">{t('withdrawRequestTitle')}</h2>
+                <ArrowLeftRight className="w-5 h-5 text-violet-600 dark:text-violet-300 flex-shrink-0" />
+                <h2 className="text-base font-bold text-slate-950 dark:text-white">{t('withdrawRequestTitle')}</h2>
               </div>
 
               {success && (
                 <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-mono flex items-start gap-2.5">
                   <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span>{success}</span>
+                  <span className="font-bold">{success}</span>
                 </div>
               )}
 
               {error && (
                 <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-500 dark:text-red-400 rounded-xl text-xs font-mono flex items-start gap-2.5">
                   <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <span>{error}</span>
+                  <span className="font-bold">{error}</span>
                 </div>
               )}
 
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2">{t('withdrawNetworkLabel')}</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 uppercase tracking-wider mb-2">{t('withdrawNetworkLabel')}</label>
                   <select
                     value={network}
                     onChange={(e) => setNetwork(e.target.value)}
-                    className="w-full bg-white/3 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-white focus:outline-none focus:border-violet-500/50 focus:bg-white/5 transition-all"
+                    className="w-full bg-white/3 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-violet-500/50 focus:bg-white/5 transition-all"
                   >
                     <option value="BEP20">USDT (BEP20) — BNB Smart Chain</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2">{t('withdrawAmountLabel')}</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 uppercase tracking-wider mb-2">{t('withdrawAmountLabel')}</label>
                   <input
                     type="number"
                     step="any"
@@ -558,7 +558,7 @@ export default function WithdrawPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2">{t('withdrawWalletLabel')}</label>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 uppercase tracking-wider mb-2">{t('withdrawWalletLabel')}</label>
                   <input
                     type="text"
                     value={walletAddress}
@@ -568,7 +568,7 @@ export default function WithdrawPage() {
                     required
                     disabled={submitting}
                   />
-                  <span className="block text-[9px] text-slate-400 dark:text-gray-500 font-mono mt-1.5 leading-relaxed">
+                  <span className="block text-xs text-slate-500 dark:text-zinc-400 font-semibold font-mono mt-1.5 leading-relaxed">
                     {t('withdrawWalletHint')}
                   </span>
                 </div>
@@ -577,7 +577,7 @@ export default function WithdrawPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-3 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-md shadow-violet-600/15"
+                className="w-full py-3 text-xs font-extrabold text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-md shadow-violet-600/15"
               >
                 {submitting ? (
                   <>
@@ -594,35 +594,35 @@ export default function WithdrawPage() {
           {/* Right sidebar: Recent history */}
           <div className="space-y-4">
             <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">{t('withdrawHistory')}</h3>
+              <h3 className="text-sm font-bold text-slate-900 dark:text-zinc-100 mb-4">{t('withdrawHistory')}</h3>
               
               <div className="space-y-3.5">
                 {withdrawals.length > 0 ? (
                   withdrawals.map((item) => (
                     <div key={item.id} className="p-3 bg-slate-50 dark:bg-white/2 border border-slate-100 dark:border-white/5 rounded-xl flex flex-col gap-2">
                       <div className="flex justify-between items-center">
-                        <span className="text-[10px] text-slate-400 dark:text-gray-500 font-mono">
+                        <span className="text-xs text-slate-500 dark:text-zinc-400 font-mono">
                           {new Date(item.createdAt).toLocaleDateString()}
                         </span>
-                        <span className={`text-[9px] font-mono px-2 py-0.5 rounded-full ${statusColor[item.status] || 'bg-slate-200 text-slate-600'}`}>
+                        <span className={`text-[10px] font-bold font-mono px-2.5 py-0.5 rounded-full ${statusColor[item.status] || 'bg-slate-200 text-slate-600'}`}>
                           {item.status.toUpperCase()}
                         </span>
                       </div>
                       <div className="flex justify-between items-baseline">
-                        <span className="text-xs text-slate-700 dark:text-gray-300 font-medium">
+                        <span className="text-xs sm:text-sm text-slate-700 dark:text-zinc-300 font-bold">
                           {item.network} {t('withdrawNetworkAddress')}
                         </span>
-                        <span className="text-sm font-bold font-mono text-slate-900 dark:text-white">
+                        <span className="text-sm sm:text-base font-extrabold font-mono text-slate-900 dark:text-white">
                           -${item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                         </span>
                       </div>
-                      <span className="text-[9px] text-slate-400 dark:text-gray-500 font-mono truncate">
+                      <span className="text-xs text-slate-500 dark:text-zinc-400 font-mono truncate">
                         {item.walletAddress}
                       </span>
                     </div>
                   ))
                 ) : (
-                  <div className="py-6 text-center text-xs text-slate-400 dark:text-gray-500 font-mono">
+                  <div className="py-6 text-center text-xs text-slate-500 dark:text-zinc-400 font-mono font-semibold">
                     {t('withdrawNoPast')}
                   </div>
                 )}

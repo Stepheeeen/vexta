@@ -27,6 +27,13 @@ export async function processDailyROI(): Promise<{ processed: number; totalPaid:
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  // Skip weekends (Saturday = 6, Sunday = 0)
+  const dayOfWeek = today.getDay();
+  if (dayOfWeek === 0 || dayOfWeek === 6) {
+    console.log('[ROI] Skipping daily ROI distribution (weekend)');
+    return { processed: 0, totalPaid: 0 };
+  }
+
   // Get all active investments whose end date hasn't passed
   const activeInvestments = await prisma.investment.findMany({
     where: {

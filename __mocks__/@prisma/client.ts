@@ -11,6 +11,7 @@ const mockPrisma = {
   referralLink: { findUnique: jest.fn(), findMany: jest.fn(), create: jest.fn(), upsert: jest.fn(), count: jest.fn() },
   withdrawal: { create: jest.fn(), findMany: jest.fn(), aggregate: jest.fn() },
   dailyROIEntry: { create: jest.fn(), findFirst: jest.fn(), deleteMany: jest.fn() },
+  settings: { findFirst: jest.fn(), create: jest.fn(), update: jest.fn() },
   $disconnect: jest.fn(),
   $transaction: jest.fn((fn: (tx: unknown) => Promise<unknown>) => fn(mockPrisma)),
 };

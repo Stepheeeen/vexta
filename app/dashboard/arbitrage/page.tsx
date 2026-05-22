@@ -398,7 +398,7 @@ export default function ArbitragePage() {
 
       {/* Header */}
       <div className="mb-8">
-        <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">{t('arbitrage')}</p>
+        <p className="text-xs font-extrabold text-violet-600 dark:text-violet-300 uppercase tracking-[0.2em] mb-1">{t('arbitrage')}</p>
         <h1 className="text-2xl font-bold text-slate-950 dark:text-white tracking-tight">{t('arbitrage')}</h1>
       </div>
 
@@ -416,32 +416,32 @@ export default function ArbitragePage() {
       ) : (
         <>
           {/* Step-by-Step Guideline Banner */}
-          <div className="bg-gradient-to-br from-violet-600/10 via-blue-600/5 to-transparent border border-violet-500/10 rounded-2xl p-6 mb-6 shadow-sm">
+          <div className="bg-gradient-to-br from-violet-600/10 via-blue-600/5 to-transparent border border-violet-500/15 rounded-2xl p-6 mb-6 shadow-sm">
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <HelpCircle className="w-5 h-5 text-violet-500 dark:text-violet-400" />
-                  <h3 className="text-sm font-semibold text-slate-950 dark:text-white">{t('arbitrageGuideTitle')}</h3>
+                  <HelpCircle className="w-5 h-5 text-violet-600 dark:text-violet-300" />
+                  <h3 className="text-sm sm:text-base font-extrabold text-slate-950 dark:text-white">{t('arbitrageGuideTitle')}</h3>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-gray-400 max-w-2xl leading-relaxed">
+                <p className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-zinc-300 max-w-2xl leading-relaxed">
                   {t('arbitrageGuideDesc')}
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-slate-200/50 dark:border-white/5 text-[11px] font-mono">
-                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-violet-500 font-bold block mb-0.5">{t('arbitrageGuideStep1Title')}</span>
-                    <span className="text-slate-400">{t('arbitrageGuideStep1Sub')}</span>
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-slate-200/50 dark:border-white/5 text-xs font-mono">
+                  <div className="p-3 bg-slate-50 dark:bg-white/2 rounded-xl">
+                    <span className="text-xs sm:text-sm font-extrabold block mb-1 text-violet-600 dark:text-violet-300">{t('arbitrageGuideStep1Title')}</span>
+                    <span className="text-slate-600 dark:text-zinc-300 font-semibold">{t('arbitrageGuideStep1Sub')}</span>
                   </div>
-                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-violet-500 font-bold block mb-0.5">{t('arbitrageGuideStep2Title')}</span>
-                    <span className="text-slate-400">{t('arbitrageGuideStep2Sub')}</span>
+                  <div className="p-3 bg-slate-50 dark:bg-white/2 rounded-xl">
+                    <span className="text-xs sm:text-sm font-extrabold block mb-1 text-violet-600 dark:text-violet-300">{t('arbitrageGuideStep2Title')}</span>
+                    <span className="text-slate-600 dark:text-zinc-300 font-semibold">{t('arbitrageGuideStep2Sub')}</span>
                   </div>
-                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-violet-500 font-bold block mb-0.5">{t('arbitrageGuideStep3Title')}</span>
-                    <span className="text-slate-400">{t('arbitrageGuideStep3Sub')}</span>
+                  <div className="p-3 bg-slate-50 dark:bg-white/2 rounded-xl">
+                    <span className="text-xs sm:text-sm font-extrabold block mb-1 text-violet-600 dark:text-violet-300">{t('arbitrageGuideStep3Title')}</span>
+                    <span className="text-slate-600 dark:text-zinc-300 font-semibold">{t('arbitrageGuideStep3Sub')}</span>
                   </div>
-                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-violet-500 font-bold block mb-0.5">{t('arbitrageGuideStep4Title')}</span>
-                    <span className="text-slate-400">{t('arbitrageGuideStep4Sub')}</span>
+                  <div className="p-3 bg-slate-50 dark:bg-white/2 rounded-xl">
+                    <span className="text-xs sm:text-sm font-extrabold block mb-1 text-violet-600 dark:text-violet-300">{t('arbitrageGuideStep4Title')}</span>
+                    <span className="text-slate-600 dark:text-zinc-300 font-semibold">{t('arbitrageGuideStep4Sub')}</span>
                   </div>
                 </div>
               </div>
@@ -469,9 +469,9 @@ export default function ArbitragePage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             {stats.map(({ label, value, sub }) => (
               <div key={label} className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-5 shadow-sm dark:shadow-none">
-                <p className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase tracking-widest mb-3">{label}</p>
-                <p className="text-xl font-bold text-slate-950 dark:text-white font-mono mb-1">{value}</p>
-                <p className="text-[10px] text-slate-500 dark:text-gray-400">{sub}</p>
+                <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase tracking-widest mb-3">{label}</p>
+                <p className="text-xl sm:text-2xl font-extrabold text-slate-950 dark:text-white font-mono mb-1">{value}</p>
+                <p className="text-xs text-slate-600 dark:text-zinc-400 font-semibold">{sub}</p>
               </div>
             ))}
           </div>
@@ -480,15 +480,15 @@ export default function ArbitragePage() {
           <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none mb-6">
             <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-200/60 dark:border-white/5">
               <div className="flex items-center gap-2">
-                <Cpu className="w-5 h-5 text-violet-500 dark:text-violet-400" />
+                <Cpu className="w-5 h-5 text-violet-600 dark:text-violet-300" />
                 <div>
-                  <h2 className="text-sm font-semibold text-slate-950 dark:text-white">VEXTA HFT ROUTER ENGINE</h2>
-                  <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">Real-time global exchange liquidity matching</p>
+                  <h2 className="text-base font-bold text-slate-950 dark:text-white">VEXTA HFT ROUTER ENGINE</h2>
+                  <p className="text-xs text-slate-600 dark:text-zinc-400 font-semibold font-mono">Real-time global exchange liquidity matching</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-[#00FF88] animate-pulse" />
-                <span className="text-[10px] font-mono font-bold text-[#00FF88]">HFT BOT ACTIVE</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-[#00FF88] animate-pulse" />
+                <span className="text-xs font-mono font-black text-[#00FF88]">HFT BOT ACTIVE</span>
               </div>
             </div>
 
@@ -496,15 +496,15 @@ export default function ArbitragePage() {
             <div className="flex flex-col md:flex-row items-center justify-between gap-8 p-10 bg-slate-50/50 dark:bg-white/2 rounded-3xl border border-slate-200 dark:border-white/5 shadow-inner">
               {/* Buy Exchange Card */}
               <div className="flex-1 w-full p-8 bg-white dark:bg-[#0A0F14]/80 rounded-2xl border border-slate-200 dark:border-white/5 text-center flex flex-col items-center justify-center shadow-md dark:shadow-none hover:scale-[1.03] transition-all duration-300">
-                <span className="text-[11px] font-mono text-green-500 font-bold uppercase tracking-widest mb-3">BUY FROM</span>
+                <span className="text-xs font-mono text-green-600 dark:text-emerald-400 font-extrabold uppercase tracking-widest mb-3">BUY FROM</span>
                 {getExchangeLogo(activeTrade.buyExchange)}
                 <span className="text-lg font-extrabold text-slate-900 dark:text-white font-mono mt-3 tracking-wide uppercase">{activeTrade.buyExchange}</span>
-                <span className="text-sm text-slate-500 dark:text-slate-400 font-mono mt-1">$63,450.20</span>
+                <span className="text-sm text-slate-600 dark:text-zinc-300 font-bold font-mono mt-1">$63,450.20</span>
               </div>
 
               {/* Glowing flow direction arrow paths */}
               <div className="flex-[1.5] w-full flex flex-col items-center justify-center py-4">
-                <span className="text-xs font-mono text-slate-400 tracking-wider mb-2">LIQUIDITY PATH</span>
+                <span className="text-xs font-mono text-slate-600 dark:text-zinc-400 font-extrabold tracking-wider mb-2">LIQUIDITY PATH</span>
                 <div className="relative w-full flex items-center justify-center my-3">
                   <svg className="w-full h-16 text-violet-500/20 dark:text-violet-400/20" viewBox="0 0 100 20" preserveAspectRatio="none" fill="none">
                     <path d="M 0 10 L 100 10" stroke="currentColor" strokeWidth="2.5" strokeDasharray="3 3" />
@@ -522,60 +522,60 @@ export default function ArbitragePage() {
                     <span className="text-[#00FF88] font-black">+{activeTrade.spread}%</span>
                   </div>
                 </div>
-                <span className="text-xs font-mono text-[#00FF88] mt-2 animate-pulse tracking-wide font-semibold">MATCHED SPREAD FOUND</span>
+                <span className="text-xs font-mono text-[#00FF88] mt-2 animate-pulse tracking-wide font-extrabold">MATCHED SPREAD FOUND</span>
               </div>
 
               {/* Sell Exchange Card */}
               <div className="flex-1 w-full p-8 bg-white dark:bg-[#0A0F14]/80 rounded-2xl border border-slate-200 dark:border-white/5 text-center flex flex-col items-center justify-center shadow-md dark:shadow-none hover:scale-[1.03] transition-all duration-300">
-                <span className="text-[11px] font-mono text-cyan-500 font-bold uppercase tracking-widest mb-3">SELL TO</span>
+                <span className="text-xs font-mono text-cyan-600 dark:text-cyan-400 font-extrabold uppercase tracking-widest mb-3">SELL TO</span>
                 {getExchangeLogo(activeTrade.sellExchange)}
                 <span className="text-lg font-extrabold text-slate-900 dark:text-white font-mono mt-3 tracking-wide uppercase">{activeTrade.sellExchange}</span>
-                <span className="text-sm text-slate-500 dark:text-slate-400 font-mono mt-1">$64,524.80</span>
+                <span className="text-sm text-slate-600 dark:text-zinc-300 font-bold font-mono mt-1">$64,524.80</span>
               </div>
             </div>
 
             {/* Bottom ticket details */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-200/60 dark:border-white/5 text-left">
               <div>
-                <p className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase">Trade Volume</p>
-                <p className="text-xs font-bold font-mono text-slate-900 dark:text-white mt-1">{activeTrade.amount} BTC</p>
+                <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase">Trade Volume</p>
+                <p className="text-xs sm:text-sm font-extrabold font-mono text-slate-900 dark:text-white mt-1">{activeTrade.amount} BTC</p>
               </div>
               <div>
-                <p className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase">Execution Fee</p>
-                <p className="text-xs font-bold font-mono text-emerald-500 mt-1">0.00% (Zero Fee)</p>
+                <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase">Execution Fee</p>
+                <p className="text-xs sm:text-sm font-extrabold font-mono text-emerald-500 mt-1">0.00% (Zero Fee)</p>
               </div>
               <div>
-                <p className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase">Gross Spread PnL</p>
-                <p className="text-xs font-bold font-mono text-slate-900 dark:text-white mt-1">+{activeTrade.spread}%</p>
+                <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase">Gross Spread PnL</p>
+                <p className="text-xs sm:text-sm font-extrabold font-mono text-slate-900 dark:text-white mt-1">+{activeTrade.spread}%</p>
               </div>
               <div>
-                <p className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase">Net Simulated profit</p>
-                <p className="text-xs font-bold font-mono text-[#00FF88] mt-1">+${activeTrade.profit}</p>
+                <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase">Net Simulated profit</p>
+                <p className="text-xs sm:text-sm font-extrabold font-mono text-[#00FF88] mt-1">+${activeTrade.profit}</p>
               </div>
             </div>
 
             {/* Scrolling Feed of Recent Executed Trades */}
             <div className="mt-6 pt-6 border-t border-slate-200/60 dark:border-white/5">
-              <p className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase tracking-widest mb-3">Recent Router Executions</p>
+              <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase tracking-widest mb-3">Recent Router Executions</p>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 text-left">
                 {recentTrades.map((t, idx) => (
                   <div key={idx} className="p-3 bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl flex flex-col justify-between">
-                    <div className="flex justify-between items-center text-[9px] font-mono text-slate-400 mb-2">
+                    <div className="flex justify-between items-center text-xs font-mono text-slate-600 dark:text-zinc-300 font-bold mb-2">
                       <span>{t.timestamp}</span>
-                      <span className="text-emerald-500 font-bold bg-emerald-500/10 px-1.5 py-0.5 rounded">SUCCESS</span>
+                      <span className="text-emerald-500 dark:text-emerald-400 font-extrabold bg-emerald-500/10 px-1.5 py-0.5 rounded">SUCCESS</span>
                     </div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold font-mono text-slate-900 dark:text-white">{t.pair}</span>
-                      <span className="text-[10px] text-green-500 font-bold font-mono">+{t.spread}%</span>
+                      <span className="text-xs sm:text-sm font-extrabold font-mono text-slate-900 dark:text-white">{t.pair}</span>
+                      <span className="text-xs font-extrabold font-mono text-green-500 dark:text-emerald-400">+{t.spread}%</span>
                     </div>
-                    <div className="flex items-center gap-1.5 text-[9px] text-slate-500 font-mono mb-2">
-                      <span className="font-semibold text-slate-700 dark:text-gray-300">{t.buyExchange}</span>
+                    <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-zinc-400 font-bold font-mono mb-2">
+                      <span className="font-bold text-slate-700 dark:text-zinc-300">{t.buyExchange}</span>
                       <ArrowRight className="w-3 h-3 text-slate-400" />
-                      <span className="font-semibold text-slate-700 dark:text-gray-300">{t.sellExchange}</span>
+                      <span className="font-bold text-slate-700 dark:text-zinc-300">{t.sellExchange}</span>
                     </div>
-                    <div className="flex justify-between items-center pt-2 border-t border-slate-200/40 dark:border-white/5 text-[10px] font-mono">
-                      <span className="text-slate-400">Profit:</span>
-                      <span className="text-[#00FF88] font-bold">+${parseFloat(t.profit).toFixed(2)}</span>
+                    <div className="flex justify-between items-center pt-2 border-t border-slate-200/40 dark:border-white/5 text-xs font-mono">
+                      <span className="text-slate-600 dark:text-zinc-300 font-bold font-mono">Profit:</span>
+                      <span className="text-[#00FF88] font-extrabold text-xs sm:text-sm">+${parseFloat(t.profit).toFixed(2)}</span>
                     </div>
                   </div>
                 ))}
@@ -592,12 +592,12 @@ export default function ArbitragePage() {
                   <BarChart3 className="w-4 h-4 text-green-500 dark:text-green-400" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-semibold text-slate-950 dark:text-white">{t('arbitrageAllPositions')}</h2>
-                  <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{t('arbitrageContracts')}</p>
+                  <h2 className="text-base font-bold text-slate-950 dark:text-white">{t('arbitrageAllPositions')}</h2>
+                  <p className="text-xs font-semibold font-mono text-slate-600 dark:text-zinc-400">{t('arbitrageContracts')}</p>
                 </div>
                 <div className="ml-auto flex items-center gap-1.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-[10px] font-mono text-green-600 dark:text-green-500">LIVE</span>
+                  <span className="text-xs font-extrabold font-mono text-green-600 dark:text-green-450">LIVE</span>
                 </div>
               </div>
 
@@ -623,31 +623,31 @@ export default function ArbitragePage() {
                       <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-all text-left">
                         <div className="flex items-center gap-3 min-w-0">
                           <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${active ? 'bg-green-500/10' : 'bg-slate-200 dark:bg-white/5'}`}>
-                            <TrendingUp className={`w-4 h-4 ${active ? 'text-green-500 dark:text-green-400' : 'text-slate-400 dark:text-gray-500'}`} />
+                            <TrendingUp className={`w-4 h-4 ${active ? 'text-green-500 dark:text-green-400' : 'text-slate-500 dark:text-zinc-400'}`} />
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-semibold text-slate-900 dark:text-white font-mono">{pair} ({plan.plan})</p>
+                            <p className="text-sm sm:text-base font-bold text-slate-900 dark:text-white font-mono">{pair} ({plan.plan})</p>
                             <div className="flex items-center gap-2 mt-0.5">
-                              <Clock className="w-3 h-3 text-slate-400 dark:text-gray-500" />
-                              <span className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{durationStr}</span>
+                              <Clock className="w-3.5 h-3.5 text-slate-555 dark:text-zinc-400" />
+                              <span className="text-xs font-bold text-slate-600 dark:text-zinc-300 font-mono">{durationStr}</span>
                             </div>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-6 flex-shrink-0">
                           <div className="text-right hidden sm:block">
-                            <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono mb-0.5">{t('arbitrageDepositVol')}</p>
-                            <p className="text-xs font-mono text-slate-900 dark:text-white">${plan.amount.toLocaleString()}</p>
+                            <p className="text-xs font-bold text-slate-600 dark:text-zinc-400 font-mono mb-0.5">{t('arbitrageDepositVol')}</p>
+                            <p className="text-xs sm:text-sm font-bold font-mono text-slate-900 dark:text-white">${plan.amount.toLocaleString()}</p>
                           </div>
                           <div className="text-right hidden sm:block">
-                            <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono mb-0.5">{t('arbitrageDailySpread')}</p>
-                            <p className={`text-xs font-mono font-bold text-green-600 dark:text-green-400`}>+{(plan.dailyROI * 100).toFixed(1)}%</p>
+                            <p className="text-xs font-bold text-slate-600 dark:text-zinc-400 font-mono mb-0.5">{t('arbitrageDailySpread')}</p>
+                            <p className={`text-xs sm:text-sm font-extrabold font-mono text-green-600 dark:text-green-400`}>+{(plan.dailyROI * 100).toFixed(1)}%</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono mb-0.5">{t('arbitragePnL')}</p>
-                            <p className={`text-sm font-bold font-mono text-green-600 dark:text-green-400`}>+${plan.totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                            <p className="text-xs font-bold text-slate-600 dark:text-zinc-400 font-mono mb-0.5">{t('arbitragePnL')}</p>
+                            <p className={`text-sm sm:text-base font-extrabold font-mono text-green-600 dark:text-green-400`}>+${plan.totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                           </div>
-                          <span className={`text-[9px] font-mono px-2.5 py-1 rounded-full ${active ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-gray-500'}`}>
+                          <span className={`text-xs font-extrabold font-mono px-2.5 py-1 rounded-full ${active ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-slate-200 dark:bg-white/5 text-slate-700 dark:text-zinc-350'}`}>
                             {plan.status.toUpperCase()}
                           </span>
                         </div>
@@ -655,7 +655,7 @@ export default function ArbitragePage() {
                     );
                   })
                 ) : (
-                  <p className="text-xs text-slate-400 dark:text-gray-500 font-mono py-8 text-center">{t('arbitrageEmpty')}</p>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-300 font-bold font-mono py-8 text-center">{t('arbitrageEmpty')}</p>
                 )}
               </div>
             </div>
@@ -667,37 +667,37 @@ export default function ArbitragePage() {
               <div>
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
-                    <Wallet className="w-4 h-4 text-violet-500 dark:text-violet-400" />
+                    <Wallet className="w-4 h-4 text-violet-650 dark:text-violet-400" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-semibold text-slate-950 dark:text-white">{t('enterAmount') || 'Invest Capital'}</h2>
-                    <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">Deploy funds to arbitrage contracts</p>
+                    <h2 className="text-sm sm:text-base font-bold text-slate-950 dark:text-white">{t('enterAmount') || 'Invest Capital'}</h2>
+                    <p className="text-xs font-semibold text-slate-600 dark:text-zinc-400 font-mono">Deploy funds to arbitrage contracts</p>
                   </div>
                 </div>
 
                 {/* Balance display */}
                 <div className="p-4 bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl mb-5 flex justify-between items-center">
                   <div>
-                    <span className="text-[9px] font-mono text-slate-400 dark:text-gray-500 block uppercase">AVAILABLE BALANCE</span>
-                    <span className="text-lg font-bold text-slate-950 dark:text-white font-mono">
+                    <span className="text-xs font-bold text-slate-600 dark:text-zinc-400 block uppercase font-mono">AVAILABLE BALANCE</span>
+                    <span className="text-lg sm:text-xl font-extrabold text-slate-950 dark:text-white font-mono">
                       ${(data?.stats.availableBalance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
-                  <span className="text-[9px] font-mono text-violet-600 dark:text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-full">USDT</span>
+                  <span className="text-xs font-extrabold font-mono text-violet-650 dark:text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-full">USDT</span>
                 </div>
 
                 <form onSubmit={handleInvest} className="space-y-4">
                   <div>
-                    <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2">Investment Amount (USD)</label>
+                    <label className="block text-xs font-bold font-mono text-slate-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Investment Amount (USD)</label>
                     <div className="relative">
-                      <span className="absolute left-4 top-3 text-slate-400 font-mono text-sm">$</span>
+                      <span className="absolute left-4 top-3 text-slate-600 dark:text-zinc-300 font-mono text-sm font-bold">$</span>
                       <input
                         type="number"
                         step="any"
                         value={investAmount}
                         onChange={(e) => setInvestAmount(e.target.value)}
                         placeholder="0.00"
-                        className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/8 rounded-xl pl-8 pr-4 py-2.5 text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-violet-500/50 focus:bg-white/5 transition-all font-mono"
+                        className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/8 rounded-xl pl-8 pr-4 py-2.5 text-sm text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-zinc-500 focus:outline-none focus:border-violet-500/50 focus:bg-white/5 transition-all font-mono"
                         required
                         disabled={investing}
                       />
@@ -712,7 +712,7 @@ export default function ArbitragePage() {
                             const bal = data?.stats.availableBalance ?? 0;
                             setInvestAmount((bal * pct).toFixed(2));
                           }}
-                          className="py-1 text-[9px] font-mono bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 rounded text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white transition-all"
+                          className="py-1.5 text-xs font-bold font-mono bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 rounded text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white transition-all"
                         >
                           {pct === 1.0 ? 'MAX' : `${pct * 100}%`}
                         </button>
@@ -724,25 +724,25 @@ export default function ArbitragePage() {
                   {matchingPlan ? (
                     <div className="p-4 bg-violet-500/5 border border-violet-500/10 rounded-xl space-y-2.5 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-slate-400 font-mono">Plan Detected:</span>
-                        <span className="font-bold text-violet-600 dark:text-violet-400 font-mono">{matchingPlan.name}</span>
+                        <span className="text-slate-650 dark:text-zinc-400 font-bold font-mono">Plan Detected:</span>
+                        <span className="font-extrabold text-violet-600 dark:text-violet-400 font-mono">{matchingPlan.name}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-400 font-mono">Daily Yield ROI:</span>
-                        <span className="font-bold text-green-500 dark:text-green-400 font-mono">+{(matchingPlan.dailyROI * 100).toFixed(2)}%</span>
+                        <span className="text-slate-655 dark:text-zinc-400 font-bold font-mono">Daily Yield ROI:</span>
+                        <span className="font-extrabold text-green-500 dark:text-green-400 font-mono">+{(matchingPlan.dailyROI * 100).toFixed(2)}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-400 font-mono">Contract Period:</span>
-                        <span className="font-bold text-slate-900 dark:text-white font-mono">{matchingPlan.duration} days</span>
+                        <span className="text-slate-656 dark:text-zinc-400 font-bold font-mono">Contract Period:</span>
+                        <span className="font-extrabold text-slate-900 dark:text-white font-mono">{matchingPlan.duration} days</span>
                       </div>
                       <div className="flex justify-between pt-1.5 border-t border-slate-200/50 dark:border-white/5">
-                        <span className="text-slate-400 font-mono">Projected Total Profit:</span>
-                        <span className="font-bold text-[#00FF88] font-mono">+${((amountNum || 0) * matchingPlan.dailyROI * matchingPlan.duration).toFixed(2)}</span>
+                        <span className="text-slate-657 dark:text-zinc-400 font-bold font-mono">Projected Total Profit:</span>
+                        <span className="font-extrabold text-[#00FF88] font-mono">+${((amountNum || 0) * matchingPlan.dailyROI * matchingPlan.duration).toFixed(2)}</span>
                       </div>
                     </div>
                   ) : investAmount && amountNum < 10 ? (
                     <div className="p-3 bg-red-500/5 border border-red-500/10 rounded-xl text-center">
-                      <span className="text-[10px] font-mono text-red-500">Minimum investment is $10.00 (Starter Plan)</span>
+                      <span className="text-xs font-bold font-mono text-red-500">Minimum investment is $10.00 (Starter Plan)</span>
                     </div>
                   ) : null}
 
@@ -799,7 +799,7 @@ export default function ArbitragePage() {
                 </div>
 
                 {/* Console footer */}
-                <div className="mt-4 pt-3 border-t border-slate-900 flex items-center justify-between text-[9px] text-slate-500 font-mono">
+                <div className="mt-4 pt-3 border-t border-slate-900 flex items-center justify-between text-xs font-bold text-slate-550 dark:text-zinc-400 font-mono">
                   <span className="flex items-center gap-1">
                     <Shield className="w-3 h-3 text-green-500" /> {t('arbitrageConsoleSecureChannel') || 'Encrypted connection'}
                   </span>

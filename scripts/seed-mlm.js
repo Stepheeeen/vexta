@@ -48,7 +48,7 @@ async function main() {
         isVerified: true,
         balance: 0.0,
         activeDeposit: 0.0,
-        planRate: 1.5, // 1.5% daily profit
+        planRate: 1.0, // 1.0% daily profit
         totalEarned: 0.0,
         totalCommission: 0.0,
       }

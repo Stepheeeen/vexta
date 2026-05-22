@@ -185,8 +185,8 @@ function ProfitCalculator() {
     const days = Number(calcDays) || 0;
     let tier = 'Starter';
     let bonusPct = 0;
-    if (amount >= 2000) { tier = 'Ultra'; bonusPct = 0.30; }
-    else if (amount >= 500) { tier = 'Prime'; bonusPct = 0.10; }
+    if (amount >= 3000) { tier = 'Ultra'; bonusPct = 0.30; }
+    else if (amount >= 1000) { tier = 'Prime'; bonusPct = 0.10; }
     const bonusAmt = amount * bonusPct;
     const startingCapital = amount + bonusAmt;
     const endingBalance = startingCapital * Math.pow(1 + 0.01, days);
@@ -204,7 +204,7 @@ function ProfitCalculator() {
         </div>
         <div>
           <h2 className="text-sm font-bold text-slate-900 dark:text-white">{t('calcTitle') || 'Profit Calculator'}</h2>
-          <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">Compound ROI Simulator · 1% Daily</p>
+          <p className="text-xs text-slate-600 dark:text-zinc-300 font-semibold font-mono mt-0.5">Compound ROI Simulator · 1% Daily</p>
         </div>
       </div>
 
@@ -212,7 +212,7 @@ function ProfitCalculator() {
         {/* Amount slider */}
         <div>
           <div className="flex justify-between items-center mb-1.5">
-            <label className="text-[10px] font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider">
+            <label className="text-xs font-bold font-mono text-slate-700 dark:text-zinc-300 uppercase tracking-wider">
               {t('calcAmount') || 'Investment Amount'}
             </label>
             <span className="text-sm font-black font-mono text-slate-900 dark:text-white">${calcAmount.toLocaleString()}</span>
@@ -222,7 +222,7 @@ function ProfitCalculator() {
             onChange={e => setCalcAmount(Number(e.target.value))}
             className="w-full h-1.5 bg-slate-200 dark:bg-white/10 rounded-full appearance-none cursor-pointer accent-violet-600"
           />
-          <div className="flex justify-between text-[9px] text-slate-400 font-mono mt-1">
+          <div className="flex justify-between text-xs text-slate-550 dark:text-zinc-400 font-bold font-mono mt-1">
             <span>$10</span><span>$50,000</span>
           </div>
         </div>
@@ -230,7 +230,7 @@ function ProfitCalculator() {
         {/* Days slider */}
         <div>
           <div className="flex justify-between items-center mb-1.5">
-            <label className="text-[10px] font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider">
+            <label className="text-xs font-bold font-mono text-slate-700 dark:text-zinc-300 uppercase tracking-wider">
               {t('calcDays') || 'Duration'}
             </label>
             <span className="text-sm font-black font-mono text-slate-900 dark:text-white">{calcDays} days</span>
@@ -240,7 +240,7 @@ function ProfitCalculator() {
             onChange={e => setCalcDays(Number(e.target.value))}
             className="w-full h-1.5 bg-slate-200 dark:bg-white/10 rounded-full appearance-none cursor-pointer accent-violet-600"
           />
-          <div className="flex justify-between text-[9px] text-slate-400 font-mono mt-1">
+          <div className="flex justify-between text-xs text-slate-550 dark:text-zinc-400 font-bold font-mono mt-1">
             <span>1 day</span><span>365 days</span>
           </div>
         </div>
@@ -253,20 +253,20 @@ function ProfitCalculator() {
             { label: 'Operating Capital', value: `$${calc.startingCapital.toFixed(2)}` },
           ].map(({ label, value, color }) => (
             <div key={label} className="flex justify-between items-center text-xs">
-              <span className="text-slate-500 dark:text-gray-400 font-mono">{label}</span>
+              <span className="text-slate-600 dark:text-zinc-400 font-semibold font-mono">{label}</span>
               <span className={`font-bold font-mono ${color || 'text-slate-900 dark:text-white'}`}>{value}</span>
             </div>
           ))}
 
           <div className="border-t border-slate-200 dark:border-white/5 pt-2.5 space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-slate-500 dark:text-gray-400 font-mono">Ending Balance</span>
+              <span className="text-xs text-slate-600 dark:text-zinc-300 font-bold font-mono">Ending Balance</span>
               <span className="text-base font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400">
                 ${calc.endingBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-xs text-slate-500 dark:text-gray-400 font-mono">Net Profit</span>
+              <span className="text-xs text-slate-650 dark:text-zinc-300 font-bold font-mono">Net Profit</span>
               <span className="text-sm font-black font-mono text-emerald-600 dark:text-emerald-400">
                 +${calc.netProfit.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </span>
@@ -386,7 +386,7 @@ export default function Dashboard() {
       {/* ── Page Header ───────────────────────────────────────────────── */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
         <div>
-          <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">{t('overview')}</p>
+          <p className="text-xs font-bold font-mono text-violet-600 dark:text-violet-300 uppercase tracking-[0.2em] mb-1">{t('overview')}</p>
           <h1 className="text-2xl font-bold text-slate-950 dark:text-white tracking-tight">{t('overviewWelcome')}, {userFirstName}</h1>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
@@ -428,9 +428,9 @@ export default function Dashboard() {
           <div id="tour-metrics" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {metrics.map(({ label, value, change }) => (
               <div key={label} className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-5 shadow-sm dark:shadow-none">
-                <p className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase tracking-widest mb-3">{label}</p>
-                <p className="text-xl font-bold text-slate-950 dark:text-white mb-2 font-mono">{show ? value : '••••••'}</p>
-                <div className="inline-flex items-center gap-1 text-[10px] font-mono text-slate-500 dark:text-gray-400">{change}</div>
+                <p className="text-xs font-bold font-mono text-slate-550 dark:text-zinc-400 uppercase tracking-widest mb-3">{label}</p>
+                <p className="text-xl font-black text-slate-950 dark:text-white mb-2 font-mono">{show ? value : '••••••'}</p>
+                <div className="inline-flex items-center gap-1 text-xs font-mono font-bold text-slate-600 dark:text-zinc-350">{change}</div>
               </div>
             ))}
           </div>
@@ -456,12 +456,12 @@ export default function Dashboard() {
                   <TrendingUp className="w-4 h-4 text-green-500 dark:text-green-400" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-semibold text-slate-950 dark:text-white">{t('overviewActivePositions')}</h2>
-                  <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{t('overviewArbitrageContracts')}</p>
+                  <h2 className="text-base font-bold text-slate-950 dark:text-white">{t('overviewActivePositions')}</h2>
+                  <p className="text-xs text-slate-650 dark:text-zinc-400 font-semibold font-mono mt-0.5">{t('overviewArbitrageContracts')}</p>
                 </div>
                 <div className="ml-auto flex items-center gap-1.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-[10px] font-mono text-green-600 dark:text-green-500">LIVE</span>
+                  <span className="text-xs font-bold font-mono text-green-600 dark:text-green-400">LIVE</span>
                 </div>
               </div>
               <div className="space-y-3">
@@ -469,17 +469,17 @@ export default function Dashboard() {
                   data.investments.filter(i => i.status === 'active').map((i, idx) => (
                     <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5">
                       <div>
-                        <p className="text-xs font-medium text-slate-900 dark:text-white font-mono">{i.plan}</p>
-                        <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-0.5">Yield contract</p>
+                        <p className="text-sm font-bold text-slate-900 dark:text-white font-mono">{i.plan}</p>
+                        <p className="text-xs text-slate-500 dark:text-zinc-400 font-semibold font-mono mt-0.5">Yield contract</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-bold text-green-500 dark:text-green-400 font-mono">+{(i.dailyROI * 100).toFixed(1)}%</p>
-                        <span className="text-[9px] font-mono text-green-600 dark:text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full">ACTIVE</span>
+                        <p className="text-base font-black text-green-500 dark:text-green-400 font-mono">+{(i.dailyROI * 100).toFixed(1)}%</p>
+                        <span className="text-[10px] font-extrabold font-mono text-green-600 dark:text-green-400 bg-green-500/10 px-2.5 py-0.5 rounded-full">ACTIVE</span>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <p className="text-xs text-slate-500 dark:text-gray-500 font-mono py-4 text-center">{t('overviewNoActive')}</p>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-semibold font-mono py-4 text-center">{t('overviewNoActive')}</p>
                 )}
               </div>
             </div>
@@ -491,8 +491,8 @@ export default function Dashboard() {
                   <Zap className="w-4 h-4 text-violet-500 dark:text-violet-400" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-semibold text-slate-950 dark:text-white">{t('overviewReferralCode')}</h2>
-                  <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{t('overviewReferralSub')}</p>
+                  <h2 className="text-base font-bold text-slate-950 dark:text-white">{t('overviewReferralCode')}</h2>
+                  <p className="text-xs text-slate-650 dark:text-zinc-400 font-semibold font-mono mt-0.5">{t('overviewReferralSub')}</p>
                 </div>
               </div>
               <div className="flex items-center justify-between gap-3 p-4 bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl mb-5">
@@ -508,7 +508,7 @@ export default function Dashboard() {
                   { label: t('overviewTotalComm'), value: `$${(data?.stats.totalCommissions ?? 0).toFixed(2)}`, color: 'text-green-600 dark:text-green-400' },
                 ].map(({ label, value, color }) => (
                   <div key={label} className="flex justify-between items-center text-xs">
-                    <span className="text-slate-500 dark:text-gray-500 font-mono">{label}</span>
+                    <span className="text-slate-600 dark:text-zinc-400 font-semibold font-mono">{label}</span>
                     <span className={`font-bold font-mono ${color}`}>{value}</span>
                   </div>
                 ))}
@@ -526,21 +526,21 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <h2 className="text-sm font-semibold text-slate-950 dark:text-white">{t('p2pTransferTitle') || 'P2P Balance Transfer'}</h2>
-                    <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{t('p2pTransferSubtitle') || 'Zero-fee internal balance transfers'}</p>
+                    <p className="text-xs text-slate-600 dark:text-zinc-300 font-mono mt-0.5">{t('p2pTransferSubtitle') || 'Zero-fee internal balance transfers'}</p>
                   </div>
-                  <span className="ml-auto text-[9px] font-mono text-violet-600 dark:text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-full uppercase tracking-wider">{t('p2pZeroFee') || '0% FEE'}</span>
+                  <span className="ml-auto text-[10px] font-bold text-violet-600 dark:text-violet-300 bg-violet-500/20 px-2.5 py-0.5 rounded-full uppercase tracking-wider">{t('p2pZeroFee') || '0% FEE'}</span>
                 </div>
                 <form onSubmit={handleP2pTransfer} className="space-y-4">
                   <div>
-                    <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2">{t('p2pRecipientLabel') || 'Recipient Email or Referral Code'}</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-zinc-200 uppercase tracking-wider mb-2">{t('p2pRecipientLabel') || 'Recipient Email or Referral Code'}</label>
                     <input type="text" value={recipient} onChange={e => setRecipient(e.target.value)} placeholder="email@example.com or VEXTA_CODE"
-                      className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-violet-500/50 focus:bg-white/5 transition-all font-mono"
+                      className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-violet-500/50 focus:bg-white/5 transition-all font-mono"
                       required disabled={p2pSubmitting} />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2">{t('p2pAmountLabel') || 'Amount (USD)'}</label>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-zinc-200 uppercase tracking-wider mb-2">{t('p2pAmountLabel') || 'Amount (USD)'}</label>
                     <input type="number" step="any" value={p2pAmount} onChange={e => setP2pAmount(e.target.value)} placeholder="0.00"
-                      className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-violet-500/50 focus:bg-white/5 transition-all font-mono"
+                      className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2.5 text-sm text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-violet-500/50 focus:bg-white/5 transition-all font-mono"
                       required disabled={p2pSubmitting} />
                   </div>
                   <button type="submit" disabled={p2pSubmitting}
@@ -565,21 +565,21 @@ export default function Dashboard() {
                             {positive ? <ArrowUpRight className="w-3.5 h-3.5 text-green-500" /> : <ArrowDownRight className="w-3.5 h-3.5 text-red-500" />}
                           </div>
                           <div>
-                            <p className="text-xs font-medium text-slate-900 dark:text-white">{tx.description || tx.type.toUpperCase()}</p>
-                            <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{new Date(tx.createdAt).toLocaleDateString()}</p>
+                            <p className="text-xs font-bold text-slate-900 dark:text-white">{tx.description || tx.type.toUpperCase()}</p>
+                            <p className="text-xs text-slate-500 dark:text-zinc-400 font-semibold font-mono">{new Date(tx.createdAt).toLocaleDateString()}</p>
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className={`text-sm font-bold font-mono ${positive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                          <p className={`text-sm sm:text-base font-extrabold font-mono ${positive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                             {positive ? '+' : ''}${tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
-                          <p className="text-[10px] text-violet-600 dark:text-violet-400 font-mono">{tx.status.toUpperCase()}</p>
+                          <p className="text-[10px] font-bold text-violet-600 dark:text-violet-300 font-mono">{tx.status.toUpperCase()}</p>
                         </div>
                       </div>
                     );
                   })
                 ) : (
-                  <p className="text-xs text-slate-500 dark:text-gray-500 font-mono py-6 text-center">{t('overviewNoActivity')}</p>
+                  <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-semibold font-mono py-6 text-center">{t('overviewNoActivity')}</p>
                 )}
               </div>
             </div>

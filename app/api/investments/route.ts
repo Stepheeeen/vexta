@@ -99,10 +99,13 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Decrement the user's persisted balance field
+      // Decrement the user's persisted balance field and set planRate
       await tx.user.update({
         where: { id: payload.userId },
-        data: { balance: { decrement: amount } }
+        data: {
+          balance: { decrement: amount },
+          planRate: plan.dailyROI * 100,
+        }
       });
 
       // Propagate referral commissions
