@@ -40,6 +40,15 @@ model User {
   balance         Float    @default(0)
   uplineId        String?  @db.ObjectId
 
+  // Sponsored & Leadership System
+  isSponsored           Boolean  @default(false)
+  sponsoredType         String?  // "free" | "goal_locked"
+  sponsoredGoalAmount   Float    @default(0)
+  sponsoredGiftedAmount Float    @default(0)
+  sponsoredDirectSales  Float    @default(0)
+  roiBlocked            Boolean  @default(false)
+  fundsFrozen           Boolean  @default(false)
+
   // Relations
   upline                User?    @relation("UplineChain", fields: [uplineId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   downline              User[]   @relation("UplineChain")
@@ -78,6 +87,7 @@ model Investment {
   status      String   @default("active") // active | completed | cancelled
   totalEarned Float    @default(0)
   createdAt   DateTime @default(now())
+  isVirtual   Boolean  @default(false)
 
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   plan     Plan      @relation(fields: [planId], references: [id])
@@ -134,6 +144,7 @@ model Transaction {
   fromUserId  String?  @db.ObjectId
   level       Int?
   createdAt   DateTime @default(now())
+  isVirtual   Boolean  @default(false)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -150,6 +161,7 @@ model Withdrawal {
   note          String?
   createdAt     DateTime  @default(now())
   processedAt   DateTime?
+  type          String    @default("roi") // "roi" | "commission"
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

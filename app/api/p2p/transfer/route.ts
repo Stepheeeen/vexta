@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { prisma } from '@/lib/prisma';
 import { getUserFromRequest } from '@/lib/auth';
-import { getAvailableBalance } from '@/lib/balance';
+import { getAvailableBalance, getWithdrawableBalances } from '@/lib/balance';
 
 const transferSchema = z.object({
   recipientIdentifier: z.string().min(1, 'Recipient email or referral code is required'),
@@ -77,17 +77,25 @@ export async function POST(req: NextRequest) {
     // Execute transfer in a transaction with pessimistic locking
     await prisma.$transaction(async (tx) => {
       // 1. Lock sender and recipient documents deterministically to prevent deadlock
+      let senderUser;
       for (const id of userIds) {
-        await tx.user.update({
+        const u = await tx.user.update({
           where: { id },
           data: { updatedAt: new Date() }
         });
+        if (id === senderId) senderUser = u;
       }
 
-      // 2. Verify sufficient available balance inside the transaction
-      const availableBalance = await getAvailableBalance(senderId, tx);
-      if (amount > availableBalance) {
-        throw new Error('INSUFFICIENT_BALANCE');
+      if (senderUser?.fundsFrozen) {
+        throw new Error('FUNDS_FROZEN');
+      }
+
+      // 2. Verify sufficient transferable balance inside the transaction
+      const pools = await getWithdrawableBalances(senderId, tx);
+      const availableTransferable = pools.availableRoi + pools.availableCommission;
+
+      if (amount > availableTransferable) {
+        throw new Error('INSUFFICIENT_TRANSFERABLE_BALANCE');
       }
 
       // 3. Sender transaction record
@@ -133,9 +141,15 @@ export async function POST(req: NextRequest) {
       message: `Successfully transferred $${amount.toFixed(2)} to ${recipient.firstName} ${recipient.lastName}`
     });
   } catch (err: any) {
-    if (err.message === 'INSUFFICIENT_BALANCE') {
+    if (err.message === 'FUNDS_FROZEN') {
       return NextResponse.json(
-        { error: 'Insufficient balance.' },
+        { error: 'Your account funds are temporarily frozen. P2P transfers are disabled.' },
+        { status: 400 }
+      );
+    }
+    if (err.message === 'INSUFFICIENT_TRANSFERABLE_BALANCE') {
+      return NextResponse.json(
+        { error: 'Insufficient transferable balance. Blocked sponsored ROI funds cannot be transferred.' },
         { status: 400 }
       );
     }

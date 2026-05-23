@@ -21,16 +21,31 @@ export async function GET(req: NextRequest) {
     // 2. Fetch all transaction data to calculate total volume
     // We sum absolute transaction values to get total volume, or sum deposits
     const deposits = await prisma.transaction.findMany({
-      where: { type: 'deposit', status: 'completed' },
+      where: { type: 'deposit', status: 'completed', isVirtual: false },
       select: { amount: true }
     });
     const totalVolume = deposits.reduce((sum, tx) => sum + tx.amount, 0);
 
     const approvedWithdrawals = await prisma.withdrawal.findMany({
       where: { status: 'approved' },
-      select: { amount: true }
+      select: { amount: true, type: true }
     });
     const totalWithdrawals = approvedWithdrawals.reduce((sum, w) => sum + w.amount, 0);
+    const totalRoiWithdrawals = approvedWithdrawals.filter(w => w.type === 'roi').reduce((sum, w) => sum + w.amount, 0);
+    const totalCommissionWithdrawals = approvedWithdrawals.filter(w => w.type === 'commission').reduce((sum, w) => sum + w.amount, 0);
+
+    // Dynamic calculations for total profits distributed
+    const roiProfitAggregate = await prisma.transaction.aggregate({
+      where: { type: { in: ['roi', 'daily_roi'] }, status: 'completed' },
+      _sum: { amount: true }
+    });
+    const totalRoiProfit = roiProfitAggregate._sum.amount ?? 0;
+
+    const commissionProfitAggregate = await prisma.transaction.aggregate({
+      where: { type: 'commission', status: 'completed' },
+      _sum: { amount: true }
+    });
+    const totalUnilevelProfit = commissionProfitAggregate._sum.amount ?? 0;
 
     // 3. System ROI average
     // Get average dailyROI from all plans
@@ -154,6 +169,10 @@ export async function GET(req: NextRequest) {
         totalUsers,
         totalVolume,
         totalWithdrawals,
+        totalRoiWithdrawals,
+        totalCommissionWithdrawals,
+        totalRoiProfit,
+        totalUnilevelProfit,
         pendingWithdrawalsCount,
         pendingDepositsCount,
         platformROI: avgDailyROI

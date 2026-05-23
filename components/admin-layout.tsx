@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutGrid, Users, CreditCard, BarChart3, Settings, LogOut, Bell, X, Check, ArrowDownRight, AlertTriangle, FileText, Sun, Moon } from 'lucide-react';
+import { LayoutGrid, Users, CreditCard, BarChart3, Settings, LogOut, Bell, X, Check, ArrowDownRight, AlertTriangle, FileText, Sun, Moon, Zap } from 'lucide-react';
 import { BackgroundPattern } from '@/components/background-pattern';
 import { VextaLogo } from '@/components/vexta-logo';
 import { SYSTEM_CONFIG } from '@/lib/config/system';
@@ -50,6 +50,7 @@ const adminTranslations = {
     analytics: 'Analytics',
     settings: 'Settings',
     resources: 'Resources',
+    sponsorship: 'Sponsorship',
   },
   es: {
     dashboard: 'Tablero',
@@ -60,6 +61,7 @@ const adminTranslations = {
     analytics: 'Analítica',
     settings: 'Configuración',
     resources: 'Recursos',
+    sponsorship: 'Patrocinios',
   },
   vi: {
     dashboard: 'Bảng điều khiển',
@@ -70,6 +72,7 @@ const adminTranslations = {
     analytics: 'Phân tích',
     settings: 'Cài đặt',
     resources: 'Tài nguyên',
+    sponsorship: 'Tài trợ',
   },
   th: {
     dashboard: 'แดชบอร์ด',
@@ -80,6 +83,7 @@ const adminTranslations = {
     analytics: 'การวิเคราะห์',
     settings: 'การตั้งค่า',
     resources: 'แหล่งข้อมูล',
+    sponsorship: 'การสนับสนุน',
   },
   pt: {
     dashboard: 'Painel',
@@ -90,6 +94,7 @@ const adminTranslations = {
     analytics: 'Análise',
     settings: 'Configurações',
     resources: 'Recursos',
+    sponsorship: 'Patrocínios',
   },
   ko: {
     dashboard: '대시보드',
@@ -100,6 +105,7 @@ const adminTranslations = {
     analytics: '통계 분석',
     settings: '설정',
     resources: '자료실',
+    sponsorship: '스폰서십',
   },
   fr: {
     dashboard: 'Tableau de bord',
@@ -110,6 +116,7 @@ const adminTranslations = {
     analytics: 'Analyses',
     settings: 'Paramètres',
     resources: 'Ressources',
+    sponsorship: 'Parrainage',
   }
 };
 
@@ -159,6 +166,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   ];
 
   const extraNavItems: NavItem[] = [
+    { href: '/admin/sponsorship',  icon: Zap,            labelKey: 'sponsorship' },
     { href: '/admin/transactions', icon: CreditCard,     labelKey: 'transactions' },
     { href: '/admin/resources',    icon: FileText,       labelKey: 'resources' },
     { href: '/admin/settings',     icon: Settings,       labelKey: 'settings' },

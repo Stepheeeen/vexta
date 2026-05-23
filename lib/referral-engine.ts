@@ -26,6 +26,16 @@ export async function propagateCommissions(
   const results: { level: number; recipientId: string; amount: number }[] = [];
   const client = tx || prisma;
 
+  // Check if investment is virtual
+  const investment = await client.investment.findUnique({
+    where: { id: investmentId },
+    select: { isVirtual: true }
+  });
+  if (investment?.isVirtual) {
+    console.log(`[REFERRAL] Skipping commission propagation for virtual investment ${investmentId}`);
+    return [];
+  }
+
   let currentUserId = investorId;
 
   for (let level = 1; level <= MAX_LEVELS; level++) {

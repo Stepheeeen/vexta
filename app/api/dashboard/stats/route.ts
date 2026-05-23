@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { getAvailableBalance } from '@/lib/balance';
+import { getAvailableBalance, getWithdrawableBalances } from '@/lib/balance';
 
 export async function GET(req: NextRequest) {
   const payload = getUserFromRequest(req);
@@ -60,6 +60,19 @@ export async function GET(req: NextRequest) {
 
   // Dynamic available balance
   const availableBalance = await getAvailableBalance(userId);
+  const pools = await getWithdrawableBalances(userId);
+  
+  const userSponsorship = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      isSponsored: true,
+      sponsoredType: true,
+      sponsoredGoalAmount: true,
+      sponsoredDirectSales: true,
+      roiBlocked: true,
+      fundsFrozen: true,
+    }
+  });
 
   return NextResponse.json({
     stats: {
@@ -70,6 +83,8 @@ export async function GET(req: NextRequest) {
       activeInvestments,
       directReferrals,
     },
+    pools,
+    userSponsorship,
     investments: investments.map((i) => ({
       id: i.id,
       plan: i.plan.name,

@@ -191,6 +191,25 @@ export default function WithdrawPage() {
   const [balance, setBalance] = useState(0);
   const [withdrawals, setWithdrawals] = useState<WithdrawalItem[]>([]);
 
+  // Sponsorship & Pool States
+  const [pools, setPools] = useState<{
+    availableRoi: number;
+    availableCommission: number;
+    blockedRoi: number;
+    fundsFrozen: boolean;
+  } | null>(null);
+
+  const [userSponsorship, setUserSponsorship] = useState<{
+    isSponsored: boolean;
+    sponsoredType: 'free' | 'goal_locked';
+    sponsoredGoalAmount: number;
+    sponsoredDirectSales: number;
+    roiBlocked: boolean;
+    fundsFrozen: boolean;
+  } | null>(null);
+
+  const [withdrawType, setWithdrawType] = useState<'roi' | 'commission'>('roi');
+
   // Form states
   const [amount, setAmount] = useState('');
   const [walletAddress, setWalletAddress] = useState('');
@@ -220,6 +239,8 @@ export default function WithdrawPage() {
       const wJson = await withdrawRes.json();
 
       setBalance(sJson.stats.availableBalance ?? 0);
+      setPools(sJson.pools ?? null);
+      setUserSponsorship(sJson.userSponsorship ?? null);
       setWithdrawals(wJson.withdrawals || []);
     } catch (err: any) {
       console.error(err);
@@ -285,11 +306,12 @@ export default function WithdrawPage() {
       return;
     }
 
-    if (numericAmount > balance) {
-      setError(`Insufficient balance. Maximum available: $${balance.toLocaleString()}`);
+    const limit = withdrawType === 'roi' ? (pools?.availableRoi ?? 0) : (pools?.availableCommission ?? 0);
+    if (numericAmount > limit) {
+      setError(`Insufficient ${withdrawType === 'roi' ? 'ROI' : 'Commission'} balance. Maximum available: $${limit.toLocaleString()}`);
       toast({
         title: 'Withdrawal Failed',
-        description: `Insufficient balance. Maximum available: $${balance.toLocaleString()}`,
+        description: `Insufficient ${withdrawType === 'roi' ? 'ROI' : 'Commission'} balance. Maximum available: $${limit.toLocaleString()}`,
         variant: 'destructive',
       });
       setSubmitting(false);
@@ -304,6 +326,7 @@ export default function WithdrawPage() {
           amount: numericAmount,
           walletAddress,
           network,
+          type: withdrawType,
         }),
       });
 
@@ -523,6 +546,91 @@ export default function WithdrawPage() {
                 <ArrowLeftRight className="w-5 h-5 text-violet-600 dark:text-violet-300 flex-shrink-0" />
                 <h2 className="text-base font-bold text-slate-950 dark:text-white">{t('withdrawRequestTitle')}</h2>
               </div>
+
+              {/* Pool Balance Selection */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                <button
+                  type="button"
+                  onClick={() => setWithdrawType('roi')}
+                  className={`relative p-5 rounded-2xl border text-left transition-all ${
+                    withdrawType === 'roi'
+                      ? 'border-violet-600 bg-violet-600/5 dark:bg-violet-600/10'
+                      : 'border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/3 hover:bg-slate-100 dark:hover:bg-white/5'
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 font-mono uppercase tracking-wider">ROI Profits</span>
+                    {withdrawType === 'roi' && <CheckCircle2 className="w-4 h-4 text-violet-500" />}
+                  </div>
+                  <p className="text-lg font-black text-slate-905 dark:text-white font-mono">
+                    ${pools ? pools.availableRoi.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}
+                  </p>
+                  {userSponsorship?.isSponsored && userSponsorship.roiBlocked && (
+                    <span className="text-[10px] text-amber-500 font-bold block mt-2">ROI Blocked</span>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setWithdrawType('commission')}
+                  className={`relative p-5 rounded-2xl border text-left transition-all ${
+                    withdrawType === 'commission'
+                      ? 'border-violet-600 bg-violet-600/5 dark:bg-violet-600/10'
+                      : 'border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/3 hover:bg-slate-100 dark:hover:bg-white/5'
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 font-mono uppercase tracking-wider">Referral Commissions</span>
+                    {withdrawType === 'commission' && <CheckCircle2 className="w-4 h-4 text-violet-500" />}
+                  </div>
+                  <p className="text-lg font-black text-slate-905 dark:text-white font-mono">
+                    ${pools ? pools.availableCommission.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}
+                  </p>
+                </button>
+              </div>
+
+              {/* Warnings and Goals for Sponsored Accounts */}
+              {userSponsorship?.isSponsored && (
+                <div className="mb-6 p-4 rounded-xl border bg-amber-500/10 border-amber-500/20 text-slate-800 dark:text-zinc-200 text-xs">
+                  {userSponsorship.sponsoredType === 'goal_locked' ? (
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center font-bold">
+                        <span className="text-amber-600 dark:text-amber-400">Direct Sales Goal Progress</span>
+                        <span className="font-mono">
+                          ${userSponsorship.sponsoredDirectSales.toLocaleString()} / ${userSponsorship.sponsoredGoalAmount.toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="text-[11px] leading-relaxed">
+                        To unlock virtual ROI withdrawals, you must generate double the value of your assigned package in direct sales (Level 1 only).
+                      </p>
+                      {userSponsorship.sponsoredDirectSales < userSponsorship.sponsoredGoalAmount ? (
+                        <div className="w-full bg-slate-200 dark:bg-white/5 h-1.5 rounded-full overflow-hidden">
+                          <div 
+                            className="bg-amber-505 h-full rounded-full transition-all"
+                            style={{ width: `${Math.min(100, Math.round((userSponsorship.sponsoredDirectSales / userSponsorship.sponsoredGoalAmount) * 100))}%` }}
+                          />
+                        </div>
+                      ) : (
+                        <p className="text-emerald-600 dark:text-emerald-400 font-bold">✓ Goal completed! Pending admin approval to unlock.</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      <p className="font-bold text-amber-600 dark:text-amber-400">Free Account Limitation</p>
+                      <p className="text-[11px] leading-relaxed">
+                        ROI withdrawals are limited to $12 USD. To withdraw more than $12 USD, you must refer real investments totaling at least $10 USD. Network commissions can be withdrawn normally.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {userSponsorship?.fundsFrozen && (
+                <div className="mb-6 p-4 rounded-xl border bg-red-500/10 border-red-500/20 text-red-500 text-xs font-bold flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>Account frozen. Payouts and transfers are temporarily locked.</span>
+                </div>
+              )}
 
               {success && (
                 <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-xl text-xs font-mono flex items-start gap-2.5">

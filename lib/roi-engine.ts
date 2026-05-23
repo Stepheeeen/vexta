@@ -99,6 +99,7 @@ export async function processDailyROI(): Promise<{ processed: number; totalPaid:
           status: 'completed',
           description: `Daily ROI — ${inv.plan.name}`,
           reference: inv.id,
+          isVirtual: inv.isVirtual,
         },
       });
 

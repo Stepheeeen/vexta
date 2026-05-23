@@ -55,6 +55,14 @@ export async function runDailyRoiDistribution(bypassWeekendCheck = false): Promi
 
   for (const user of activeUsers) {
     try {
+      // Find virtual vs real active investments
+      const activeInvestments = await prisma.investment.findMany({
+        where: { userId: user.id, status: 'active' },
+        select: { amount: true, isVirtual: true }
+      });
+      const virtualBase = activeInvestments.filter(i => i.isVirtual).reduce((sum, i) => sum + i.amount, 0);
+      const realBase = activeInvestments.filter(i => !i.isVirtual).reduce((sum, i) => sum + i.amount, 0);
+
       const maxEarnings = Number((user.activeDeposit * 3.0).toFixed(2));
       
       // If user has already reached 300% ROI, skip
@@ -72,6 +80,18 @@ export async function runDailyRoiDistribution(bypassWeekendCheck = false): Promi
 
       if (dailyProfit <= 0) continue;
 
+      // Calculate how much of this dailyProfit is virtual vs. real
+      const totalBase = virtualBase + realBase;
+      let virtualProfit = 0;
+      let realProfit = 0;
+      if (totalBase > 0) {
+        virtualProfit = Number((dailyProfit * (virtualBase / totalBase)).toFixed(2));
+        realProfit = Number((dailyProfit - virtualProfit).toFixed(2));
+      } else {
+        // Fallback: if no active investments records, treat as real
+        realProfit = dailyProfit;
+      }
+
       // Increment user balance and totalEarned
       await prisma.user.update({
         where: { id: user.id },
@@ -81,18 +101,34 @@ export async function runDailyRoiDistribution(bypassWeekendCheck = false): Promi
         }
       });
 
-      // Create Transaction
-      await prisma.transaction.create({
-        data: {
-          userId: user.id,
-          type: 'daily_roi',
-          amount: dailyProfit,
-          status: 'completed',
-          description: 'Daily arbitrage profit'
-        }
-      });
+      // Create Transactions
+      if (realProfit > 0) {
+        await prisma.transaction.create({
+          data: {
+            userId: user.id,
+            type: 'daily_roi',
+            amount: realProfit,
+            status: 'completed',
+            description: 'Daily arbitrage profit',
+            isVirtual: false
+          }
+        });
+      }
 
-      console.log(`ROI: Paid $${dailyProfit.toFixed(2)} to ${user.firstName} ${user.lastName} (${user.email})`);
+      if (virtualProfit > 0) {
+        await prisma.transaction.create({
+          data: {
+            userId: user.id,
+            type: 'daily_roi',
+            amount: virtualProfit,
+            status: 'completed',
+            description: 'Daily arbitrage profit (Sponsored)',
+            isVirtual: true
+          }
+        });
+      }
+
+      console.log(`ROI: Paid $${dailyProfit.toFixed(2)} to ${user.firstName} ${user.lastName} (${user.email}) | Real: $${realProfit.toFixed(2)}, Virtual: $${virtualProfit.toFixed(2)}`);
       
       usersPaid++;
       totalDistributed = Number((totalDistributed + dailyProfit).toFixed(2));
