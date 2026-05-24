@@ -217,6 +217,8 @@ export default function WithdrawPage() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [requiresOtp, setRequiresOtp] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
   const [pageError, setPageError] = useState<string | null>(null);
   const [simulating, setSimulating] = useState(false);
 
@@ -319,15 +321,21 @@ export default function WithdrawPage() {
     }
 
     try {
+      const payload: any = {
+        amount: numericAmount,
+        walletAddress,
+        network,
+        type: withdrawType,
+      };
+
+      if (requiresOtp) {
+        payload.verificationCode = verificationCode;
+      }
+
       const res = await fetch('/api/withdrawals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amount: numericAmount,
-          walletAddress,
-          network,
-          type: withdrawType,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (res.status === 401) {
@@ -338,6 +346,16 @@ export default function WithdrawPage() {
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to request withdrawal');
 
+      if (json.requiresOtp) {
+        setRequiresOtp(true);
+        setSuccess(json.message || 'Verification code sent to your email.');
+        toast({
+          title: 'Verification Required',
+          description: json.message || 'Verification code sent to your email.',
+        });
+        return;
+      }
+
       setSuccess(`Your withdrawal of $${numericAmount.toLocaleString()} (${network}) was requested successfully!`);
       toast({
         title: 'Withdrawal Requested',
@@ -345,6 +363,8 @@ export default function WithdrawPage() {
       });
       setAmount('');
       setWalletAddress('');
+      setRequiresOtp(false);
+      setVerificationCode('');
       await fetchWithdrawalData();
     } catch (err: any) {
       console.error(err);
@@ -689,6 +709,27 @@ export default function WithdrawPage() {
                 </div>
               </div>
 
+              {requiresOtp && (
+                <div className="p-4 bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl">
+                  <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 uppercase tracking-wider mb-2">
+                    {t('verifyTitle') || 'Verification Code'}
+                  </label>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400 mb-3 leading-relaxed">
+                    {t('verifySubtitle') || 'Enter the 6-digit code we sent to your email address.'}
+                  </p>
+                  <input
+                    type="text"
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value)}
+                    placeholder="123456"
+                    className="w-full bg-white dark:bg-black/20 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 text-center text-xl tracking-[0.5em] font-mono text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-violet-500 transition-all"
+                    required
+                    disabled={submitting}
+                    maxLength={6}
+                  />
+                </div>
+              )}
+
               <button
                 type="submit"
                 disabled={submitting}
@@ -700,7 +741,7 @@ export default function WithdrawPage() {
                     <span>{t('withdrawProcessing')}</span>
                   </>
                 ) : (
-                  <span>{t('withdrawSubmitBtn')}</span>
+                  <span>{requiresOtp ? (t('verifySubmitBtn') || 'Verify & Withdraw') : t('withdrawSubmitBtn')}</span>
                 )}
               </button>
             </form>

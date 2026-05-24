@@ -229,7 +229,7 @@ export default function AdminAnalytics() {
             <div>
               <div className="flex justify-between mb-1">
                 <span className="text-slate-500 dark:text-gray-400 text-sm">{t('adminAnalyticsNorthAmerica') || 'North America'}</span>
-                <span className="text-slate-900 dark:text-white font-bold text-sm">38%</span>
+                <span className="text-slate-900 dark:text-white font-bold text-sm">38%{stats?.totalVolume ? ` ($${(stats.totalVolume * 0.38).toLocaleString(undefined, { maximumFractionDigits: 0 })})` : ''}</span>
               </div>
               <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
                 <div className="bg-violet-500 h-2 rounded-full" style={{ width: '38%' }} />
@@ -238,7 +238,7 @@ export default function AdminAnalytics() {
             <div>
               <div className="flex justify-between mb-1">
                 <span className="text-slate-500 dark:text-gray-400 text-sm">{t('adminAnalyticsEurope') || 'Europe'}</span>
-                <span className="text-slate-900 dark:text-white font-bold text-sm">32%</span>
+                <span className="text-slate-900 dark:text-white font-bold text-sm">32%{stats?.totalVolume ? ` ($${(stats.totalVolume * 0.32).toLocaleString(undefined, { maximumFractionDigits: 0 })})` : ''}</span>
               </div>
               <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
                 <div className="bg-violet-500 h-2 rounded-full" style={{ width: '32%' }} />
@@ -247,7 +247,7 @@ export default function AdminAnalytics() {
             <div>
               <div className="flex justify-between mb-1">
                 <span className="text-slate-500 dark:text-gray-400 text-sm">{t('adminAnalyticsAsiaPacific') || 'Asia Pacific'}</span>
-                <span className="text-slate-900 dark:text-white font-bold text-sm">25%</span>
+                <span className="text-slate-900 dark:text-white font-bold text-sm">25%{stats?.totalVolume ? ` ($${(stats.totalVolume * 0.25).toLocaleString(undefined, { maximumFractionDigits: 0 })})` : ''}</span>
               </div>
               <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
                 <div className="bg-violet-500 h-2 rounded-full" style={{ width: '25%' }} />
@@ -256,7 +256,7 @@ export default function AdminAnalytics() {
             <div>
               <div className="flex justify-between mb-1">
                 <span className="text-slate-500 dark:text-gray-400 text-sm">{t('adminAnalyticsOther') || 'Other'}</span>
-                <span className="text-slate-900 dark:text-white font-bold text-sm">5%</span>
+                <span className="text-slate-900 dark:text-white font-bold text-sm">5%{stats?.totalVolume ? ` ($${(stats.totalVolume * 0.05).toLocaleString(undefined, { maximumFractionDigits: 0 })})` : ''}</span>
               </div>
               <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
                 <div className="bg-violet-500 h-2 rounded-full" style={{ width: '5%' }} />
@@ -291,10 +291,10 @@ export default function AdminAnalytics() {
           <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">{t('adminAnalyticsSegments') || 'User Segments'}</h3>
           <div className="space-y-3">
             {[
-              { segment: t('adminAnalyticsWhales') || 'Whales (>$100k)', count: 24, pct: 4.7 },
-              { segment: t('adminAnalyticsHighValue') || 'High Value ($10k-$100k)', count: 128, pct: 24.4 },
-              { segment: t('adminAnalyticsRegular') || 'Regular ($1k-$10k)', count: 248, pct: 47.3 },
-              { segment: t('adminAnalyticsStarter') || 'Starter (<$1k)', count: 123, pct: 23.6 },
+              { segment: t('adminAnalyticsWhales') || 'Whales (>$1k)', count: 24, pct: 4.7 },
+              { segment: t('adminAnalyticsHighValue') || 'High Value ($600-$1k)', count: 128, pct: 24.4 },
+              { segment: t('adminAnalyticsRegular') || 'Regular ($100-$600)', count: 248, pct: 47.3 },
+              { segment: t('adminAnalyticsStarter') || 'Starter ($10-$100)', count: 123, pct: 23.6 },
             ].map((item) => (
               <div key={item.segment}>
                 <div className="flex justify-between mb-1">

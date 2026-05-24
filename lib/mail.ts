@@ -103,4 +103,52 @@ export async function sendDeleteAccountOTPEmail(email: string, firstName: string
   }
 }
 
+/**
+ * Sends a 6-digit email OTP for confirming withdrawal requests.
+ * Falls back to logging to console if the Resend API key is missing or dummy.
+ */
+export async function sendWithdrawalOTPEmail(email: string, firstName: string, code: string, amount: number, network: string): Promise<boolean> {
+  const apiKey = process.env.RESEND_API_KEY;
 
+  if (!apiKey || apiKey === 're_123456789' || apiKey.startsWith('your_')) {
+    console.log(`\n==================================================`);
+    console.log(`📬  [EMAIL SIMULATION - WITHDRAWAL OTP] To: ${email}`);
+    console.log(`💵  Amount: $${amount.toFixed(2)} via ${network}`);
+    console.log(`🔑  Verification Code: ${code}`);
+    console.log(`==================================================\n`);
+    return true;
+  }
+
+  try {
+    const fromEmail = process.env.RESEND_FROM_EMAIL || `${SYSTEM_CONFIG.brand.name} Auth <onboarding@resend.dev>`;
+    const { error } = await resend.emails.send({
+      from: fromEmail,
+      to: email,
+      subject: `Confirm Withdrawal Request - ${SYSTEM_CONFIG.brand.name}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 12px; background-color: #0d1420; color: #ffffff;">
+          <h2 style="color: #00D9FF; font-weight: 300;">Withdrawal Verification</h2>
+          <p>Hi ${firstName},</p>
+          <p>You requested a withdrawal of <strong>$${amount.toFixed(2)}</strong> via <strong>${network}</strong>.</p>
+          <p>To confirm this transaction, please enter the following 6-digit verification code in your dashboard:</p>
+          <div style="background: #1a2436; color: #00D9FF; font-family: monospace; font-size: 24px; font-weight: 700; text-align: center; padding: 15px; margin: 20px 0; border-radius: 8px; letter-spacing: 4px; border: 1px solid rgba(0, 217, 255, 0.2);">
+            ${code}
+          </div>
+          <p style="color: #808A9D; font-size: 12px; margin-top: 30px;">
+            This verification code is valid for 15 minutes. If you did not request this withdrawal, please secure your account and contact support immediately.
+          </p>
+        </div>
+      `,
+    });
+
+    if (error) {
+      console.error('[Resend Withdrawal OTP Error]', error);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error('[Resend Withdrawal OTP Exception]', err);
+    return false;
+  }
+}

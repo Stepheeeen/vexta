@@ -9,6 +9,7 @@ const schema = z.object({
   walletAddress: z.string().min(10, 'Invalid wallet address'),
   network:       z.enum(['BEP20']).default('BEP20'),
   type:          z.enum(['roi', 'commission']).default('roi'),
+  verificationCode: z.string().optional(),
 });
 
 // GET /api/withdrawals
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 });
     }
 
-    const { amount, walletAddress, network, type } = parsed.data;
+    const { amount, walletAddress, network, type, verificationCode } = parsed.data;
 
     // Check system settings
     const settings = await prisma.settings.findFirst();
@@ -45,6 +46,42 @@ export async function POST(req: NextRequest) {
         { error: 'System is currently undergoing maintenance. Withdrawals are temporarily disabled.' },
         { status: 503 }
       );
+    }
+
+    const userRecord = await prisma.user.findUnique({ where: { id: payload.userId } });
+    if (!userRecord) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+
+    if (!verificationCode) {
+      // Preliminary balance check
+      const pools = await getWithdrawableBalances(payload.userId, prisma as any);
+      const availableInPool = type === 'roi' ? pools.availableRoi : pools.availableCommission;
+      
+      if (amount > availableInPool) {
+        return NextResponse.json({ error: 'Insufficient available balance in the selected withdrawal category.' }, { status: 400 });
+      }
+
+      if (userRecord.fundsFrozen) {
+        return NextResponse.json({ error: 'Your account funds are temporarily frozen. Please contact support.' }, { status: 400 });
+      }
+
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      await prisma.user.update({
+        where: { id: payload.userId },
+        data: {
+          verificationCode: code,
+          verificationCodeExpires: new Date(Date.now() + 15 * 60 * 1000),
+        }
+      });
+
+      const { sendWithdrawalOTPEmail } = require('@/lib/mail');
+      await sendWithdrawalOTPEmail(userRecord.email, userRecord.firstName, code, amount, network);
+
+      return NextResponse.json({ requiresOtp: true, message: 'OTP sent to email' }, { status: 200 });
+    }
+
+    // Verify OTP
+    if (userRecord.verificationCode !== verificationCode || !userRecord.verificationCodeExpires || new Date() > userRecord.verificationCodeExpires) {
+      return NextResponse.json({ error: 'Invalid or expired verification code' }, { status: 400 });
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -122,6 +159,12 @@ export async function POST(req: NextRequest) {
       });
 
       return withdrawal;
+    });
+
+    // Clear verification code after successful transaction
+    await prisma.user.update({
+      where: { id: payload.userId },
+      data: { verificationCode: null, verificationCodeExpires: null }
     });
 
     return NextResponse.json({ message: 'Withdrawal request submitted', withdrawal: result }, { status: 201 });
