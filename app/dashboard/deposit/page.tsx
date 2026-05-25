@@ -34,6 +34,7 @@ interface DepositTx {
 }
 
 function PlanCard({ plan, onSelect }: { plan: Plan; onSelect: (amount: number) => void }) {
+  const { t } = useTranslation();
   const icons: Record<string, React.ReactNode> = {
     'STARTER PLAN': <Zap className="w-5 h-5 text-emerald-400" />,
     'PRIME PLAN': <Star className="w-5 h-5 text-amber-400" />,
@@ -72,15 +73,15 @@ function PlanCard({ plan, onSelect }: { plan: Plan; onSelect: (amount: number) =
 
       <div className="space-y-2.5 mb-5 text-xs">
         <div className="flex justify-between">
-          <span className="text-slate-500 dark:text-gray-400">Daily ROI</span>
+          <span className="text-slate-500 dark:text-gray-400">{t('depDailyROI')}</span>
           <span className="font-bold text-emerald-500">{(plan.dailyROI * 100).toFixed(1)}% / day</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-slate-500 dark:text-gray-400">Total ROI</span>
+          <span className="text-slate-500 dark:text-gray-400">{t('depTotalROI')}</span>
           <span className="font-bold text-emerald-400">300%</span>
         </div>
         <div className="flex justify-between border-t border-white/5 pt-2.5">
-          <span className="text-slate-500 dark:text-gray-400">Min. Deposit</span>
+          <span className="text-slate-500 dark:text-gray-400">{t('depMinDeposit')}</span>
           <span className="font-bold text-slate-900 dark:text-white font-mono">${plan.minDeposit.toLocaleString()}</span>
         </div>
       </div>
@@ -89,7 +90,7 @@ function PlanCard({ plan, onSelect }: { plan: Plan; onSelect: (amount: number) =
         onClick={() => onSelect(plan.minDeposit)}
         className="w-full mt-auto py-2.5 rounded-xl text-xs font-bold bg-white/10 hover:bg-violet-600 hover:text-white text-slate-800 dark:text-white border border-white/10 hover:border-violet-600 transition-all duration-200 flex items-center justify-center gap-1.5 group-hover:border-violet-500/50"
       >
-        Deposit from ${plan.minDeposit.toLocaleString()}
+        {t('depDepositFrom')} ${plan.minDeposit.toLocaleString()}
         <ChevronRight className="w-3.5 h-3.5" />
       </button>
     </div>
@@ -193,6 +194,7 @@ function CheckoutModal({
   onClose: () => void;
   onInstant: () => Promise<void>;
 }) {
+  const { t } = useTranslation();
   const { formatted, expired } = useCountdown(EXPIRY_SECONDS);
   const [copied, setCopied] = useState(false);
   const [txHash, setTxHash] = useState('');
@@ -262,8 +264,8 @@ function CheckoutModal({
             <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
               <CheckCircle2 className="w-8 h-8 text-emerald-500" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Deposit Confirmed!</h3>
-            <p className="text-xs text-slate-500 dark:text-gray-400">Your balance has been updated. Check your dashboard overview.</p>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t('depConfirmed')}</h3>
+            <p className="text-xs text-slate-500 dark:text-gray-400">{t('depConfirmedDesc')}</p>
             <button
               onClick={onClose}
               className="mt-2 px-8 py-2.5 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer"
@@ -276,7 +278,7 @@ function CheckoutModal({
             {/* Amount */}
             <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/3 rounded-2xl border border-slate-200 dark:border-white/8">
               <div>
-                <p className="text-[10px] uppercase font-mono text-slate-400 tracking-widest mb-0.5">Amount Due</p>
+                <p className="text-[10px] uppercase font-mono text-slate-400 tracking-widest mb-0.5">{t('depAmountDue')}</p>
                 <p className="text-2xl font-black text-slate-900 dark:text-white font-mono">
                   ${amount.toLocaleString()} <span className="text-sm font-bold text-slate-400">USDT</span>
                 </p>
@@ -294,7 +296,7 @@ function CheckoutModal({
                 : 'bg-amber-500/5 border-amber-500/15 text-amber-600 dark:text-amber-400'
             }`}>
               <Clock className={`w-4 h-4 flex-shrink-0 ${expired ? '' : 'animate-pulse'}`} />
-              <span>{expired ? 'Invoice expired — please refresh' : `Invoice expires in ${formatted}`}</span>
+              <span>{expired ? t('depInvoiceExpired') : `Invoice expires in ${formatted}`}</span>
             </div>
 
             {/* QR + Address */}
@@ -303,7 +305,7 @@ function CheckoutModal({
                 <SimpleQR address={DEPOSIT_ADDRESS} />
               </div>
               <div className="col-span-3 space-y-2.5">
-                <p className="text-[10px] text-slate-500 dark:text-gray-400 font-mono uppercase tracking-wider">Send USDT to:</p>
+                <p className="text-[10px] text-slate-500 dark:text-gray-400 font-mono uppercase tracking-wider">{t('depSendUsdtTo')}</p>
                 <div className="flex items-center justify-between gap-1.5 p-2 bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl transition-all hover:border-slate-300 dark:hover:border-white/15">
                   <span className="flex-1 font-mono text-[9px] text-slate-900 dark:text-white break-all select-all leading-normal">
                     {DEPOSIT_ADDRESS}
@@ -318,7 +320,7 @@ function CheckoutModal({
                   </button>
                 </div>
                 <p className="text-[9px] text-slate-400 dark:text-gray-500 leading-relaxed">
-                  ⚠️ Only send USDT on BEP20 (Binance Smart Chain). Incorrect network may result in permanent loss.
+                  {t('depWarning')}
                 </p>
               </div>
             </div>
@@ -329,7 +331,7 @@ function CheckoutModal({
                 <div className="absolute inset-0 rounded-full bg-blue-500 animate-ping opacity-75" />
                 <div className="w-2 h-2 rounded-full bg-blue-500" />
               </div>
-              <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400">Awaiting network confirmation…</span>
+              <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400">{t('depAwaiting')}</span>
             </div>
 
             {/* Instant Simulation Button */}
@@ -341,13 +343,13 @@ function CheckoutModal({
               {confirming ? (
                 <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>
               ) : (
-                <><Zap className="w-4 h-4" /> Simulate Instant Confirmation (Demo)</>
+                <><Zap className="w-4 h-4" /> {t('depSimulate')}</>
               )}
             </button>
 
             {/* TX Hash form */}
             <div className="border-t border-slate-200 dark:border-white/5 pt-4">
-              <p className="text-[10px] uppercase font-mono text-slate-400 tracking-wider mb-2">Or submit TX hash manually</p>
+              <p className="text-[10px] uppercase font-mono text-slate-400 tracking-wider mb-2">{t('depOrSubmit')}</p>
               <form onSubmit={handleHashSubmit} className="flex gap-2 items-center">
                 <input
                   type="text"
@@ -361,7 +363,7 @@ function CheckoutModal({
                   disabled={submitting || !txHash.trim()}
                   className="h-10 px-5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-650 hover:from-violet-500 hover:to-indigo-500 text-white text-xs font-bold disabled:opacity-50 transition-all cursor-pointer flex items-center justify-center flex-shrink-0"
                 >
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Submit'}
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : t('depSubmitBtn')}
                 </button>
               </form>
             </div>
@@ -457,9 +459,9 @@ export default function DepositPage() {
         <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">
           {t('deposit')}
         </p>
-        <h1 className="text-2xl font-bold text-slate-950 dark:text-white tracking-tight">Fund Your Account</h1>
+        <h1 className="text-2xl font-bold text-slate-950 dark:text-white tracking-tight">{t('depFundYourAccount')}</h1>
         <p className="text-xs text-slate-500 dark:text-gray-400 mt-1 max-w-xl">
-          Deposit USDT via BEP20 (Binance Smart Chain) exclusively. Choose a plan below to see minimum requirements, then submit your payment.
+          {t('depSubtitle')}
         </p>
       </div>
 
@@ -467,7 +469,7 @@ export default function DepositPage() {
       <div className="flex items-center gap-3 p-4 mb-8 bg-gradient-to-r from-violet-600/10 via-blue-600/5 to-transparent border border-violet-500/20 rounded-2xl">
         <ShieldCheck className="w-5 h-5 text-violet-500 flex-shrink-0" />
         <p className="text-xs text-slate-700 dark:text-gray-300">
-          <span className="font-bold text-violet-600 dark:text-violet-400">USDT BEP20 Only</span> — We exclusively accept USDT on the Binance Smart Chain (BEP20). Do not send via TRC20 or ERC20.
+          <span className="font-bold text-violet-600 dark:text-violet-400">{t('depBep20Only')}</span> — {t('depBep20Desc')}
         </p>
       </div>
 
@@ -478,14 +480,14 @@ export default function DepositPage() {
       ) : (
         <div className="space-y-10">
 
-          {/* ── Section 1: Investment Plans ────────────────────────────── */}
+          {/* ── Section 1: {t('depInvPlans')} ────────────────────────────── */}
           <section>
             <div className="flex items-center gap-2 mb-5">
               <TrendingUp className="w-5 h-5 text-violet-500" />
               <h2 className="text-base font-bold text-slate-900 dark:text-white">Investment Plans</h2>
             </div>
             {plans.length === 0 ? (
-              <p className="text-sm text-slate-400 dark:text-gray-500 font-mono">No plans configured.</p>
+              <p className="text-sm text-slate-400 dark:text-gray-500 font-mono">{t('depNoPlans')}</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
                 {plans.map(plan => (
@@ -506,7 +508,7 @@ export default function DepositPage() {
             <section className="lg:col-span-5 space-y-5">
               <div className="flex items-center gap-2 mb-1">
                 <Wallet className="w-5 h-5 text-violet-500" />
-                <h2 className="text-base font-bold text-slate-900 dark:text-white">Make a Deposit</h2>
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">{t('depMakeDeposit')}</h2>
               </div>
 
               <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm space-y-5 w-full">
@@ -534,7 +536,7 @@ export default function DepositPage() {
                     />
                   </div>
                   <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-1.5 font-mono">
-                    Minimum: $10.00 USDT • No maximum limit
+                    {t('depMinUsdt')}
                   </p>
                 </div>
 
@@ -555,7 +557,7 @@ export default function DepositPage() {
                   onClick={handleProceed}
                   className="w-full py-3.5 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white text-sm font-bold shadow-lg shadow-violet-600/25 transition-all hover:scale-[1.01] flex items-center justify-center gap-2"
                 >
-                  Proceed to Payment
+                  {t('depProceed')}
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
@@ -565,16 +567,16 @@ export default function DepositPage() {
             <section className="lg:col-span-7 space-y-5">
               <div className="flex items-center gap-2 mb-1">
                 <History className="w-5 h-5 text-violet-500" />
-                <h2 className="text-base font-bold text-slate-900 dark:text-white">Your Deposit History</h2>
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">{t('depHistory')}</h2>
               </div>
 
               {/* Stats row */}
               <div className="grid grid-cols-2 gap-4">
                 {[
-                  { label: 'Total Deposited', value: `$${totalDeposited.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, sub: 'USDT BEP20' },
-                  { label: 'Completed', value: deposits.filter(d => d.status === 'completed').length, sub: 'deposits' },
-                  { label: 'Pending Review', value: deposits.filter(d => d.status === 'pending').length, sub: 'transactions' },
-                  { label: 'Network', value: 'BEP20', sub: 'Binance Smart Chain' },
+                  { label: t('depTotalDep'), value: `$${totalDeposited.toLocaleString(undefined, { minimumFractionDigits: 2 })}`, sub: 'USDT BEP20' },
+                  { label: t('depCompleted'), value: deposits.filter(d => d.status === 'completed').length, sub: t('depDeposits') },
+                  { label: t('depPendingRev'), value: deposits.filter(d => d.status === 'pending').length, sub: t('depTransactions') },
+                  { label: t('depNetwork'), value: 'BEP20', sub: t('depBsc') },
                 ].map((stat, i) => (
                   <div key={i} className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl p-4">
                     <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1">{stat.label}</p>
@@ -588,7 +590,7 @@ export default function DepositPage() {
               <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden">
                 {deposits.length === 0 ? (
                   <div className="py-12 text-center text-xs text-slate-400 dark:text-gray-500 font-mono">
-                    No deposit history yet. Make your first deposit.
+                    {t('depNoHistory')}
                   </div>
                 ) : (
                   <div className="divide-y divide-slate-100 dark:divide-white/5">

@@ -172,7 +172,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { href: '/admin/settings',     icon: Settings,       labelKey: 'settings' },
   ];
 
-  const allNavItems = [...coreNavItems, ...extraNavItems];
+  const allNavItems = [...coreNavItems]; // ONLY core items for sidebar
 
   // Close dropdown on click outside
   useEffect(() => {

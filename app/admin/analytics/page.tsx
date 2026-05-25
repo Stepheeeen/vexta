@@ -129,39 +129,39 @@ export default function AdminAnalytics() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
           <div>
-            <p className="text-slate-550 dark:text-zinc-400 text-[10px] font-bold font-mono uppercase tracking-wider mb-1 truncate">Total ROI Paid</p>
+            <p className="text-slate-550 dark:text-zinc-400 text-[10px] font-bold font-mono uppercase tracking-wider mb-1 truncate">{t("adminTotalROIPaid") || "Total ROI Paid"}</p>
             <p className="text-xl font-bold text-violet-605 dark:text-violet-400 font-mono">
               ${stats?.totalRoiProfit != null ? stats.totalRoiProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
             </p>
           </div>
-          <p className="text-[9px] text-slate-400 font-mono mt-2">Platform ROI Earnings Distributed</p>
+          <p className="text-[9px] text-slate-400 font-mono mt-2">{t("adminPlatformROIEarnings") || "Platform ROI Earnings Distributed"}</p>
         </div>
         <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
           <div>
-            <p className="text-slate-550 dark:text-zinc-400 text-[10px] font-bold font-mono uppercase tracking-wider mb-1 truncate">Total Commissions Paid</p>
+            <p className="text-slate-550 dark:text-zinc-400 text-[10px] font-bold font-mono uppercase tracking-wider mb-1 truncate">{t("adminTotalCommissionsPaid") || "Total Commissions Paid"}</p>
             <p className="text-xl font-bold text-violet-605 dark:text-violet-400 font-mono">
               ${stats?.totalUnilevelProfit != null ? stats.totalUnilevelProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
             </p>
           </div>
-          <p className="text-[9px] text-slate-400 font-mono mt-2">Platform Referral Earnings Distributed</p>
+          <p className="text-[9px] text-slate-400 font-mono mt-2">{t("adminPlatformReferralEarnings") || "Platform Referral Earnings Distributed"}</p>
         </div>
         <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
           <div>
-            <p className="text-slate-550 dark:text-zinc-400 text-[10px] font-bold font-mono uppercase tracking-wider mb-1 truncate">ROI Withdrawals</p>
+            <p className="text-slate-550 dark:text-zinc-400 text-[10px] font-bold font-mono uppercase tracking-wider mb-1 truncate">{t("adminROIWithdrawals") || "ROI Withdrawals"}</p>
             <p className="text-xl font-bold text-rose-505 dark:text-rose-400 font-mono">
               ${stats?.totalRoiWithdrawals != null ? stats.totalRoiWithdrawals.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
             </p>
           </div>
-          <p className="text-[9px] text-slate-400 font-mono mt-2">Paid ROI Outflows Completed</p>
+          <p className="text-[9px] text-slate-400 font-mono mt-2">{t("adminPaidROIOutflows") || "Paid ROI Outflows Completed"}</p>
         </div>
         <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
           <div>
-            <p className="text-slate-550 dark:text-zinc-400 text-[10px] font-bold font-mono uppercase tracking-wider mb-1 truncate">Commission Withdrawals</p>
+            <p className="text-slate-550 dark:text-zinc-400 text-[10px] font-bold font-mono uppercase tracking-wider mb-1 truncate">{t("adminCommissionWithdrawals") || "Commission Withdrawals"}</p>
             <p className="text-xl font-bold text-rose-505 dark:text-rose-400 font-mono">
               ${stats?.totalCommissionWithdrawals != null ? stats.totalCommissionWithdrawals.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
             </p>
           </div>
-          <p className="text-[9px] text-slate-400 font-mono mt-2">Paid Unilevel Outflows Completed</p>
+          <p className="text-[9px] text-slate-400 font-mono mt-2">{t("adminPaidUnilevelOutflows") || "Paid Unilevel Outflows Completed"}</p>
         </div>
       </div>
 

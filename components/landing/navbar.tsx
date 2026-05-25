@@ -493,7 +493,7 @@ export function Navbar() {
                 ) : (
                   <Moon className="w-3.5 h-3.5 text-slate-400" />
                 )}
-                <span>Theme</span>
+                <span>{t("navTheme")}</span>
               </span>
               <span className="text-xs uppercase text-slate-400 font-medium">
                 {mounted ? (resolvedTheme === 'dark' ? 'Dark' : 'Light') : ''}

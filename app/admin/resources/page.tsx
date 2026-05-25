@@ -3,6 +3,7 @@
 import { AdminLayout } from '@/components/admin-layout';
 import { FileText, Video, Presentation, Upload, Trash2, Loader2, Link as LinkIcon, Plus } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
 
 interface Resource {
@@ -17,6 +18,7 @@ interface Resource {
 }
 
 export default function AdminResourcesPage() {
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
@@ -145,11 +147,11 @@ export default function AdminResourcesPage() {
   };
 
   const fileTypes = [
-    { value: 'business_explanation', label: 'Business Explainer' },
-    { value: 'pdf', label: 'PDF Guide' },
-    { value: 'presentation', label: 'Presentation' },
-    { value: 'video', label: 'Video' },
-    { value: 'marketing', label: 'Marketing Media' }
+    { value: 'business_explanation', label: t("adminResBusinessExplainer") || 'Business Explainer' },
+    { value: 'pdf', label: t("adminResPDFGuide") || 'PDF Guide' },
+    { value: 'presentation', label: t("adminResPresentation") || 'Presentation' },
+    { value: 'video', label: t("adminResVideo") || 'Video' },
+    { value: 'marketing', label: t("adminResMarketingMedia") || 'Marketing Media' }
   ];
 
   const languages = [
@@ -164,9 +166,9 @@ export default function AdminResourcesPage() {
   return (
     <AdminLayout>
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Upload & Manage Resources</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{t("adminUploadManageResources") || "Upload & Manage Resources"}</h1>
         <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
-          Upload PDFs, presentations, videos, and marketing material templates for user downloads in multiple languages.
+          {t("adminUploadManageResourcesDesc") || "Upload PDFs, presentations, videos, and marketing material templates for user downloads in multiple languages."}
         </p>
       </div>
 
@@ -175,32 +177,41 @@ export default function AdminResourcesPage() {
         <div className="lg:col-span-1 bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
           <h2 className="text-sm font-semibold text-slate-900 dark:text-white mb-5 flex items-center gap-2">
             <Plus className="w-4 h-4 text-violet-500" />
-            Upload New File
+            {t("adminUploadNewFile") || "Upload New File"}
           </h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                Select File
-              </label>
-              <input
-                id="file-input"
-                type="file"
-                onChange={handleFileChange}
-                required
-                className="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 dark:file:bg-white/5 dark:file:text-white dark:hover:file:bg-white/10"
-              />
+              <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">{t("adminSelectFile") || "Select File"}</label>
+              <div className="relative">
+                <input
+                  id="file-input"
+                  type="file"
+                  onChange={handleFileChange}
+                  required
+                  className="hidden"
+                />
+                <label
+                  htmlFor="file-input"
+                  className="w-full flex items-center justify-between bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2.5 text-xs text-slate-800 dark:text-white cursor-pointer hover:border-violet-500 transition-all font-mono"
+                >
+                  <span className="truncate max-w-[70%] text-slate-500 dark:text-gray-400">
+                    {file ? file.name : (t("adminNoFileChosen") || "No file chosen")}
+                  </span>
+                  <span className="bg-violet-100 dark:bg-white/10 text-violet-700 dark:text-white px-3 py-1 rounded-lg font-semibold whitespace-nowrap">
+                    {t("adminChooseFileBtn") || "Choose file"}
+                  </span>
+                </label>
+              </div>
             </div>
 
             <div>
-              <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                Resource Title
-              </label>
+              <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">{t("adminResourceTitle") || "Resource Title"}</label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Marketing Presentation PDF"
+                placeholder={t("adminMarketingPresentation") || "Marketing Presentation PDF"}
                 required
                 disabled={submitting}
                 className="w-full bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2.5 text-xs text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-violet-500 transition-all font-mono"
@@ -208,13 +219,11 @@ export default function AdminResourcesPage() {
             </div>
 
             <div>
-              <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                Description
-              </label>
+              <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">{t("adminDescription") || "Description"}</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Enter a brief summary for the users..."
+                placeholder={t("adminEnterBriefSummary") || "Enter a brief summary for the users..."}
                 rows={3}
                 disabled={submitting}
                 className="w-full bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2.5 text-xs text-slate-800 dark:text-white placeholder-slate-400 focus:outline-none focus:border-violet-500 transition-all font-sans"
@@ -223,9 +232,7 @@ export default function AdminResourcesPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                  Category
-                </label>
+                <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">{t("adminCategory") || "Category"}</label>
                 <select
                   value={fileType}
                   onChange={(e) => setFileType(e.target.value)}
@@ -238,9 +245,7 @@ export default function AdminResourcesPage() {
               </div>
 
               <div>
-                <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                  Language
-                </label>
+                <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">{t("adminLanguage") || "Language"}</label>
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
@@ -266,7 +271,7 @@ export default function AdminResourcesPage() {
               ) : (
                 <>
                   <Upload className="w-4 h-4" />
-                  <span>Upload Resource</span>
+                  <span>{t("adminUploadResourceBtn") || "Upload Resource"}</span>
                 </>
               )}
             </button>
@@ -275,7 +280,7 @@ export default function AdminResourcesPage() {
 
         {/* Resources List Table Card */}
         <div className="lg:col-span-2 bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm overflow-hidden">
-          <h2 className="text-sm font-semibold text-slate-900 dark:text-white mb-5">Uploaded Resources List</h2>
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-white mb-5">{t("adminUploadedResourcesList") || "Uploaded Resources List"}</h2>
 
           {loading ? (
             <div className="py-20 flex justify-center">
@@ -283,7 +288,7 @@ export default function AdminResourcesPage() {
             </div>
           ) : resources.length === 0 ? (
             <div className="text-center py-16 text-xs text-slate-400 dark:text-gray-500 font-mono">
-              No files uploaded yet.
+              {t("adminNoFilesUploaded") || "No files uploaded yet."}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -291,7 +296,7 @@ export default function AdminResourcesPage() {
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-white/5 text-[9px] font-mono text-slate-400 uppercase tracking-widest">
                     <th className="pb-3 pr-4">Title & Type</th>
-                    <th className="pb-3 pr-4">Language</th>
+                    <th className="pb-3 pr-4">{t("adminLanguage") || "Language"}</th>
                     <th className="pb-3 pr-4">Size</th>
                     <th className="pb-3 pr-4">Upload Date</th>
                     <th className="pb-3 text-right">Action</th>

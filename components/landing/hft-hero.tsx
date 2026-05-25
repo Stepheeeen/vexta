@@ -177,8 +177,8 @@ export function HftHero() {
 
             {/* Static trade cards */}
             {[
-              { route: 'BINANCE → BYBIT', label: 'BTC Arbitrage Executed', profit: '+1.42%' },
-              { route: 'OKX → BITGET',   label: 'ETH Arbitrage Executed', profit: '+0.82%' },
+              { route: 'BINANCE → BYBIT', label: t('hftBtcArb'), profit: '+1.42%' },
+              { route: 'OKX → BITGET',   label: t('hftEthArb'), profit: '+0.82%' },
             ].map(({ route, label, profit }) => (
               <div key={route} className="p-5 rounded-2xl border border-white/6 bg-white/3 mb-4 overflow-hidden">
                 <small className="block text-slate-500 font-mono text-xs mb-2">{route}</small>
@@ -190,10 +190,10 @@ export function HftHero() {
             {/* 4-cell status grid */}
             <div className="grid grid-cols-2 gap-3 mt-2">
               {[
-                { label: 'AI ENGINE',      value: 'ACTIVE' },
-                { label: 'SYSTEM',         value: '24/7' },
-                { label: 'EXECUTION',      value: 'Realtime' },
-                { label: 'INFRASTRUCTURE', value: 'HFT' },
+                { label: t('hftAiEngine'),      value: t('hftActive') },
+                { label: t('hftSystem'),         value: '24/7' },
+                { label: t('hftExecution'),      value: t('hftRealtime') },
+                { label: t('hftInfrastructure'), value: t('hftInfrastructure') || 'HFT' },
               ].map(({ label, value }) => (
                 <div key={label} className="p-4 rounded-2xl border border-white/6 bg-white/3">
                   <span className="block text-xs text-slate-500 font-mono mb-2">{label}</span>
@@ -206,8 +206,8 @@ export function HftHero() {
             <div className="mt-4 pt-4 border-t border-white/5">
               <div className="text-[9px] font-mono text-slate-600 uppercase tracking-widest mb-2">
                 {mounted
-                  ? `Live Feed · ${executions} executions · ${execMs}ms avg`
-                  : 'Live Feed · Loading…'}
+                  ? (t('hftLiveFeedStats') || '').replace('{exec}', executions.toString()).replace('{ms}', execMs.toString())
+                  : t('hftLiveFeedLoad')}
               </div>
 
               <div className="space-y-1 overflow-hidden" style={{ maxHeight: '120px' }}>

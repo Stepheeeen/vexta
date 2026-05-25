@@ -46,6 +46,7 @@ function generateTrade() {
 }
 
 function ArbitrageEngine() {
+  const { t } = useTranslation();
   const [trades, setTrades] = useState(() => Array.from({ length: 6 }, generateTrade));
   const [activePath, setActivePath] = useState<{ buy: string; sell: string } | null>(null);
   const [spread, setSpread] = useState('0.142%');
@@ -74,13 +75,13 @@ function ArbitrageEngine() {
             <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-70" />
             <div className="w-2 h-2 rounded-full bg-emerald-400" />
           </div>
-          <span className="text-[10px] sm:text-xs font-bold text-white font-mono tracking-wide truncate">VEXTA HFT ENGINE</span>
-          <span className="text-[9px] bg-emerald-500/20 text-emerald-400 font-mono px-2 py-0.5 rounded-full shrink-0">LIVE</span>
+          <span className="text-[10px] sm:text-xs font-bold text-white font-mono tracking-wide truncate">{t("dashHftEngine")}</span>
+          <span className="text-[9px] bg-emerald-500/20 text-emerald-400 font-mono px-2 py-0.5 rounded-full shrink-0">{t("dashLive")}</span>
         </div>
         <div className="flex items-center gap-2 sm:gap-4 text-[9px] sm:text-[10px] font-mono text-slate-400 shrink-0">
-          <span className="hidden sm:inline">SPREAD <span className="text-emerald-400 font-bold">{spread}</span></span>
-          <span>EXEC <span className="text-violet-400 font-bold">{execCount}</span></span>
-          <span>PnL <span className="text-emerald-400 font-bold">+${totalPnL.toFixed(2)}</span></span>
+          <span className="hidden sm:inline">{t("dashSpread")} <span className="text-emerald-400 font-bold">{spread}</span></span>
+          <span>{t("dashExec")} <span className="text-violet-400 font-bold">{execCount}</span></span>
+          <span>{t("dashPnl")} <span className="text-emerald-400 font-bold">+${totalPnL.toFixed(2)}</span></span>
         </div>
       </div>
 
@@ -137,7 +138,7 @@ function ArbitrageEngine() {
 
       {/* Live Trade Ticker */}
       <div className="flex-1 overflow-hidden px-3 sm:px-5 pb-4">
-        <div className="text-[9px] font-mono text-slate-600 uppercase tracking-widest mb-2">Live Executed Trades</div>
+        <div className="text-[9px] font-mono text-slate-600 uppercase tracking-widest mb-2">{t("dashLiveExecuted")}</div>
         <div className="space-y-1.5 overflow-hidden" style={{ maxHeight: '200px' }}>
           {trades.map((trade, i) => (
             <div
@@ -203,7 +204,7 @@ function ProfitCalculator() {
         </div>
         <div>
           <h2 className="text-sm font-bold text-slate-900 dark:text-white">{t('calcTitle') || 'Profit Calculator'}</h2>
-          <p className="text-xs text-slate-600 dark:text-zinc-300 font-semibold font-mono mt-0.5">Vexta HFT Arbitrage Calculator · 1% Daily</p>
+          <p className="text-xs text-slate-600 dark:text-zinc-300 font-semibold font-mono mt-0.5">{t("dashCalcTitle")}</p>
         </div>
       </div>
 
@@ -240,11 +241,11 @@ function ProfitCalculator() {
         {/* Results */}
         <div className="bg-slate-50 dark:bg-white/3 rounded-2xl p-4 space-y-2.5 border border-slate-200 dark:border-white/5">
           {[
-            { label: 'Plan Tier', value: calc.tier + " · 1.0%/day" },
-            { label: 'Signup Bonus', value: "+" + calc.bonusPct + " (+$" + calc.bonusAmt.toFixed(2) + ")", color: 'text-emerald-600 dark:text-emerald-400' },
-            { label: 'Operating Capital', value: "$" + calc.startingCapital.toFixed(2) },
-            { label: 'Daily Return', value: "$" + calc.dailyReturn.toFixed(2) + " / day", color: 'text-emerald-600 dark:text-emerald-400' },
-            { label: 'Payout Limit', value: '300.0% ROI' },
+            { label: t('depPlanTier'), value: calc.tier + " · 1.0%/day" },
+            { label: t('depSignupBonus'), value: "+" + calc.bonusPct + " (+$" + calc.bonusAmt.toFixed(2) + ")", color: 'text-emerald-600 dark:text-emerald-400' },
+            { label: t('depOperatingCapital'), value: "$" + calc.startingCapital.toFixed(2) },
+            { label: t('depDailyReturn'), value: "$" + calc.dailyReturn.toFixed(2) + " / day", color: 'text-emerald-600 dark:text-emerald-400' },
+            { label: t('depPayoutLimit'), value: '300.0% ROI' },
           ].map(({ label, value, color }) => (
             <div key={label} className="flex justify-between items-center text-xs">
               <span className="text-slate-600 dark:text-zinc-400 font-semibold font-mono">{label}</span>
@@ -254,13 +255,13 @@ function ProfitCalculator() {
 
           <div className="border-t border-slate-200 dark:border-white/5 pt-2.5 space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-slate-600 dark:text-zinc-300 font-bold font-mono">Max Potential Return</span>
+              <span className="text-xs text-slate-600 dark:text-zinc-300 font-bold font-mono">{t("dashMaxReturn")}</span>
               <span className="text-base font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400">
                 {"$" + calc.endingBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-xs text-slate-600 dark:text-zinc-300 font-bold font-mono">Net Profit Cap</span>
+              <span className="text-xs text-slate-600 dark:text-zinc-300 font-bold font-mono">{t("dashNetProfit")}</span>
               <span className="text-sm font-black font-mono text-emerald-600 dark:text-emerald-400">
                 {"+" + calc.netProfit.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </span>
@@ -414,7 +415,7 @@ export default function Dashboard() {
       ) : error ? (
         <div className="p-6 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl font-mono text-sm max-w-xl mx-auto my-12 text-center">
           <p className="mb-4">{error}</p>
-          <button onClick={fetchDashboardData} className="px-4 py-2 bg-red-500 text-white rounded-xl font-sans font-medium hover:bg-red-600 transition-colors">Retry</button>
+          <button onClick={fetchDashboardData} className="px-4 py-2 bg-red-500 text-white rounded-xl font-sans font-medium hover:bg-red-600 transition-colors">{t("dashRetry")}</button>
         </div>
       ) : (
         <>
@@ -464,11 +465,11 @@ export default function Dashboard() {
                     <div key={idx} className="flex items-center justify-between gap-3 p-3 sm:p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5 min-w-0">
                       <div className="min-w-0 flex-1">
                         <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white font-mono truncate">{i.plan}</p>
-                        <p className="text-[10px] sm:text-xs text-slate-500 dark:text-zinc-400 font-semibold font-mono mt-0.5">Yield contract</p>
+                        <p className="text-[10px] sm:text-xs text-slate-500 dark:text-zinc-400 font-semibold font-mono mt-0.5">{t("dashYieldContract")}</p>
                       </div>
                       <div className="text-right shrink-0">
                         <p className="text-sm sm:text-base font-black text-green-500 dark:text-green-400 font-mono">+{(i.dailyROI * 100).toFixed(1)}%</p>
-                        <span className="text-[9px] sm:text-[10px] font-extrabold font-mono text-green-600 dark:text-green-400 bg-green-500/10 px-2 sm:px-2.5 py-0.5 rounded-full">ACTIVE</span>
+                        <span className="text-[9px] sm:text-[10px] font-extrabold font-mono text-green-600 dark:text-green-400 bg-green-500/10 px-2 sm:px-2.5 py-0.5 rounded-full">{t("dashActive")}</span>
                       </div>
                     </div>
                   ))

@@ -64,10 +64,10 @@ export default function ReferralsPage() {
   const referralLink = `https://www.vexta.network/?ref=${referralCode}`;
 
   const stats = [
-    { label: t('referralsStat1'), value: `${data?.totals.level1Count ?? 0}`,        sub: t('referralsStat1Sub') },
-    { label: t('referralsStat2'),     value: `${data?.totals.totalNetworkCount ?? 0}`,       sub: t('referralsStat2Sub') },
-    { label: t('referralsStat3'),   value: t('referralsCommMatrixVal'),       sub: t('referralsCommMatrixSub') },
-    { label: t('referralsStat4'),        value: `$${(data?.totals.totalEarned ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,   sub: t('referralsStat4Sub') },
+    { label: t('referralsStat1'), value: `${data?.totals.level1Count ?? 0}`, sub: t('referralsStat1Sub') },
+    { label: t('referralsStat2'), value: `${data?.totals.totalNetworkCount ?? 0}`, sub: t('referralsStat2Sub') },
+    { label: t('referralsStat3'), value: t('referralsCommMatrixVal'), sub: t('referralsCommMatrixSub') },
+    { label: t('referralsStat4'), value: `$${(data?.totals.totalEarned ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, sub: t('referralsStat4Sub') },
   ];
 
   const levelLabels: Record<number, string> = {
@@ -204,7 +204,7 @@ export default function ReferralsPage() {
               </div>
               <div className="mt-4 pt-4 border-t border-slate-200/60 dark:border-white/5 flex justify-between">
                 <span className="text-xs text-slate-400 dark:text-gray-500 font-mono">{t('referralsTotalPayout')}</span>
-                <span className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400 font-mono">26.5%</span>
+                <span className="text-xs font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400 font-mono">26%</span>
               </div>
             </div>
           </div>

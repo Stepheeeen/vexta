@@ -139,17 +139,17 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         const defaultNotifs: NotificationItem[] = [
           {
             id: 'welcome',
-            title: 'Welcome to VEXTA',
-            message: 'Your growth portfolio is ready. Secure it by verifying your credentials.',
-            time: 'Just now',
+            title: t('notifWelcomeTitle') || 'Welcome to VEXTA',
+            message: t('notifWelcomeDesc') || 'Your growth portfolio is ready. Secure it by verifying your credentials.',
+            time: t('notifJustNow') || 'Just now',
             read: true,
             type: 'info',
           },
           {
             id: 'simulate-tip',
-            title: 'Sandbox Mode Active',
-            message: 'Use the Simulation Controls on the dashboard to test deposits and yields.',
-            time: '5m ago',
+            title: t('notifSandboxTitle') || 'Sandbox Mode Active',
+            message: t('notifSandboxDesc') || 'Use the Simulation Controls on the dashboard to test deposits and yields.',
+            time: t('notif5mAgo') || '5m ago',
             read: true,
             type: 'success',
           }
@@ -232,7 +232,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             {showNotif && (
               <div className="absolute right-0 top-9 w-80 bg-white dark:bg-[#0A0F14]/95 border border-slate-200 dark:border-white/10 rounded-2xl shadow-xl z-50 overflow-hidden font-sans">
                 <div className="p-4 border-b border-slate-200 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-white/2">
-                  <span className="text-xs font-semibold text-slate-800 dark:text-white">Recent Notifications</span>
+                  <span className="text-xs font-semibold text-slate-800 dark:text-white">{t('notifRecent') || 'Recent Notifications'}</span>
                   {unreadCount > 0 && (
                     <button
                       onClick={markAllRead}
@@ -264,7 +264,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-slate-400 dark:text-gray-500 font-mono py-8 text-center">No notifications.</p>
+                    <p className="text-xs text-slate-400 dark:text-gray-500 font-mono py-8 text-center">{t('notifEmpty') || 'No notifications.'}</p>
                   )}
                 </div>
               </div>
@@ -439,7 +439,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               <div className="p-3 border-b border-slate-200 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-white/2">
                 <span className="text-xs font-semibold text-slate-800 dark:text-white">Notifications</span>
                 {unreadCount > 0 && (
-                  <button onClick={markAllRead} className="text-[9px] font-mono text-violet-600 dark:text-violet-400">Mark read</button>
+                  <button onClick={markAllRead} className="text-[9px] font-mono text-violet-600 dark:text-violet-400">{t('notifMarkRead') || 'Mark read'}</button>
                 )}
               </div>
               <div className="max-h-[240px] overflow-y-auto divide-y divide-slate-100 dark:divide-white/5">

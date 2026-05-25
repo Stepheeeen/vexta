@@ -96,10 +96,10 @@ export function Hero() {
                   <div className="w-2.5 h-2.5 rounded-full bg-slate-200" />
                   <div className="w-2.5 h-2.5 rounded-full bg-slate-200" />
                 </div>
-                <span className="text-[10px] font-mono text-slate-400 ml-2">portfolio.overview — live</span>
+                <span className="text-[10px] font-mono text-slate-400 ml-2">{t("heroPortfolioLive")}</span>
                 <div className="ml-auto flex items-center gap-1.5">
                   <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                  <span className="text-[10px] font-mono text-green-600">ACTIVE</span>
+                  <span className="text-[10px] font-mono text-green-600">{t("heroActive")}</span>
                 </div>
               </div>
 

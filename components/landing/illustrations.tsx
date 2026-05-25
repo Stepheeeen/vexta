@@ -241,6 +241,7 @@ export function IllustrationNetwork() {
 }
 
 export function IllustrationHeroChart() {
+  const { t } = useTranslation();
   return (
     <svg viewBox="0 0 500 320" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
       {/* Card background */}
@@ -248,7 +249,7 @@ export function IllustrationHeroChart() {
 
       {/* Header bar */}
       <rect x="10" y="10" width="480" height="50" rx="16" fill="#7c3aed" opacity="0.12" />
-      <text x="32" y="40" fill="#a78bfa" fontSize="14" fontWeight="600">Portfolio Overview</text>
+      <text x="32" y="40" fill="#a78bfa" fontSize="14" fontWeight="600">{t("illusPortfolioOverview")}</text>
       <rect x="380" y="25" width="90" height="22" rx="6" fill="#7c3aed" opacity="0.3" />
       <text x="394" y="40" fill="#a78bfa" fontSize="10">+24.8% ↑</text>
 
@@ -284,15 +285,15 @@ export function IllustrationHeroChart() {
 
       {/* Bottom stats row */}
       <rect x="32" y="258" width="130" height="38" rx="8" fill="#ffffff" opacity="0.03" />
-      <text x="44" y="272" fill="#6b7280" fontSize="8" fontWeight="500">TOTAL INVESTED</text>
+      <text x="44" y="272" fill="#6b7280" fontSize="8" fontWeight="500">{t("illusTotalInv")}</text>
       <text x="44" y="288" fill="white" fontSize="14" fontWeight="700">$12,400</text>
 
       <rect x="176" y="258" width="130" height="38" rx="8" fill="#ffffff" opacity="0.03" />
-      <text x="188" y="272" fill="#6b7280" fontSize="8" fontWeight="500">DAILY RETURN</text>
+      <text x="188" y="272" fill="#6b7280" fontSize="8" fontWeight="500">{t("illusDailyRet")}</text>
       <text x="188" y="288" fill="#4ade80" fontSize="14" fontWeight="700">+$248.00</text>
 
       <rect x="320" y="258" width="130" height="38" rx="8" fill="#ffffff" opacity="0.03" />
-      <text x="332" y="272" fill="#6b7280" fontSize="8" fontWeight="500">REFERRAL EARN.</text>
+      <text x="332" y="272" fill="#6b7280" fontSize="8" fontWeight="500">{t("illusRefEarn")}</text>
       <text x="332" y="288" fill="#a78bfa" fontSize="14" fontWeight="700">$1,320</text>
 
       <defs>

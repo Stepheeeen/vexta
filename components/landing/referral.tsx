@@ -88,7 +88,7 @@ export function ReferralSystem() {
                 <div key={level} className="group/row">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
-                      <span className="text-xs font-bold text-slate-400 w-12">LVL {level}</span>
+                      <span className="text-xs font-bold text-slate-400 w-12">{t("refLevelLabel")} {level}</span>
                       <div>
                         <span className="text-sm font-medium text-slate-800 block">
                           {t(labelKey).startsWith('referralLvl')

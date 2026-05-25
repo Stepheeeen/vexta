@@ -229,7 +229,7 @@ export default function AdminSponsorship() {
             System Control
           </p>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
-            Sponsored Accounts (Leadership)
+            {t("adminSponsoredAccounts") || "Sponsored Accounts (Leadership)"}
           </h1>
         </div>
         <div className="flex gap-2">
@@ -242,9 +242,9 @@ export default function AdminSponsorship() {
           </button>
           <button
             onClick={() => setShowGiftModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-650 hover:bg-violet-700 text-white text-xs font-bold shadow-md shadow-violet-600/10 transition-all hover:scale-[1.01] cursor-pointer"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold shadow-md shadow-violet-600/10 transition-all hover:scale-[1.01] cursor-pointer"
           >
-            <Plus className="w-4 h-4" /> Gift Sponsored Package
+            <Plus className="w-4 h-4" /> {t("adminGiftSponsoredPackage") || "Gift Sponsored Package"}
           </button>
         </div>
       </div>
@@ -252,10 +252,10 @@ export default function AdminSponsorship() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
-          { label: 'Total Leaders', value: leaders.length.toString(), icon: Users, color: 'text-violet-600 dark:text-violet-400' },
-          { label: 'Total Gifted Capital', value: `$${totalGifted.toLocaleString()}`, icon: DollarSign, color: 'text-amber-500 dark:text-amber-400' },
-          { label: 'Total Team Sales', value: `$${totalNetworkVolume.toLocaleString()}`, icon: Award, color: 'text-emerald-500 dark:text-emerald-400' },
-          { label: 'Leader Withdrawals', value: `$${totalWithdrawn.toLocaleString()}`, icon: ArrowDownRight, color: 'text-red-500 dark:text-red-400' },
+          { label: t("adminTotalLeaders") || "Total Leaders", value: leaders.length.toString(), icon: Users, color: 'text-violet-600 dark:text-violet-400' },
+          { label: t("adminTotalGiftedCapital") || "Total Gifted Capital", value: `$${totalGifted.toLocaleString()}`, icon: DollarSign, color: 'text-amber-500 dark:text-amber-400' },
+          { label: t("adminTotalTeamSales") || "Total Team Sales", value: `$${totalNetworkVolume.toLocaleString()}`, icon: Award, color: 'text-emerald-500 dark:text-emerald-400' },
+          { label: t("adminLeaderWithdrawals") || "Leader Withdrawals", value: `$${totalWithdrawn.toLocaleString()}`, icon: ArrowDownRight, color: 'text-red-500 dark:text-red-400' },
         ].map((stat, i) => {
           const Icon = stat.icon;
           return (
@@ -331,7 +331,7 @@ export default function AdminSponsorship() {
 
       {/* Leaders Table */}
       <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
-        <h2 className="text-base font-bold text-slate-900 dark:text-white mb-6">Active Sponsored Leaders</h2>
+        <h2 className="text-base font-bold text-slate-900 dark:text-white mb-6">{t("adminActiveSponsoredLeaders") || "Active Sponsored Leaders"}</h2>
         
         {loading ? (
           <div className="py-12 flex items-center justify-center">
@@ -339,7 +339,7 @@ export default function AdminSponsorship() {
           </div>
         ) : leaders.length === 0 ? (
           <div className="py-12 text-center text-slate-500 dark:text-zinc-400 font-mono text-xs font-bold">
-            No sponsored accounts found.
+            {t("adminNoSponsoredAccounts") || "No sponsored accounts found."}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -568,7 +568,7 @@ export default function AdminSponsorship() {
                   <button
                     type="submit"
                     disabled={gifting || !selectedUser || !giftAmount}
-                    className="flex-1 py-2.5 bg-violet-650 hover:bg-violet-700 disabled:opacity-50 rounded-xl text-white text-xs font-bold transition-all cursor-pointer"
+                    className="flex-1 py-2.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 rounded-xl text-white text-xs font-bold transition-all cursor-pointer"
                   >
                     {gifting ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Confirm Gift'}
                   </button>
@@ -625,7 +625,7 @@ export default function AdminSponsorship() {
                 <button
                   type="submit"
                   disabled={adjusting || !adjustAmount}
-                  className="flex-1 py-2.5 bg-violet-650 hover:bg-violet-700 disabled:opacity-50 rounded-xl text-white text-xs font-bold transition-all cursor-pointer"
+                  className="flex-1 py-2.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 rounded-xl text-white text-xs font-bold transition-all cursor-pointer"
                 >
                   {adjusting ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Save Changes'}
                 </button>

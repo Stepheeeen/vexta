@@ -482,13 +482,13 @@ export default function ArbitragePage() {
               <div className="flex items-center gap-2">
                 <Cpu className="w-5 h-5 text-violet-600 dark:text-violet-300" />
                 <div>
-                  <h2 className="text-base font-bold text-slate-950 dark:text-white">VEXTA HFT ROUTER ENGINE</h2>
-                  <p className="text-xs text-slate-600 dark:text-zinc-400 font-semibold font-mono">Real-time global exchange liquidity matching</p>
+                  <h2 className="text-base font-bold text-slate-950 dark:text-white">{t('arbRouterEngine')}</h2>
+                  <p className="text-xs text-slate-600 dark:text-zinc-400 font-semibold font-mono">{t('arbRealtimeMatch')}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-[#00FF88] animate-pulse" />
-                <span className="text-xs font-mono font-black text-[#00FF88]">HFT BOT ACTIVE</span>
+                <span className="text-xs font-mono font-black text-[#00FF88]">{t('arbBotActive')}</span>
               </div>
             </div>
 
@@ -496,7 +496,7 @@ export default function ArbitragePage() {
             <div className="flex flex-col md:flex-row items-center justify-between gap-8 p-10 bg-slate-50/50 dark:bg-white/2 rounded-3xl border border-slate-200 dark:border-white/5 shadow-inner">
               {/* Buy Exchange Card */}
               <div className="flex-1 w-full p-8 bg-white dark:bg-[#0A0F14]/80 rounded-2xl border border-slate-200 dark:border-white/5 text-center flex flex-col items-center justify-center shadow-md dark:shadow-none hover:scale-[1.03] transition-all duration-300">
-                <span className="text-xs font-mono text-green-600 dark:text-emerald-400 font-extrabold uppercase tracking-widest mb-3">BUY FROM</span>
+                <span className="text-xs font-mono text-green-600 dark:text-emerald-400 font-extrabold uppercase tracking-widest mb-3">{t('arbBuyFrom')}</span>
                 {getExchangeLogo(activeTrade.buyExchange)}
                 <span className="text-lg font-extrabold text-slate-900 dark:text-white font-mono mt-3 tracking-wide uppercase">{activeTrade.buyExchange}</span>
                 <span className="text-sm text-slate-600 dark:text-zinc-300 font-bold font-mono mt-1">$63,450.20</span>
@@ -504,7 +504,7 @@ export default function ArbitragePage() {
 
               {/* Glowing flow direction arrow paths */}
               <div className="flex-[1.5] w-full flex flex-col items-center justify-center py-4">
-                <span className="text-xs font-mono text-slate-600 dark:text-zinc-400 font-extrabold tracking-wider mb-2">LIQUIDITY PATH</span>
+                <span className="text-xs font-mono text-slate-600 dark:text-zinc-400 font-extrabold tracking-wider mb-2">{t('arbLiqPath')}</span>
                 <div className="relative w-full flex items-center justify-center my-3">
                   <svg className="w-full h-16 text-violet-500/20 dark:text-violet-400/20" viewBox="0 0 100 20" preserveAspectRatio="none" fill="none">
                     <path d="M 0 10 L 100 10" stroke="currentColor" strokeWidth="2.5" strokeDasharray="3 3" />
@@ -522,12 +522,12 @@ export default function ArbitragePage() {
                     <span className="text-[#00FF88] font-black">+{activeTrade.spread}%</span>
                   </div>
                 </div>
-                <span className="text-xs font-mono text-[#00FF88] mt-2 animate-pulse tracking-wide font-extrabold">MATCHED SPREAD FOUND</span>
+                <span className="text-xs font-mono text-[#00FF88] mt-2 animate-pulse tracking-wide font-extrabold">{t('arbMatchedSpread')}</span>
               </div>
 
               {/* Sell Exchange Card */}
               <div className="flex-1 w-full p-8 bg-white dark:bg-[#0A0F14]/80 rounded-2xl border border-slate-200 dark:border-white/5 text-center flex flex-col items-center justify-center shadow-md dark:shadow-none hover:scale-[1.03] transition-all duration-300">
-                <span className="text-xs font-mono text-cyan-600 dark:text-cyan-400 font-extrabold uppercase tracking-widest mb-3">SELL TO</span>
+                <span className="text-xs font-mono text-cyan-600 dark:text-cyan-400 font-extrabold uppercase tracking-widest mb-3">{t('arbSellTo')}</span>
                 {getExchangeLogo(activeTrade.sellExchange)}
                 <span className="text-lg font-extrabold text-slate-900 dark:text-white font-mono mt-3 tracking-wide uppercase">{activeTrade.sellExchange}</span>
                 <span className="text-sm text-slate-600 dark:text-zinc-300 font-bold font-mono mt-1">$64,524.80</span>
@@ -542,7 +542,7 @@ export default function ArbitragePage() {
               </div>
               <div>
                 <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase">Execution Fee</p>
-                <p className="text-xs sm:text-sm font-extrabold font-mono text-emerald-500 mt-1">0.00% (Zero Fee)</p>
+                <p className="text-xs sm:text-sm font-extrabold font-mono text-emerald-500 mt-1">{t('arbZeroFee')}</p>
               </div>
               <div>
                 <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase">Gross Spread PnL</p>
@@ -562,7 +562,7 @@ export default function ArbitragePage() {
                   <div key={idx} className="p-3 bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl flex flex-col justify-between">
                     <div className="flex justify-between items-center text-xs font-mono text-slate-600 dark:text-zinc-300 font-bold mb-2">
                       <span>{t.timestamp}</span>
-                      <span className="text-emerald-500 dark:text-emerald-400 font-extrabold bg-emerald-500/10 px-1.5 py-0.5 rounded">SUCCESS</span>
+                      <span className="text-emerald-500 dark:text-emerald-400 font-extrabold bg-emerald-500/10 px-1.5 py-0.5 rounded">{t('arbSuccess')}</span>
                     </div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-xs sm:text-sm font-extrabold font-mono text-slate-900 dark:text-white">{t.pair}</span>
@@ -574,7 +574,7 @@ export default function ArbitragePage() {
                       <span className="font-bold text-slate-700 dark:text-zinc-300">{t.sellExchange}</span>
                     </div>
                     <div className="flex justify-between items-center pt-2 border-t border-slate-200/40 dark:border-white/5 text-xs font-mono">
-                      <span className="text-slate-600 dark:text-zinc-300 font-bold font-mono">Profit:</span>
+                      <span className="text-slate-600 dark:text-zinc-300 font-bold font-mono">{t('arbProfit')}</span>
                       <span className="text-[#00FF88] font-extrabold text-xs sm:text-sm">+${parseFloat(t.profit).toFixed(2)}</span>
                     </div>
                   </div>
@@ -658,28 +658,28 @@ export default function ArbitragePage() {
               <div>
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
-                    <Wallet className="w-4 h-4 text-violet-650 dark:text-violet-400" />
+                    <Wallet className="w-4 h-4 text-violet-600 dark:text-violet-400" />
                   </div>
                   <div>
                     <h2 className="text-sm sm:text-base font-bold text-slate-950 dark:text-white">{t('enterAmount') || 'Invest Capital'}</h2>
-                    <p className="text-xs font-semibold text-slate-600 dark:text-zinc-400 font-mono">Deploy funds to arbitrage contracts</p>
+                    <p className="text-xs font-semibold text-slate-600 dark:text-zinc-400 font-mono">{t('arbDeployFunds')}</p>
                   </div>
                 </div>
 
                 {/* Balance display */}
                 <div className="p-4 bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl mb-5 flex justify-between items-center">
                   <div>
-                    <span className="text-xs font-bold text-slate-600 dark:text-zinc-400 block uppercase font-mono">AVAILABLE BALANCE</span>
+                    <span className="text-xs font-bold text-slate-600 dark:text-zinc-400 block uppercase font-mono">{t('arbAvailBal')}</span>
                     <span className="text-lg sm:text-xl font-extrabold text-slate-950 dark:text-white font-mono">
                       ${(data?.stats.availableBalance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
-                  <span className="text-xs font-extrabold font-mono text-violet-650 dark:text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-full">USDT</span>
+                  <span className="text-xs font-extrabold font-mono text-violet-600 dark:text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-full">USDT</span>
                 </div>
 
                 <form onSubmit={handleInvest} className="space-y-4">
                   <div>
-                    <label className="block text-xs font-bold font-mono text-slate-700 dark:text-zinc-300 uppercase tracking-wider mb-2">Investment Amount (USD)</label>
+                    <label className="block text-xs font-bold font-mono text-slate-700 dark:text-zinc-300 uppercase tracking-wider mb-2">{t("arbInvAmount")}</label>
                     <div className="relative">
                       <span className="absolute left-4 top-3 text-slate-600 dark:text-zinc-300 font-mono text-sm font-bold">$</span>
                       <input
@@ -715,25 +715,25 @@ export default function ArbitragePage() {
                   {matchingPlan ? (
                     <div className="p-4 bg-violet-500/5 border border-violet-500/10 rounded-xl space-y-2.5 text-xs">
                       <div className="flex justify-between">
-                        <span className="text-slate-600 dark:text-zinc-400 font-bold font-mono">Plan Detected:</span>
+                        <span className="text-slate-600 dark:text-zinc-400 font-bold font-mono">{t("arbPlanDetected")}</span>
                         <span className="font-extrabold text-violet-600 dark:text-violet-400 font-mono">{matchingPlan.name}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600 dark:text-zinc-400 font-bold font-mono">Daily Yield ROI:</span>
+                        <span className="text-slate-600 dark:text-zinc-400 font-bold font-mono">{t("arbDailyYield")}</span>
                         <span className="font-extrabold text-green-500 dark:text-green-400 font-mono">+{(matchingPlan.dailyROI * 100).toFixed(2)}%</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600 dark:text-zinc-400 font-bold font-mono">Payout Limit:</span>
+                        <span className="text-slate-600 dark:text-zinc-400 font-bold font-mono">{t("arbPayoutLimit")}</span>
                         <span className="font-extrabold text-slate-900 dark:text-white font-mono">300.0% Return</span>
                       </div>
                       <div className="flex justify-between pt-1.5 border-t border-slate-200/50 dark:border-white/5">
-                        <span className="text-slate-600 dark:text-zinc-400 font-bold font-mono">Projected Total Return:</span>
+                        <span className="text-slate-600 dark:text-zinc-400 font-bold font-mono">{t("arbProjReturn")}</span>
                         <span className="font-extrabold text-[#00FF88] font-mono">+${((amountNum || 0) * 3.0).toFixed(2)}</span>
                       </div>
                     </div>
                   ) : investAmount && amountNum < 10 ? (
                     <div className="p-3 bg-red-500/5 border border-red-500/10 rounded-xl text-center">
-                      <span className="text-xs font-bold font-mono text-red-500">Minimum investment is $10.00 (STARTER PLAN)</span>
+                      <span className="text-xs font-bold font-mono text-red-500">{t("arbMinInv")}</span>
                     </div>
                   ) : null}
 
@@ -745,10 +745,10 @@ export default function ArbitragePage() {
                     {investing ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Processing...</span>
+                        <span>{t("arbProcessing")}</span>
                       </>
                     ) : (
-                      <span>Activate Contract</span>
+                      <span>{t("arbActivate")}</span>
                     )}
                   </button>
                 </form>
@@ -766,7 +766,7 @@ export default function ArbitragePage() {
                   </div>
                   <div className="ml-auto flex items-center gap-1.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-[8px] font-mono text-green-500">MONITOR</span>
+                    <span className="text-[8px] font-mono text-green-500">{t("arbMonitor")}</span>
                   </div>
                 </div>
 
