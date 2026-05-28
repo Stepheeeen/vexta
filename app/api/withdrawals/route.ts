@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Insufficient available balance in the selected withdrawal category.' }, { status: 400 });
       }
 
-      if (userRecord.fundsFrozen) {
+      if ((userRecord as any).fundsFrozen) {
         return NextResponse.json({ error: 'Your account funds are temporarily frozen. Please contact support.' }, { status: 400 });
       }
 
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify OTP
-    if (userRecord.verificationCode !== verificationCode || !userRecord.verificationCodeExpires || new Date() > userRecord.verificationCodeExpires) {
+    if ((userRecord as any).verificationCode !== verificationCode || !(userRecord as any).verificationCodeExpires || new Date() > (userRecord as any).verificationCodeExpires) {
       return NextResponse.json({ error: 'Invalid or expired verification code' }, { status: 400 });
     }
 
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
         data: { updatedAt: new Date() }
       });
 
-      if (user.fundsFrozen) {
+      if ((user as any).fundsFrozen) {
         throw new Error('FUNDS_FROZEN');
       }
 
@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Free sponsored check
-      if (user.isSponsored && user.sponsoredType === 'free' && type === 'roi') {
+      if ((user as any).isSponsored && (user as any).sponsoredType === 'free' && type === 'roi') {
         // Calculate historical ROI withdrawn inside transaction
         const roiWithdrawnResult = await tx.withdrawal.aggregate({
           where: { userId: payload.userId, status: { in: ['approved', 'pending'] }, type: 'roi' },
@@ -114,11 +114,11 @@ export async function POST(req: NextRequest) {
         const totalRoiWithdrawn = roiWithdrawnResult._sum.amount ?? 0;
 
         if ((totalRoiWithdrawn + amount) > 12) {
-          if (user.sponsoredDirectSales < 10) {
+          if ((user as any).sponsoredDirectSales < 10) {
             // Lock user's ROI withdrawals
             await tx.user.update({
               where: { id: payload.userId },
-              data: { roiBlocked: true }
+              data: { roiBlocked: true } as any
             });
             throw new Error('FREE_ROI_LOCKED');
           }

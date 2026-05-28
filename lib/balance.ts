@@ -122,7 +122,7 @@ export async function getWithdrawableBalances(userId: string, tx?: any) {
     const referredIds = referrals.map((r: any) => r.referredId);
     if (referredIds.length > 0) {
       const directRealInvestments = await client.investment.findMany({
-        where: { userId: { in: referredIds }, isVirtual: false },
+        where: { userId: { in: referredIds }, isVirtual: false } as any,
         select: { amount: true }
       });
       sponsoredDirectSales = directRealInvestments.reduce((sum: number, inv: any) => sum + inv.amount, 0);
@@ -169,7 +169,7 @@ export async function getWithdrawableBalances(userId: string, tx?: any) {
   // Calculate virtual ROI earned (from virtual investments or virtual daily_roi)
   const virtualInvestmentEarned = investments.filter((i: any) => i.isVirtual).reduce((sum: number, inv: any) => sum + inv.totalEarned, 0);
   const virtualDailyRoiTxns = await client.transaction.aggregate({
-    where: { userId, type: 'daily_roi', status: 'completed', isVirtual: true },
+    where: { userId, type: 'daily_roi', status: 'completed', isVirtual: true } as any,
     _sum: { amount: true }
   });
   const totalVirtualRoiEarned = virtualInvestmentEarned + (virtualDailyRoiTxns._sum.amount ?? 0);

@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
       sponsoredDirectSales: true,
       roiBlocked: true,
       fundsFrozen: true,
-    }
+    } as any
   });
 
   return NextResponse.json({
@@ -81,8 +81,8 @@ export async function GET(req: NextRequest) {
       totalInvested: +totalInvested.toFixed(2),
       totalEarned: +totalEarnedFinal.toFixed(2),
       totalCommissions: +totalCommissions.toFixed(2),
-      operationalCapital: userRecord?.operationalCapital || 0,
-      pendingIntegration: userRecord?.pendingIntegration || 0,
+      operationalCapital: (userRecord as any)?.operationalCapital || 0,
+      pendingIntegration: (userRecord as any)?.pendingIntegration || 0,
       availableBalance,
       activeInvestments,
       directReferrals,
@@ -93,7 +93,7 @@ export async function GET(req: NextRequest) {
       id: i.id,
       plan: i.plan.name,
       amount: i.amount,
-      activeCapital: i.activeCapital,
+      activeCapital: (i as any).activeCapital,
       dailyROI: i.plan.dailyROI,
       duration: i.plan.duration,
       startDate: i.startDate,
