@@ -20,8 +20,31 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     notifWelcomeTitle: "Welcome to VEXTA",
     notifWelcomeDesc: "Your growth portfolio is ready. Secure it by verifying your credentials.",
     notifJustNow: "Just now",
-    notifSandboxTitle: "Sandbox Mode Active",
-    notifSandboxDesc: "Use the Simulation Controls on the dashboard to test deposits and yields.",
+
+    notifSandboxDesc: "Your account is secure. Make a deposit to activate your portfolio.",
+    notifSandboxTitle: "Live Account",
+    earningsEmpty: "No transaction history. Make a deposit to start earning.",
+    overviewSimControls: "Quick Actions",
+    overviewSimStep4: "Refresh Data",
+    overviewNoActivity: "No transaction history. Make a deposit to get started.",
+    handoverDemo: "Live Account",
+    demoDisclaimerText: "Welcome to Vexta. Your account is live.",
+    demoDisclaimerBadge: "LIVE ACCOUNT",
+    earningsGuideDesc: "To start earning, first deposit USDT, then subscribe to one of Vexta's high-yield arbitrage plans. Returns are calculated daily with compound interest.",
+    earningsSimulateBtn: "Start Earning",
+    earningsProcessingBtn: "Processing...",
+    arbitrageGuideDesc: "Start an active position by depositing funds and selecting one of our yield contract plans. Our router engine automatically monitors market spreads and executes buy/sell commands across global exchanges.",
+    arbitrageSimulateBtn: "Start Arbitrage",
+    arbitrageProcessingBtn: "Processing...",
+    portfolioGuideDesc: "Your portfolio represents your total locked value, active plans, accumulated yield, and system longevity statistics. Track contract progress bars to monitor your investments.",
+    portfolioSimulateBtn: "Add Asset",
+    portfolioProcessingBtn: "Processing...",
+    withdrawGuideDesc: "Request a payout of your available wallet balance. In standard accounts, withdrawal processing takes up to 24 hours.",
+    withdrawGuideStep1Title: "1. Request Payout",
+    withdrawGuideStep1Sub: "Withdraw your available balance",
+    withdrawSimulateBtn: "Withdraw Funds",
+    withdrawProcessingBtn: "Processing...",
+    depSimulate: "Make an Instant Deposit",
     notif5mAgo: "5m ago",
     withdrawP2PZeroFeeTag: "0% FEE",
     withdrawLive: "LIVE",
@@ -102,7 +125,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     depSendUsdtTo: "Send USDT to:",
     depWarning: "⚠️ Only send USDT on BEP20 (Binance Smart Chain). Incorrect network may result in permanent loss.",
     depAwaiting: "Awaiting network confirmation…",
-    depSimulate: "Simulate Instant Confirmation (Demo)",
+
     depOrSubmit: "Or submit TX hash manually",
     depSubmitBtn: "Submit",
     depConfirmed: "Deposit Confirmed!",
@@ -266,7 +289,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsStat4: 'Withdrawn Funds',
     earningsStat4Sub: 'Virtual payouts',
     earningsHistorySubtitle: 'All simulated income sources',
-    earningsEmpty: 'No transaction history. Complete mock simulation cycles or deposit to start earning.',
+
     referralsStat1: 'Direct Referrals',
     referralsStat1Sub: 'Level 1 network',
     referralsStat2: 'Total Network',
@@ -314,7 +337,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewHideBalance: 'Hide',
     overviewShowBalance: 'Show',
     overviewBalanceSuffix: 'Balance',
-    overviewSimControls: 'Simulation Controls',
+
     overviewSimControlsSub: 'Simulate activities with virtual currency',
     overviewSimStep1: '1. Add virtual funds',
     overviewSimStep1Sub: 'Deposit simulated USD instantly to your virtual balance.',
@@ -324,7 +347,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewSimStep3: '3. Trigger Daily Yield',
     overviewSimStep3Sub: 'Simulate a daily timer cycle. Calculates ROI and distributes commissions.',
     overviewSimTriggerRoi: 'Trigger ROI Payout',
-    overviewSimStep4: '4. Reset Simulation',
+
     overviewSimStep4Sub: 'Clear all simulated history and starts fresh at 0.',
     overviewSimWithdrawBtn: 'Withdraw $500',
     overviewSimResetBtn: 'Reset All',
@@ -336,7 +359,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewCommRate: 'Commission Rate',
     overviewTotalComm: 'Total Commissions',
     overviewRecentActivity: 'Recent Activity',
-    overviewNoActivity: 'No transaction history. Perform deposit or simulation actions above.',
+
     settingsThemeModeDesc: 'Toggle light/dark appearance preference. Currently:',
     settingsDarkMode: 'Dark Mode',
     settingsLightMode: 'Light Mode',
@@ -407,7 +430,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverRoi: 'Daily ROI Engine',
     handoverAdmin: 'Admin Control Panel',
     handoverSecurity: 'Security & Auth',
-    handoverDemo: 'Simulation & Demo',
+
     handoverApi: 'API Reference',
     handoverDev: 'Developer Tooling',
     handoverComplete: 'Complete',
@@ -415,10 +438,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverConfidential: 'Confidential · Client Handover Document',
     handoverBuildStatus: '✓ Production Build Verified',
     handoverRoutes: '43 Compiled Routes',
-    demoDisclaimerText: 'You are in Demo Mode. This is a sandbox testing account with virtual funds.',
-    demoDisclaimerBadge: 'DEMO ACCOUNT',
+
     earningsGuideTitle: 'How Earnings Accumulate',
-    earningsGuideDesc: 'To start earning, first deposit USDT, then subscribe to one of Vexta\'s high-yield arbitrage plans. Returns are calculated daily with compound interest. For client demo purposes, you can use the button on the right to instantly trigger and view demo earnings.',
+
     earningsGuideStep1Title: '1. Deposit Funds',
     earningsGuideStep1Sub: 'Add USDT to balance',
     earningsGuideStep2Title: '2. Choose Plan',
@@ -427,10 +449,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsGuideStep3Sub: 'Routing engine trade execution',
     earningsGuideStep4Title: '4. Collect Yield',
     earningsGuideStep4Sub: 'Daily compound updates',
-    earningsSimulateBtn: 'Simulate Demo Earnings',
-    earningsProcessingBtn: 'Processing Demo...',
+
     arbitrageGuideTitle: 'How Arbitrage Trading Works',
-    arbitrageGuideDesc: 'Start an active position by depositing funds and selecting one of our yield contract plans. Our router engine automatically monitors market spreads and executes buy/sell commands across global exchanges. For client demo purposes, use the CTA to instantly simulate and activate an arbitrage contract.',
+
     arbitrageGuideStep1Title: '1. Add Balance',
     arbitrageGuideStep1Sub: 'USDT to your wallet',
     arbitrageGuideStep2Title: '2. Choose Contract',
@@ -439,10 +460,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     arbitrageGuideStep3Sub: 'Streamed below in real-time',
     arbitrageGuideStep4Title: '4. Track PnL',
     arbitrageGuideStep4Sub: 'Earn daily ROI spreads',
-    arbitrageSimulateBtn: 'Simulate Demo Arbitrage',
-    arbitrageProcessingBtn: 'Processing Demo...',
+
     portfolioGuideTitle: 'Managing Your Portfolio',
-    portfolioGuideDesc: 'Your portfolio represents your total locked value, active plans, accumulated yield, and system longevity statistics. Track contract progress bars to monitor your investments. For client demo purposes, click the button on the right to immediately simulate and seed a live portfolio plan asset.',
+
     portfolioGuideStep1Title: '1. Total Value Locked',
     portfolioGuideStep1Sub: 'Total active capital in play',
     portfolioGuideStep2Title: '2. Active Count',
@@ -451,20 +471,16 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     portfolioGuideStep3Sub: 'Progress bars track maturity',
     portfolioGuideStep4Title: '4. Longevity',
     portfolioGuideStep4Sub: 'Days active since registration',
-    portfolioSimulateBtn: 'Simulate Demo Asset',
-    portfolioProcessingBtn: 'Processing Demo...',
+
     withdrawGuideTitle: 'Withdrawing Your Capital',
-    withdrawGuideDesc: 'Request a payout of your available wallet balance. In standard accounts, withdrawal processing takes up to 24 hours. For client demo purposes, you can click the button on the right to instantly seed your account with $5,000.00 virtual USDT.',
-    withdrawGuideStep1Title: '1. Seed Demo Funds',
-    withdrawGuideStep1Sub: 'Get instant $5k demo balance',
+
     withdrawGuideStep2Title: '2. Choose Network',
     withdrawGuideStep2Sub: 'USDT BEP20 (Binance Smart Chain)',
     withdrawGuideStep3Title: '3. Destination',
     withdrawGuideStep3Sub: 'Enter mock wallet address',
     withdrawGuideStep4Title: '4. Track Request',
     withdrawGuideStep4Sub: 'Monitor status on the right',
-    withdrawSimulateBtn: 'Simulate Demo Funds',
-    withdrawProcessingBtn: 'Processing Demo...',
+
     p2pError: 'P2P Transfer Error',
     p2pSuccess: 'P2P Transfer Successful',
     p2pTransferTitle: 'P2P Balance Transfer',
@@ -536,8 +552,8 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     notifWelcomeTitle: "Bienvenido a VEXTA",
     notifWelcomeDesc: "Su cartera de crecimiento está lista. Asegúrela verificando sus credenciales.",
     notifJustNow: "Justo ahora",
-    notifSandboxTitle: "Modo Sandbox Activo",
-    notifSandboxDesc: "Use los controles de simulación en el tablero para probar depósitos y rendimientos.",
+
+
     notif5mAgo: "Hace 5m",
     withdrawP2PZeroFeeTag: "0% TARIFA",
     withdrawLive: "EN VIVO",
@@ -618,7 +634,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     depSendUsdtTo: "Enviar USDT a:",
     depWarning: "⚠️ Envía USDT solo por BEP20. Red incorrecta puede resultar en pérdida permanente.",
     depAwaiting: "Esperando confirmación de la red…",
-    depSimulate: "Simular Confirmación Instantánea (Demo)",
+
     depOrSubmit: "O envía el hash de TX manualmente",
     depSubmitBtn: "Enviar",
     depConfirmed: "¡Depósito Confirmado!",
@@ -782,7 +798,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsStat4: 'Fondos retirados',
     earningsStat4Sub: 'Pagos virtuales',
     earningsHistorySubtitle: 'Todas las fuentes de ingresos simuladas',
-    earningsEmpty: 'Sin historial de transacciones. Complete ciclos de simulación de prueba o deposite para comenzar a ganar.',
+
     referralsStat1: 'Referidos directos',
     referralsStat1Sub: 'Red de nivel 1',
     referralsStat2: 'Red total',
@@ -830,7 +846,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewHideBalance: 'Ocultar',
     overviewShowBalance: 'Mostrar',
     overviewBalanceSuffix: 'saldo',
-    overviewSimControls: 'Controles de simulación',
+
     overviewSimControlsSub: 'Simule actividades con moneda virtual',
     overviewSimStep1: '1. Añadir fondos virtuales',
     overviewSimStep1Sub: 'Deposite USD simulados al instante en su saldo virtual.',
@@ -840,7 +856,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewSimStep3: '3. Activar rendimiento diario',
     overviewSimStep3Sub: 'Simule un ciclo de temporizador diario. Calcula el ROI y distribuye comisiones.',
     overviewSimTriggerRoi: 'Activar pago de ROI',
-    overviewSimStep4: '4. Restablecer simulación',
+
     overviewSimStep4Sub: 'Borre todo el historial simulado y comience de nuevo en 0.',
     overviewSimWithdrawBtn: 'Retirar $500',
     overviewSimResetBtn: 'Restablecer todo',
@@ -852,7 +868,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewCommRate: 'Tasa de comisión',
     overviewTotalComm: 'Comisiones totales',
     overviewRecentActivity: 'Actividad reciente',
-    overviewNoActivity: 'Sin historial de transacciones. Realice un depósito o acciones de simulación arriba.',
+
     settingsThemeModeDesc: 'Alternar preferencia de apariencia clara/oscura. Actualmente:',
     settingsDarkMode: 'Modo Oscuro',
     settingsLightMode: 'Modo Claro',
@@ -923,7 +939,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverRoi: 'Motor de ROI Diario',
     handoverAdmin: 'Panel de Control de Administrador',
     handoverSecurity: 'Seguridad y Autenticación',
-    handoverDemo: 'Simulación y Demostración',
+
     handoverApi: 'Referencia de la API',
     handoverDev: 'Herramientas de Desarrollo',
     handoverComplete: 'Completado',
@@ -931,10 +947,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverConfidential: 'Confidencial · Documento de entrega al cliente',
     handoverBuildStatus: '✓ Compilación de producción verificada',
     handoverRoutes: '43 rutas compiladas',
-    demoDisclaimerText: 'Estás en modo de demostración. Esta es una cuenta de prueba de sandbox con fondos virtuales.',
-    demoDisclaimerBadge: 'CUENTA DE DEMO',
+
     earningsGuideTitle: 'Cómo se acumulan las ganancias',
-    earningsGuideDesc: 'Para comenzar a ganar, primero deposite USDT, luego suscríbase a uno de los planes de arbitraje de alto rendimiento de Vexta. Los rendimientos se calculan diariamente con interés compuesto. Para fines de demostración, puede usar el botón de la derecha para simular y ver ganancias de demostración instantáneamente.',
+
     earningsGuideStep1Title: '1. Depositar fondos',
     earningsGuideStep1Sub: 'Añadir USDT al saldo',
     earningsGuideStep2Title: '2. Elegir plan',
@@ -943,10 +958,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsGuideStep3Sub: 'Ejecución del motor de enrutamiento',
     earningsGuideStep4Title: '4. Cobrar rendimiento',
     earningsGuideStep4Sub: 'Actualizaciones de interés compuesto',
-    earningsSimulateBtn: 'Simular ganancias de demostración',
-    earningsProcessingBtn: 'Procesando demo...',
+
     arbitrageGuideTitle: 'Cómo funciona el arbitraje',
-    arbitrageGuideDesc: 'Inicie una posición activa depositando fondos y seleccionando uno de nuestros planes de contrato de rendimiento. Nuestro motor de enrutamiento monitorea automáticamente los diferenciales del mercado y ejecuta comandos de compra/venta en intercambios globales. Para fines de demostración, use el CTA para simular y activar instantáneamente un contrato de arbitraje.',
+
     arbitrageGuideStep1Title: '1. Añadir saldo',
     arbitrageGuideStep1Sub: 'USDT a su billetera',
     arbitrageGuideStep2Title: '2. Elegir contrato',
@@ -955,10 +969,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     arbitrageGuideStep3Sub: 'Transmitido abajo en tiempo real',
     arbitrageGuideStep4Title: '4. Seguir PnL',
     arbitrageGuideStep4Sub: 'Obtener diferenciales diarios de ROI',
-    arbitrageSimulateBtn: 'Simular arbitraje de demostración',
-    arbitrageProcessingBtn: 'Procesando demo...',
+
     portfolioGuideTitle: 'Gestionar su portafolio',
-    portfolioGuideDesc: 'Su portafolio representa su valor total bloqueado, planes activos, rendimiento acumulado y estadísticas de longevidad del sistema. Siga las barras de progreso del contrato para monitorear sus inversiones. Para fines de demostración, haga clic en el botón de la derecha para simular y sembrar inmediatamente un activo de plan de portafolio en vivo.',
+
     portfolioGuideStep1Title: '1. Valor total bloqueado',
     portfolioGuideStep1Sub: 'Capital activo total en juego',
     portfolioGuideStep2Title: '2. Cantidad activa',
@@ -967,20 +980,16 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     portfolioGuideStep3Sub: 'Monitorear la madurez del plan',
     portfolioGuideStep4Title: '4. Longevidad',
     portfolioGuideStep4Sub: 'Días activo desde el registro',
-    portfolioSimulateBtn: 'Simular activo de demostración',
-    portfolioProcessingBtn: 'Procesando demo...',
+
     withdrawGuideTitle: 'Retirar su capital',
-    withdrawGuideDesc: 'Solicite un pago de su saldo disponible. En cuentas estándar, el procesamiento del retiro demora hasta 24 horas. Para fines de demostración, puede hacer clic en el botón de la derecha para sembrar instantáneamente su cuenta con $5,000.00 USDT virtuales.',
-    withdrawGuideStep1Title: '1. Sembrar fondos demo',
-    withdrawGuideStep1Sub: 'Obtenga saldo instantáneo de $5k',
+
     withdrawGuideStep2Title: '2. Elegir red',
     withdrawGuideStep2Sub: 'USDT BEP20 (Binance Smart Chain)',
     withdrawGuideStep3Title: '3. Destino',
     withdrawGuideStep3Sub: 'Ingrese dirección de billetera de prueba',
     withdrawGuideStep4Title: '4. Seguir solicitud',
     withdrawGuideStep4Sub: 'Monitorear estado a la derecha',
-    withdrawSimulateBtn: 'Simular fondos de demostración',
-    withdrawProcessingBtn: 'Procesando demo...',
+
     p2pError: 'Error de transferencia P2P',
     p2pSuccess: 'Transferencia P2P exitosa',
     p2pTransferTitle: 'Transferencia de saldo P2P',
@@ -1181,7 +1190,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsStat4: 'Tiền đã rút',
     earningsStat4Sub: 'Thanh toán ảo',
     earningsHistorySubtitle: 'Tất cả các nguồn thu nhập mô phỏng',
-    earningsEmpty: 'Không có lịch sử giao dịch. Hoàn thành chu kỳ mô phỏng hoặc nạp tiền để bắt đầu kiếm tiền.',
+
     referralsStat1: 'Giới thiệu trực tiếp',
     referralsStat1Sub: 'Mạng lưới cấp 1',
     referralsStat2: 'Tổng mạng lưới',
@@ -1229,7 +1238,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewHideBalance: 'Ẩn',
     overviewShowBalance: 'Hiện',
     overviewBalanceSuffix: 'Số dư',
-    overviewSimControls: 'Bảng điều khiển mô phỏng',
+
     overviewSimControlsSub: 'Mô phỏng hoạt động với tiền ảo',
     overviewSimStep1: '1. Thêm tiền ảo',
     overviewSimStep1Sub: 'Nạp USD mô phỏng ngay lập tức vào số dư ảo của bạn.',
@@ -1239,7 +1248,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewSimStep3: '3. Kích hoạt lợi suất hàng ngày',
     overviewSimStep3Sub: 'Mô phỏng chu kỳ hẹn giờ hàng ngày. Tính ROI và chia hoa hồng.',
     overviewSimTriggerRoi: 'Kích hoạt thanh toán ROI',
-    overviewSimStep4: '4. Đặt lại mô phỏng',
+
     overviewSimStep4Sub: 'Xóa toàn bộ lịch sử mô phỏng và bắt đầu lại từ 0.',
     overviewSimWithdrawBtn: 'Rút 500 USD',
     overviewSimResetBtn: 'Đặt lại tất cả',
@@ -1251,7 +1260,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewCommRate: 'Tỷ lệ hoa hồng',
     overviewTotalComm: 'Tổng hoa hồng',
     overviewRecentActivity: 'Giao dịch gần đây',
-    overviewNoActivity: 'Không có lịch sử giao dịch. Thực hiện nạp tiền hoặc thao tác mô phỏng phía trên.',
+
     settingsThemeModeDesc: 'Chuyển đổi tùy chọn giao diện sáng/tối. Hiện tại:',
     settingsDarkMode: 'Chế độ tối',
     settingsLightMode: 'Chế độ sáng',
@@ -1322,7 +1331,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverRoi: 'Công cụ Tính ROI hàng ngày',
     handoverAdmin: 'Bảng Điều khiển Admin',
     handoverSecurity: 'Bảo mật & Xác thực',
-    handoverDemo: 'Mô phỏng & Demo',
+
     handoverApi: 'Tài liệu API',
     handoverDev: 'Công cụ cho Nhà phát triển',
     handoverComplete: 'Hoàn thành',
@@ -1330,10 +1339,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverConfidential: 'Bảo mật · Tài liệu bàn giao khách hàng',
     handoverBuildStatus: '✓ Đã xác minh bản build sản xuất',
     handoverRoutes: '43 Route đã biên dịch',
-    demoDisclaimerText: 'Bạn đang ở Chế độ Demo. Đây là tài khoản thử nghiệm sandbox với tiền ảo.',
-    demoDisclaimerBadge: 'TÀI KHOẢN DEMO',
+
     earningsGuideTitle: 'Cách tích lũy lợi nhuận',
-    earningsGuideDesc: 'Để bắt đầu kiếm tiền, trước tiên hãy nạp USDT, sau đó đăng ký một trong các gói trọng tài năng suất cao của Vexta. Lợi nhuận được tính hàng ngày với lãi kép. Đối với tài khoản demo, bạn có thể sử dụng nút bên phải để kích hoạt và xem lợi nhuận demo ngay lập tức.',
+
     earningsGuideStep1Title: '1. Nạp tiền',
     earningsGuideStep1Sub: 'Thêm USDT vào số dư',
     earningsGuideStep2Title: '2. Chọn gói',
@@ -1342,10 +1350,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsGuideStep3Sub: 'Thực thi giao dịch bằng công cụ định tuyến',
     earningsGuideStep4Title: '4. Nhận lợi nhuận',
     earningsGuideStep4Sub: 'Cập nhật lãi kép hàng ngày',
-    earningsSimulateBtn: 'Mô phỏng thu nhập demo',
-    earningsProcessingBtn: 'Đang xử lý demo...',
+
     arbitrageGuideTitle: 'Cách hoạt động của kinh doanh chênh lệch giá',
-    arbitrageGuideDesc: 'Bắt đầu một vị thế hoạt động bằng cách nạp tiền và chọn một trong các gói hợp đồng lợi nhuận của chúng tôi. Công cụ định tuyến tự động theo dõi chênh lệch giá thị trường và thực hiện các lệnh mua/bán trên các sàn giao dịch toàn cầu. Đối với mục đích demo, hãy sử dụng CTA để mô phỏng và kích hoạt hợp đồng chênh lệch giá ngay lập tức.',
+
     arbitrageGuideStep1Title: '1. Thêm số dư',
     arbitrageGuideStep1Sub: 'USDT vào ví của bạn',
     arbitrageGuideStep2Title: '2. Chọn hợp đồng',
@@ -1354,10 +1361,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     arbitrageGuideStep3Sub: 'Được phát trực tiếp bên dưới theo thời gian thực',
     arbitrageGuideStep4Title: '4. Theo dõi PnL',
     arbitrageGuideStep4Sub: 'Kiếm chênh lệch ROI hàng ngày',
-    arbitrageSimulateBtn: 'Mô phỏng chênh lệch giá demo',
-    arbitrageProcessingBtn: 'Đang xử lý demo...',
+
     portfolioGuideTitle: 'Quản lý danh mục đầu tư',
-    portfolioGuideDesc: 'Danh mục đầu tư của bạn đại diện cho tổng giá trị bị khóa, các gói đang hoạt động, lợi nhuận tích lũy và số liệu thống kê thời gian hoạt động của hệ thống. Theo dõi các thanh tiến trình hợp đồng để giám sát các khoản đầu tư của bạn. Đối với mục đích demo, nhấp vào nút bên phải để mô phỏng và tạo ngay một tài sản gói danh mục đầu tư trực tiếp.',
+
     portfolioGuideStep1Title: '1. Tổng giá trị bị khóa',
     portfolioGuideStep1Sub: 'Tổng số vốn đang hoạt động',
     portfolioGuideStep2Title: '2. Số gói hoạt động',
@@ -1366,20 +1372,16 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     portfolioGuideStep3Sub: 'Thanh tiến trình theo dõi ngày đáo hạn',
     portfolioGuideStep4Title: '4. Thời gian hoạt động',
     portfolioGuideStep4Sub: 'Số ngày hoạt động kể từ khi đăng ký',
-    portfolioSimulateBtn: 'Mô phỏng tài sản demo',
-    portfolioProcessingBtn: 'Đang xử lý demo...',
+
     withdrawGuideTitle: 'Rút vốn của bạn',
-    withdrawGuideDesc: 'Yêu cầu thanh toán số dư ví có sẵn của bạn. Trong các tài khoản thông thường, quá trình xử lý rút tiền mất tới 24 giờ. Đối với mục đích demo, bạn có thể nhấp vào nút ở bên phải để nhận ngay số dư USDT ảo trị giá $5,000.00.',
-    withdrawGuideStep1Title: '1. Nhận vốn demo',
-    withdrawGuideStep1Sub: 'Nhận ngay số dư demo $5k',
+
     withdrawGuideStep2Title: '2. Chọn mạng',
     withdrawGuideStep2Sub: 'USDT BEP20 (Binance Smart Chain)',
     withdrawGuideStep3Title: '3. Điểm đến',
     withdrawGuideStep3Sub: 'Nhập địa chỉ ví giả định',
     withdrawGuideStep4Title: '4. Theo dõi yêu cầu',
     withdrawGuideStep4Sub: 'Giám sát trạng thái ở bên phải',
-    withdrawSimulateBtn: 'Mô phỏng quỹ demo',
-    withdrawProcessingBtn: 'Đang xử lý demo...',
+
     p2pError: 'Lỗi chuyển P2P',
     p2pSuccess: 'Chuyển P2P thành công',
     p2pTransferTitle: 'Chuyển số dư P2P',
@@ -1580,7 +1582,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsStat4: 'เงินที่ถอนแล้ว',
     earningsStat4Sub: 'การจ่ายเงินเสมือน',
     earningsHistorySubtitle: 'แหล่งที่มาของรายได้จำลองทั้งหมด',
-    earningsEmpty: 'ไม่มีประวัติการทำธุรกรรม จำลองรอบการทำงานหรือฝากเงินเพื่อเริ่มรับรายได้',
+
     referralsStat1: 'การแนะนำโดยตรง',
     referralsStat1Sub: 'เครือข่ายระดับ 1',
     referralsStat2: 'เครือข่ายทั้งหมด',
@@ -1628,7 +1630,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewHideBalance: 'ซ่อน',
     overviewShowBalance: 'แสดง',
     overviewBalanceSuffix: 'ยอดเงิน',
-    overviewSimControls: 'แผงควบคุมการจำลอง',
+
     overviewSimControlsSub: 'จำลองกิจกรรมด้วยสกุลเงินเสมือน',
     overviewSimStep1: '1. เพิ่มเงินเสมือน',
     overviewSimStep1Sub: 'ฝากเงิน USD จำลองเข้าสู่ยอดคงเหลือเสมือนของคุณทันที',
@@ -1638,7 +1640,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewSimStep3: '3. กระตุ้นผลตอบแทนรายวัน',
     overviewSimStep3Sub: 'จำลองรอบตัวจับเวลาประจำวัน คำนวณ ROI และกระจายค่าคอมมิชชั่น',
     overviewSimTriggerRoi: 'กระตุ้นการจ่ายเงิน ROI',
-    overviewSimStep4: '4. รีเซ็ตการจำลอง',
+
     overviewSimStep4Sub: 'ล้างประวัติการจำลองทั้งหมดและเริ่มต้นใหม่ที่ 0',
     overviewSimWithdrawBtn: 'ถอนเงิน $500',
     overviewSimResetBtn: 'รีเซ็ตทั้งหมด',
@@ -1650,7 +1652,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewCommRate: 'อัตราค่าคอมมิชชั่น',
     overviewTotalComm: 'ค่าคอมมิชชั่นทั้งหมด',
     overviewRecentActivity: 'ธุรกรรมล่าสุด',
-    overviewNoActivity: 'ไม่มีประวัติการทำธุรกรรม ดำเนินการฝากเงินหรือการจำลองด้านบน',
+
     settingsThemeModeDesc: 'สลับการตั้งค่าธีมสว่าง/มืด ปัจจุบันคือ:',
     settingsDarkMode: 'โหมดมืด',
     settingsLightMode: 'โหมดสว่าง',
@@ -1721,7 +1723,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverRoi: 'ระบบคำนวณ ROI รายวัน',
     handoverAdmin: 'แผงควบคุมผู้ดูแลระบบ',
     handoverSecurity: 'ความปลอดภัยและการยืนยันตัวตน',
-    handoverDemo: 'การจำลองและเดโม่',
+
     handoverApi: 'ข้อมูลอ้างอิง API',
     handoverDev: 'เครื่องมือสำหรับนักพัฒนา',
     handoverComplete: 'เสร็จสมบูรณ์',
@@ -1729,10 +1731,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverConfidential: 'ข้อมูลลับ · เอกสารส่งมอบงานให้ลูกค้า',
     handoverBuildStatus: '✓ ตรวจสอบการสร้างสำหรับโปรดักชั่นแล้ว',
     handoverRoutes: '43 เส้นทางที่คอมไพล์แล้ว',
-    demoDisclaimerText: 'คุณอยู่ในโหมดสาธิต นี่คือบัญชีทดลองใช้แซนด์บ็อกซ์พร้อมเงินเสมือนจริง',
-    demoDisclaimerBadge: 'บัญชีทดลอง',
+
     earningsGuideTitle: 'การสะสมรายได้ทำงานอย่างไร',
-    earningsGuideDesc: 'เพื่อเริ่มรับรายได้ ขั้นแรกให้ฝาก USDT จากนั้นสมัครแผนการทำกำไรจากส่วนต่างราคา (Arbitrage) ของ Vexta ผลตอบแทนจะคำนวณทุกวันพร้อมดอกเบี้ยทบต้น สำหรับบัญชีสาธิต คุณสามารถใช้ปุ่มทางขวาเพื่อเปิดใช้งานและดูรายได้สาธิตได้ทันที',
+
     earningsGuideStep1Title: '1. ฝากเงิน',
     earningsGuideStep1Sub: 'เพิ่ม USDT ในยอดคงเหลือ',
     earningsGuideStep2Title: '2. เลือกแผน',
@@ -1741,10 +1742,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsGuideStep3Sub: 'การดำเนินการเทรดด้วยระบบกำหนดเส้นทาง',
     earningsGuideStep4Title: '4. รับผลตอบแทน',
     earningsGuideStep4Sub: 'อัปเดตดอกเบี้ยทบต้นรายวัน',
-    earningsSimulateBtn: 'จำลองรายได้สาธิต',
-    earningsProcessingBtn: 'กำลังดำเนินการเดโม...',
+
     arbitrageGuideTitle: 'การเทรดส่วนต่างราคาทำงานอย่างไร',
-    arbitrageGuideDesc: 'เริ่มต้นสถานะที่ใช้งานอยู่โดยการฝากเงินและเลือกหนึ่งในแผนสัญญาผลตอบแทนของเรา ระบบกำหนดเส้นทางของเราจะตรวจสอบส่วนต่างราคากลางโดยอัตนุมัติและดำเนินการคำสั่งซื้อ/ขายในกระดานแลกเปลี่ยนทั่วโลก สำหรับวัตถุประสงค์ในการสาธิต ให้ใช้ปุ่มเพื่อจำลองและเปิดใช้งานสัญญาส่วนต่างราคาทันที',
+
     arbitrageGuideStep1Title: '1. เพิ่มยอดคงเหลือ',
     arbitrageGuideStep1Sub: 'USDT ไปยังกระเป๋าเงินของคุณ',
     arbitrageGuideStep2Title: '2. เลือกสัญญา',
@@ -1753,10 +1753,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     arbitrageGuideStep3Sub: 'สตรีมข้อมูลด้านล่างแบบเรียลไทม์',
     arbitrageGuideStep4Title: '4. ติดตาม PnL',
     arbitrageGuideStep4Sub: 'รับส่วนต่าง ROI รายวัน',
-    arbitrageSimulateBtn: 'จำลองส่วนต่างราคาสาธิต',
-    arbitrageProcessingBtn: 'กำลังดำเนินการเดโม...',
+
     portfolioGuideTitle: 'การจัดการพอร์ตโฟลิโอของคุณ',
-    portfolioGuideDesc: 'พอร์ตโฟลิโอของคุณแสดงถึงมูลค่ารวมที่ถูกล็อก แผนที่ใช้งานอยู่ ผลตอบแทนสะสม และสถิติระยะเวลาการใช้งานระบบ ติดตามแถบความคืบหน้าของสัญญาเพื่อตรวจสอบการลงทุนของคุณ สำหรับวัตถุประสงค์ในการสาธิต ให้คลิกปุ่มทางขวาเพื่อจำลองและสร้างสินทรัพย์แผนพอร์ตโฟลิโอสดทันที',
+
     portfolioGuideStep1Title: '1. มูลค่ารวมที่ถูกล็อก',
     portfolioGuideStep1Sub: 'เงินทุนที่ใช้งานอยู่ทั้งหมด',
     portfolioGuideStep2Title: '2. จำนวนแผนที่ใช้งาน',
@@ -1765,20 +1764,16 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     portfolioGuideStep3Sub: 'แถบความคืบหน้าติดตามการครบกำหนด',
     portfolioGuideStep4Title: '4. ระยะเวลาการใช้งาน',
     portfolioGuideStep4Sub: 'จำนวนวันที่ใช้งานตั้งแต่ลงทะเบียน',
-    portfolioSimulateBtn: 'จำลองสินทรัพย์สาธิต',
-    portfolioProcessingBtn: 'กำลังดำเนินการเดโม...',
+
     withdrawGuideTitle: 'การถอนเงินทุนของคุณ',
-    withdrawGuideDesc: 'ขอถอนยอดคงเหลือในกระเป๋าเงินที่ใช้งานได้ของคุณ ในบัญชีปกติ การดำเนินการถอนเงินอาจใช้เวลาสูงสุด 24 ชั่วโมง สำหรับวัตถุประสงค์ในการสาธิต คุณสามารถคลิกปุ่มทางด้านขวาเพื่อเติมยอดคงเหลือจำลอง $5,000.00 USDT ได้ทันที',
-    withdrawGuideStep1Title: '1. จำลองรับเงินทุน',
-    withdrawGuideStep1Sub: 'รับยอดเงินสาธิต $5k ทันที',
+
     withdrawGuideStep2Title: '2. เลือกเครือข่าย',
     withdrawGuideStep2Sub: 'USDT BEP20 (Binance Smart Chain)',
     withdrawGuideStep3Title: '3. ปลายทาง',
     withdrawGuideStep3Sub: 'ป้อนที่อยู่กระเป๋าเงินจำลอง',
     withdrawGuideStep4Title: '4. ติดตามคำขอ',
     withdrawGuideStep4Sub: 'ตรวจสอบสถานะทางด้านขวา',
-    withdrawSimulateBtn: 'จำลองกองทุนสาธิต',
-    withdrawProcessingBtn: 'กำลังดำเนินการเดโม...',
+
     p2pError: 'เกิดข้อผิดพลาดในการถ่ายโอน P2P',
     p2pSuccess: 'การโอน P2P สำเร็จ',
     p2pTransferTitle: 'การโอนยอดคงเหลือ P2P',
@@ -1979,7 +1974,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsStat4: 'Fundos Retirados',
     earningsStat4Sub: 'Pagamentos virtuais',
     earningsHistorySubtitle: 'Todas as fontes de rendimento simuladas',
-    earningsEmpty: 'Nenhum histórico de transações. Conclua os ciclos de simulação ou deposite para começar a ganhar.',
+
     referralsStat1: 'Indicações Diretas',
     referralsStat1Sub: 'Rede de Nível 1',
     referralsStat2: 'Rede Total',
@@ -2027,7 +2022,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewHideBalance: 'Ocultar',
     overviewShowBalance: 'Mostrar',
     overviewBalanceSuffix: 'Saldo',
-    overviewSimControls: 'Controles de Simulação',
+
     overviewSimControlsSub: 'Simule atividades com moeda virtual',
     overviewSimStep1: '1. Adicionar fundos virtuais',
     overviewSimStep1Sub: 'Deposite USD simulados instantaneamente em seu saldo virtual.',
@@ -2037,7 +2032,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewSimStep3: '3. Ativar Rendimento Diário',
     overviewSimStep3Sub: 'Simule um ciclo diário. Calcula o ROI e distribui comissões.',
     overviewSimTriggerRoi: 'Ativar Pagamento de ROI',
-    overviewSimStep4: '4. Reiniciar Simulação',
+
     overviewSimStep4Sub: 'Limpe todo o histórico simulado e comece do zero.',
     overviewSimWithdrawBtn: 'Retirar $500',
     overviewSimResetBtn: 'Reiniciar Tudo',
@@ -2049,7 +2044,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewCommRate: 'Taxa de Comissão',
     overviewTotalComm: 'Total de Comissões',
     overviewRecentActivity: 'Atividade Recente',
-    overviewNoActivity: 'Nenhum histórico de transações. Realize depósitos ou ações de simulação acima.',
+
     settingsThemeModeDesc: 'Alternar preferência de aparência clara/escura. Atualmente:',
     settingsDarkMode: 'Modo Escuro',
     settingsLightMode: 'Modo Claro',
@@ -2120,7 +2115,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverRoi: 'Motor de ROI Diário',
     handoverAdmin: 'Painel de Controle do Administrador',
     handoverSecurity: 'Segurança e Autenticação',
-    handoverDemo: 'Simulação e Demonstração',
+
     handoverApi: 'Referência da API',
     handoverDev: 'Ferramentas de Desenvolvimento',
     handoverComplete: 'Concluído',
@@ -2128,10 +2123,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverConfidential: 'Confidencial · Documento de entrega do cliente',
     handoverBuildStatus: '✓ Compilação de produção verificada',
     handoverRoutes: '43 rotas compiladas',
-    demoDisclaimerText: 'Você está no modo de demonstração. Esta é uma conta de teste sandbox com fundos virtuais.',
-    demoDisclaimerBadge: 'CONTA DE DEMONSTRAÇÃO',
+
     earningsGuideTitle: 'Como os rendimentos se acumulam',
-    earningsGuideDesc: 'Para começar a ganhar, primeiro deposite USDT e depois assine um dos planos de arbitragem de alto rendimento da Vexta. Os retornos são calculados diariamente com juros compostos. Para fins de demonstração do cliente, você pode usar o botão à direita para acionar e visualizar rendimentos de demonstração instantaneamente.',
+
     earningsGuideStep1Title: '1. Depositar fundos',
     earningsGuideStep1Sub: 'Adicionar USDT ao saldo',
     earningsGuideStep2Title: '2. Escolher plano',
@@ -2140,10 +2134,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsGuideStep3Sub: 'Execução do motor de roteamento',
     earningsGuideStep4Title: '4. Coletar rendimento',
     earningsGuideStep4Sub: 'Atualizações diárias de juros compostos',
-    earningsSimulateBtn: 'Simular ganhos de demonstração',
-    earningsProcessingBtn: 'Processando demo...',
+
     arbitrageGuideTitle: 'Como funciona a negociação de arbitragem',
-    arbitrageGuideDesc: 'Inicie uma posição activa depositando fundos e selecionando um de nossos planos de contrato de rendimento. Nosso motor de roteamento monitora automaticamente os spreads do mercado e executa comandos de compra/venda em bolsas globais. Para fins de demonstração, use a CTA para simular e ativar instantaneamente um contrato de arbitragem.',
+
     arbitrageGuideStep1Title: '1. Adicionar saldo',
     arbitrageGuideStep1Sub: 'USDT para sua carteira',
     arbitrageGuideStep2Title: '2. Escolher contrato',
@@ -2152,10 +2145,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     arbitrageGuideStep3Sub: 'Transmitido abaixo em tempo real',
     arbitrageGuideStep4Title: '4. Rastrear PnL',
     arbitrageGuideStep4Sub: 'Obter spreads diários de ROI',
-    arbitrageSimulateBtn: 'Simular arbitragem de demonstração',
-    arbitrageProcessingBtn: 'Processando demo...',
+
     portfolioGuideTitle: 'Gerenciando seu portfólio',
-    portfolioGuideDesc: 'Seu portfólio representa seu valor total bloqueado, planos ativos, rendimento acumulado e estatísticas de longevidade do sistema. Rastreie as barras de progresso do contrato para monitorar seus investimentos. Para fins de demonstração, clique no botão à direita para simular e semear imediatamente um ativo de plano de portfólio ao vivo.',
+
     portfolioGuideStep1Title: '1. Valor total bloqueado',
     portfolioGuideStep1Sub: 'Capital ativo total em jogo',
     portfolioGuideStep2Title: '2. Contagem ativa',
@@ -2164,20 +2156,16 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     portfolioGuideStep3Sub: 'Barras de progresso rastreiam a maturidade',
     portfolioGuideStep4Title: '4. Longevidade',
     portfolioGuideStep4Sub: 'Dias ativo desde o registro',
-    portfolioSimulateBtn: 'Simular ativo de demonstração',
-    portfolioProcessingBtn: 'Processando demo...',
+
     withdrawGuideTitle: 'Retirando seu capital',
-    withdrawGuideDesc: 'Solicite um resgate do saldo disponível da sua carteira. Em contas padrão, o processamento de saque leva até 24 horas. Para fins de demonstração, você pode clicar no botão à direita para semear instantaneamente sua conta com $5.000,00 USDT virtuais.',
-    withdrawGuideStep1Title: '1. Semear fundos demo',
-    withdrawGuideStep1Sub: 'Ganhe saldo demo de $5k instantâneo',
+
     withdrawGuideStep2Title: '2. Escolher rede',
     withdrawGuideStep2Sub: 'USDT BEP20 (Binance Smart Chain)',
     withdrawGuideStep3Title: '3. Destino',
     withdrawGuideStep3Sub: 'Insira endereço de carteira simulada',
     withdrawGuideStep4Title: '4. Rastrear pedido',
     withdrawGuideStep4Sub: 'Monitore o status à direita',
-    withdrawSimulateBtn: 'Simular fundos de demonstração',
-    withdrawProcessingBtn: 'Processando demo...',
+
     p2pError: 'Erro de transferência P2P',
     p2pSuccess: 'Transferência P2P bem-sucedida',
     p2pTransferTitle: 'Transferência de saldo P2P',
@@ -2378,7 +2366,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsStat4: '출금된 자금',
     earningsStat4Sub: '가상 지급액',
     earningsHistorySubtitle: '모든 시뮬레이션된 수익원',
-    earningsEmpty: '거래 내역이 없습니다. 시뮬레이션 주기를 완료하거나 입금하여 수익 창출을 시작하세요.',
+
     referralsStat1: '직접 추천인',
     referralsStat1Sub: '1단계 네트워크',
     referralsStat2: '총 네트워크',
@@ -2426,7 +2414,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewHideBalance: '숨기기',
     overviewShowBalance: '표시',
     overviewBalanceSuffix: '잔고',
-    overviewSimControls: '시뮬레이션 제어',
+
     overviewSimControlsSub: '가상 통화로 시뮬레이션 활동 수행',
     overviewSimStep1: '1. 가상 자금 추가',
     overviewSimStep1Sub: '시뮬레이션된 USD를 가상 잔고에 즉시 입금합니다.',
@@ -2436,7 +2424,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewSimStep3: '3. 일일 수익률 트리거',
     overviewSimStep3Sub: '일일 타이머 주기를 시뮬레이션하여 ROI를 계산하고 커미션을 분배합니다.',
     overviewSimTriggerRoi: 'ROI 지급 트리거',
-    overviewSimStep4: '4. 시뮬레이션 초기화',
+
     overviewSimStep4Sub: '시뮬레이션된 모든 기록을 지우고 0에서 새로 시작합니다.',
     overviewSimWithdrawBtn: '500달러 출금',
     overviewSimResetBtn: '모두 초기화',
@@ -2448,7 +2436,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewCommRate: '커미션 비율',
     overviewTotalComm: '총 커미션',
     overviewRecentActivity: '최근 활동',
-    overviewNoActivity: '거래 내역이 없습니다. 위에서 입금 또는 시뮬레이션 동작을 수행하세요.',
+
     settingsThemeModeDesc: '다크/라이트 테마 설정을 변경합니다. 현재 상태:',
     settingsDarkMode: '다크 모드',
     settingsLightMode: '라이트 모드',
@@ -2519,7 +2507,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverRoi: '일일 ROI 엔진',
     handoverAdmin: '관리자 제어판',
     handoverSecurity: '보안 및 인증',
-    handoverDemo: '시뮬레이션 및 데모',
+
     handoverApi: 'API 레퍼런스',
     handoverDev: '개발자 도구',
     handoverComplete: '완료',
@@ -2527,10 +2515,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverConfidential: '기밀 · 클라이언트 인도 문서',
     handoverBuildStatus: '✓ 프로덕션 빌드 확인됨',
     handoverRoutes: '43개 컴파일된 라우트',
-    demoDisclaimerText: '데모 모드입니다. 가상 자금이 포함된 샌드박스 테스트 계정입니다.',
-    demoDisclaimerBadge: '데모 계정',
+
     earningsGuideTitle: '수익 적립 방식 안내',
-    earningsGuideDesc: '수익을 창출하려면 먼저 USDT를 입금한 다음 Vexta의 고수익 차익거래 플랜 중 하나에 가입하세요. 수익은 복리로 매일 계산됩니다. 데모 계정의 경우, 우측의 버튼을 클릭하여 즉시 데모 수익을 발생시키고 확인할 수 있습니다.',
+
     earningsGuideStep1Title: '1. 자금 입금',
     earningsGuideStep1Sub: '지갑 잔액에 USDT 추가',
     earningsGuideStep2Title: '2. 플랜 선택',
@@ -2539,10 +2526,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsGuideStep3Sub: '라우팅 엔진에 의한 체결',
     earningsGuideStep4Title: '4. 이자 수령',
     earningsGuideStep4Sub: '일일 복리 적립 업데이트',
-    earningsSimulateBtn: '데모 수익 시뮬레이션',
-    earningsProcessingBtn: '데모 처리 중...',
+
     arbitrageGuideTitle: '차익거래 작동 원리',
-    arbitrageGuideDesc: '자금을 입금하고 당사 수익 계약 플랜 중 하나를 선택하여 활성 포지션을 시작하세요. 라우팅 엔진이 시장 스프레드를 실시간 모니터링하여 글로벌 거래소 간의 매수/매도 주문을 자동 실행합니다. 데모 목적으로 CTA 버튼을 사용해 즉시 차익거래 계약을 시뮬레이션하고 활성화할 수 있습니다.',
+
     arbitrageGuideStep1Title: '1. 잔액 추가',
     arbitrageGuideStep1Sub: '지갑에 USDT 입금',
     arbitrageGuideStep2Title: '2. 계약 선택',
@@ -2551,10 +2537,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     arbitrageGuideStep3Sub: '하단에 실시간 스트리밍 제공',
     arbitrageGuideStep4Title: '4. 손익 추적',
     arbitrageGuideStep4Sub: '일일 ROI 스프레드 적립',
-    arbitrageSimulateBtn: '데모 차익거래 시뮬레이션',
-    arbitrageProcessingBtn: '데모 처리 중...',
+
     portfolioGuideTitle: '포트폴리오 관리',
-    portfolioGuideDesc: '귀하의 포트폴리오는 총 예치 자산, 활성화된 플랜, 누적 수익 및 시스템 유지 관리 통계를 표시합니다. 계약 진행률 표시줄을 통해 투자를 모니터링하세요. 데모 목적으로 우측 버튼을 클릭하면 즉시 포트폴리오 자산을 활성화하는 시뮬레이션을 실행할 수 있습니다.',
+
     portfolioGuideStep1Title: '1. 총 예치 자산 (TVL)',
     portfolioGuideStep1Sub: '현재 운용 중인 활성 자본금',
     portfolioGuideStep2Title: '2. 활성 플랜 수',
@@ -2563,20 +2548,16 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     portfolioGuideStep3Sub: '만기일까지의 진행률 표시줄',
     portfolioGuideStep4Title: '4. 가입 기간',
     portfolioGuideStep4Sub: '가입 이후 활성 상태로 유지된 일수',
-    portfolioSimulateBtn: '데모 자산 시뮬레이션',
-    portfolioProcessingBtn: '데모 처리 중...',
+
     withdrawGuideTitle: '투자금 출금 신청',
-    withdrawGuideDesc: '출금 가능 지갑 잔액의 지급을 요청하세요. 일반 계정의 경우 출금 승인 처리는 최대 24시간이 소요됩니다. 데모 목적으로 우측 버튼을 클릭하여 $5,000.00의 가상 USDT를 즉시 지갑 잔액에 추가할 수 있습니다.',
-    withdrawGuideStep1Title: '1. 데모 자금 생성',
-    withdrawGuideStep1Sub: '가상 잔액 $5k 즉시 충전',
+
     withdrawGuideStep2Title: '2. 네트워크 선택',
     withdrawGuideStep2Sub: 'USDT BEP20 (Binance Smart Chain)',
     withdrawGuideStep3Title: '3. 출금 주소',
     withdrawGuideStep3Sub: '모의 테스트 지갑 주소 입력',
     withdrawGuideStep4Title: '4. 요청 추적',
     withdrawGuideStep4Sub: '우측 목록에서 상태 모니터링',
-    withdrawSimulateBtn: '데모 자금 시뮬레이션',
-    withdrawProcessingBtn: '데모 처리 중...',
+
     p2pError: 'P2P 전송 오류',
     p2pSuccess: 'P2P 전송 성공',
     p2pTransferTitle: 'P2P 잔액 이체',
@@ -2777,7 +2758,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsStat4: 'Fonds retirés',
     earningsStat4Sub: 'Versements virtuels',
     earningsHistorySubtitle: 'Toutes les sources de gains simulées',
-    earningsEmpty: 'Aucun historique de transaction. Terminez les cycles de simulation ou déposez pour commencer à gagner.',
+
     referralsStat1: 'Parrainages directs',
     referralsStat1Sub: 'Réseau de niveau 1',
     referralsStat2: 'Réseau total',
@@ -2825,7 +2806,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewHideBalance: 'Masquer',
     overviewShowBalance: 'Afficher',
     overviewBalanceSuffix: 'Solde',
-    overviewSimControls: 'Controles de simulation',
+
     overviewSimControlsSub: 'Simuler des activités avec de la monnaie virtuelle',
     overviewSimStep1: '1. Ajouter des fonds virtuels',
     overviewSimStep1Sub: 'Déposez instantanément des USD simulés sur votre solde virtuel.',
@@ -2835,7 +2816,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewSimStep3: '3. Simuler le ROI quotidien',
     overviewSimStep3Sub: 'Simulez un cycle quotidien. Calcule le ROI et distribue les commissions.',
     overviewSimTriggerRoi: 'Simuler le paiement du ROI',
-    overviewSimStep4: '4. Réinitialiser la simulation',
+
     overviewSimStep4Sub: 'Effacez tout l’historique simulé et recommencez à 0.',
     overviewSimWithdrawBtn: 'Retirer 500 USD',
     overviewSimResetBtn: 'Réinitialiser tout',
@@ -2847,7 +2828,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewCommRate: 'Taux de commission',
     overviewTotalComm: 'Total des commissions',
     overviewRecentActivity: 'Activité récente',
-    overviewNoActivity: 'Aucun historique de transaction. Effectuez des dépôts ou des simulations ci-dessus.',
+
     settingsThemeModeDesc: 'Basculez la préférence d’apparence claire/sombre. Actuellement :',
     settingsDarkMode: 'Mode sombre',
     settingsLightMode: 'Mode clair',
@@ -2918,7 +2899,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverRoi: 'Moteur de ROI quotidien',
     handoverAdmin: 'Panneau de contrôle administrateur',
     handoverSecurity: 'Sécurité & Authentification',
-    handoverDemo: 'Simulation & Démo',
+
     handoverApi: 'Référence de l\'API',
     handoverDev: 'Outils de développement',
     handoverComplete: 'Terminé',
@@ -2926,10 +2907,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverConfidential: 'Confidentiel · Document de livraison client',
     handoverBuildStatus: '✓ Build de production vérifié',
     handoverRoutes: '43 routes compilées',
-    demoDisclaimerText: 'Vous êtes en mode démo. Il s\'agit d\'un compte de test sandbox avec des fonds virtuels.',
-    demoDisclaimerBadge: 'COMPTE DE DÉMO',
+
     earningsGuideTitle: 'Accumulation des gains',
-    earningsGuideDesc: 'Pour commencer à gagner, déposez d\'abord des USDT, puis souscrivez à l\'un des plans d\'arbitrage à haut rendement de Vexta. Les rendements sont calculés quotidiennement avec des intérêts composés. Pour les besoins de la démo, utilisez le bouton à droite pour déclencher et visualiser instantanément des gains fictifs.',
+
     earningsGuideStep1Title: '1. Déposer des fonds',
     earningsGuideStep1Sub: 'Ajouter des USDT au solde',
     earningsGuideStep2Title: '2. Choisir un plan',
@@ -2938,10 +2918,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsGuideStep3Sub: 'Exécution par le moteur de routage',
     earningsGuideStep4Title: '4. Récolter le rendement',
     earningsGuideStep4Sub: 'Mises à jour quotidiennes composées',
-    earningsSimulateBtn: 'Simuler des gains de démo',
-    earningsProcessingBtn: 'Traitement démo...',
+
     arbitrageGuideTitle: 'Fonctionnement de l\'arbitrage',
-    arbitrageGuideDesc: 'Démarrez une position active en déposant des fonds et en sélectionnant l\'un de nos contrats de rendement. Notre moteur de routage surveille automatiquement les écarts du marché et exécute les ordres d\'achat/vente sur les bourses mondiales. Pour la démo, utilisez le CTA pour simuler et activer instantanément un contrat d\'arbitrage.',
+
     arbitrageGuideStep1Title: '1. Ajouter du solde',
     arbitrageGuideStep1Sub: 'USDT vers votre portefeuille',
     arbitrageGuideStep2Title: '2. Choisir le contrat',
@@ -2950,10 +2929,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     arbitrageGuideStep3Sub: 'Diffusé ci-dessous en temps réel',
     arbitrageGuideStep4Title: '4. Suivre le PnL',
     arbitrageGuideStep4Sub: 'Gagner des spreads ROI quotidiens',
-    arbitrageSimulateBtn: 'Simuler un arbitrage de démo',
-    arbitrageProcessingBtn: 'Traitement démo...',
+
     portfolioGuideTitle: 'Gestion de votre portefeuille',
-    portfolioGuideDesc: 'Votre portefeuille représente votre valeur totale verrouillée, vos plans actifs, vos rendements cumulés et vos statistiques de longévité du système. Suivez les barres de progression pour surveiller vos investissements. Pour la démo, cliquez sur le bouton à droite pour simuler et générer immédiatement un actif de portefeuille actif.',
+
     portfolioGuideStep1Title: '1. Valeur totale verrouillée',
     portfolioGuideStep1Sub: 'Capital actif total engagé',
     portfolioGuideStep2Title: '2. Nombre actif',
@@ -2962,20 +2940,16 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     portfolioGuideStep3Sub: 'Suivi de la maturité des plans',
     portfolioGuideStep4Title: '4. Longévité',
     portfolioGuideStep4Sub: 'Jours actifs depuis l\'inscription',
-    portfolioSimulateBtn: 'Simuler un actif de démo',
-    portfolioProcessingBtn: 'Traitement démo...',
+
     withdrawGuideTitle: 'Retirer votre capital',
-    withdrawGuideDesc: 'Demandez un paiement de votre solde disponible. Sur les comptes standards, le traitement prend jusqu\'à 24 heures. Pour la démo, vous pouvez cliquer sur le bouton à droite pour alimenter instantanément votre compte avec 5 000,00 $ USDT virtuels.',
-    withdrawGuideStep1Title: '1. Alimenter en démo',
-    withdrawGuideStep1Sub: 'Obtenez un solde fictif de 5k$',
+
     withdrawGuideStep2Title: '2. Choisir le réseau',
     withdrawGuideStep2Sub: 'USDT BEP20 (Binance Smart Chain)',
     withdrawGuideStep3Title: '3. Destination',
     withdrawGuideStep3Sub: 'Saisissez une adresse de portefeuille de test',
     withdrawGuideStep4Title: '4. Suivre la demande',
     withdrawGuideStep4Sub: 'Surveillez le statut à droite',
-    withdrawSimulateBtn: 'Simuler des fonds de démo',
-    withdrawProcessingBtn: 'Traitement démo...',
+
     p2pError: 'Erreur de transfert P2P',
     p2pSuccess: 'Transfert P2P réussi',
     p2pTransferTitle: 'Transfert de solde P2P',
@@ -3176,7 +3150,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsStat4: '提取资金',
     earningsStat4Sub: '虚拟支出',
     earningsHistorySubtitle: '所有模拟收入来源',
-    earningsEmpty: '无交易记录。完成模拟模拟周期或存款即可开始赚钱。',
+
     referralsStat1: '直接推荐',
     referralsStat1Sub: '1级网络',
     referralsStat2: '总网络',
@@ -3224,7 +3198,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewHideBalance: '隐藏',
     overviewShowBalance: '显示',
     overviewBalanceSuffix: '平衡',
-    overviewSimControls: '模拟控制',
+
     overviewSimControlsSub: '用虚拟货币模拟活动',
     overviewSimStep1: '1.添加虚拟资金',
     overviewSimStep1Sub: '立即将模拟美元存入您的虚拟余额。',
@@ -3234,7 +3208,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewSimStep3: '3.触发每日收益',
     overviewSimStep3Sub: '模拟每日计时器周期。计算投资回报率并分配佣金。',
     overviewSimTriggerRoi: '触发投资回报率支付',
-    overviewSimStep4: '4. 重置模拟',
+
     overviewSimStep4Sub: '清除所有模拟历史记录并从 0 重新开始。',
     overviewSimWithdrawBtn: '提取 500 美元',
     overviewSimResetBtn: '全部重置',
@@ -3246,7 +3220,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewCommRate: '佣金率',
     overviewTotalComm: '佣金总额',
     overviewRecentActivity: '最近的活动',
-    overviewNoActivity: '无交易记录。执行上述存款或模拟操作。',
+
     settingsThemeModeDesc: '切换亮/暗外观偏好。目前：',
     settingsDarkMode: '深色模式',
     settingsLightMode: '灯光模式',
@@ -3317,7 +3291,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverRoi: '每日投资回报率引擎',
     handoverAdmin: '管理控制面板',
     handoverSecurity: '安全与授权',
-    handoverDemo: '模拟与演示',
+
     handoverApi: 'API参考',
     handoverDev: '开发者工具',
     handoverComplete: '完成',
@@ -3325,10 +3299,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverConfidential: '保密 · 客户移交文件',
     handoverBuildStatus: '✓ 生产版本已验证',
     handoverRoutes: '43条编译路线',
-    demoDisclaimerText: '您正处于演示模式。这是一个带有虚拟资金的沙盒测试帐户。',
-    demoDisclaimerBadge: '模拟账户',
+
     earningsGuideTitle: '收益如何累积',
-    earningsGuideDesc: '要开始赚钱，首先存入USDT，然后订阅Vexta的高收益套利计划之一。回报按复利每日计算。对于客户演示目的，您可以使用右���的按钮立即触发并查看演示收益。',
+
     earningsGuideStep1Title: '1. 存入资金',
     earningsGuideStep1Sub: '添加USDT至余额',
     earningsGuideStep2Title: '2. 选择计划',
@@ -3337,10 +3310,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsGuideStep3Sub: '路由引擎交易执行',
     earningsGuideStep4Title: '4. 收取收益',
     earningsGuideStep4Sub: '每日化合物更新',
-    earningsSimulateBtn: '模拟模拟收益',
-    earningsProcessingBtn: '处���演示...',
+
     arbitrageGuideTitle: '套利交易如何运作',
-    arbitrageGuideDesc: '通过存入资金并选择我们的收益合约计划之一来启动活跃头寸。我们的路由器引擎自动监控市场价差并在全球交易所执行买入/卖出命令。出于客户端演示的目的，使用 CTA 立即模拟并激活套利合约。',
+
     arbitrageGuideStep1Title: '1.添加余额',
     arbitrageGuideStep1Sub: 'USDT 到您的钱包',
     arbitrageGuideStep2Title: '2. 选择合约',
@@ -3349,10 +3321,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     arbitrageGuideStep3Sub: '下面实时直播',
     arbitrageGuideStep4Title: '4. 追踪盈亏',
     arbitrageGuideStep4Sub: '赚取每日投资回报率差价',
-    arbitrageSimulateBtn: '模拟演示套利',
-    arbitrageProcessingBtn: '处理演示...',
+
     portfolioGuideTitle: '管理您的投资组合',
-    portfolioGuideDesc: '您的投资组合代表您的总锁定价值、活跃计划、累计收益率和系���寿命统计数据。跟踪合同进度条以监控您的投资。出于客户演示目的，单击右侧的按钮立即模拟并播种实时投资组合计划资产。',
+
     portfolioGuideStep1Title: '1. 锁定总价值',
     portfolioGuideStep1Sub: '活跃资本总额',
     portfolioGuideStep2Title: '2. 活跃计数',
@@ -3361,20 +3332,16 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     portfolioGuideStep3Sub: '进度条追踪成熟度',
     portfolioGuideStep4Title: '4. 长寿',
     portfolioGuideStep4Sub: '自注册以来的活跃天数',
-    portfolioSimulateBtn: '模拟演示资产',
-    portfolioProcessingBtn: '处理演示...',
+
     withdrawGuideTitle: '提取资金',
-    withdrawGuideDesc: '请求支付您的可用钱包余额。在标准账户中，提款处理最多需要 24 小时。出于客户演示目的，您可以单击右侧的按钮立即为您的账户注入 5,000.00 美元的虚拟 USDT。',
-    withdrawGuideStep1Title: '1. 种子演示基金',
-    withdrawGuideStep1Sub: '立即获得 5,000 美元演示余额',
+
     withdrawGuideStep2Title: '2. 选择网络',
     withdrawGuideStep2Sub: 'USDT BEP20（币安智能链）',
     withdrawGuideStep3Title: '3. 目的地',
     withdrawGuideStep3Sub: '输入模拟钱包地址',
     withdrawGuideStep4Title: '4. 追踪请求',
     withdrawGuideStep4Sub: '右侧监控状态',
-    withdrawSimulateBtn: '模拟模拟基金',
-    withdrawProcessingBtn: '处理演示...',
+
     p2pError: 'P2P传输错误',
     p2pSuccess: 'P2P转账成功',
     p2pTransferTitle: 'P2P余额转账',
@@ -3575,7 +3542,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsStat4: 'الأموال المسحوبة',
     earningsStat4Sub: 'المدفوعات الافتراضية',
     earningsHistorySubtitle: 'جميع مصادر الدخل المحاكاة',
-    earningsEmpty: 'لا يوجد سجل المعاملات. أكمل دورات المحاكاة الوهمية أو قم بالإيداع لبدء الربح.',
+
     referralsStat1: 'الإحالات المباشرة',
     referralsStat1Sub: 'شبكة المستوى 1',
     referralsStat2: 'الشبكة الشاملة',
@@ -3623,7 +3590,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewHideBalance: 'إخفاء',
     overviewShowBalance: 'عرض',
     overviewBalanceSuffix: 'التوازن',
-    overviewSimControls: 'ضوابط المحاكاة',
+
     overviewSimControlsSub: 'محاكاة الأنشطة بالعملة الافتراضية',
     overviewSimStep1: '1. أضف الأموال الافتراضية',
     overviewSimStep1Sub: 'قم بإيداع الدولار الأمريكي على الفور في رصيدك الافتراضي.',
@@ -3633,7 +3600,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewSimStep3: '3. تفعيل العائد اليومي',
     overviewSimStep3Sub: 'محاكاة دورة توقيت يومية. يحسب العائد على الاستثمار ويوزع العمولات.',
     overviewSimTriggerRoi: 'تفعيل دفع عائد الاستثمار',
-    overviewSimStep4: '4. إعادة ضبط المحاكاة',
+
     overviewSimStep4Sub: 'امسح كل سجل المحاكاة وابدأ من جديد عند 0.',
     overviewSimWithdrawBtn: 'سحب 500 دولار',
     overviewSimResetBtn: 'إعادة ضبط الكل',
@@ -3645,7 +3612,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewCommRate: 'سعر العمولة',
     overviewTotalComm: 'إجمالي العمولات',
     overviewRecentActivity: 'النشاط الأخير',
-    overviewNoActivity: 'لا يوجد سجل المعاملات. قم بتنفيذ إجراءات الإيداع أو المحاكاة أعلاه.',
+
     settingsThemeModeDesc: 'تبديل تفضيل المظهر الفاتح/الداكن. حاليا:',
     settingsDarkMode: 'الوضع المظلم',
     settingsLightMode: 'وضع الضوء',
@@ -3716,7 +3683,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverRoi: 'محرك عائد الاستثمار اليومي',
     handoverAdmin: 'لوحة تحكم المشرف',
     handoverSecurity: 'الأمن والمصادقة',
-    handoverDemo: 'المحاكاة والعرض',
+
     handoverApi: 'مرجع واجهة برمجة التطبيقات',
     handoverDev: 'أدوات المطور',
     handoverComplete: 'كامل',
@@ -3724,10 +3691,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverConfidential: 'سري · وثيقة تسليم العميل',
     handoverBuildStatus: '✓ التحقق من بناء الإنتاج',
     handoverRoutes: '43 طرق مجمعة',
-    demoDisclaimerText: 'أنت في الوضع التجريبي. هذا حساب اختباري بأموال افتراضية.',
-    demoDisclaimerBadge: 'حساب تجريبي',
+
     earningsGuideTitle: 'كيف تتراكم الأرباح',
-    earningsGuideDesc: 'لبدء الربح، قم أولاً بإيداع USDT، ثم اشترك في إحدى خطط المراجحة ذات العائد المرتفع من Vexta. يتم احتساب العوائد يوميا مع الفائدة المركبة. لأغراض العرض التجريبي للعميل، يمكنك استخدام الزر الموجود على اليمين لتفعيل وعرض الأرباح التجريبية على الفور.',
+
     earningsGuideStep1Title: '1. إيداع الأموال',
     earningsGuideStep1Sub: 'أضف USDT إلى التوازن',
     earningsGuideStep2Title: '2. اختر الخطة',
@@ -3736,10 +3702,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsGuideStep3Sub: 'توجيه تنفيذ التجارة المحرك',
     earningsGuideStep4Title: '4. جمع العائد',
     earningsGuideStep4Sub: 'التحديثات المركبة اليومية',
-    earningsSimulateBtn: 'محاكاة الأرباح التجريبية',
-    earningsProcessingBtn: 'معالجة العرض التوضيحي...',
+
     arbitrageGuideTitle: 'كيف يعمل تداول المراجحة',
-    arbitrageGuideDesc: 'ابدأ مركزًا نشطًا عن طريق إيداع الأموال واختيار إحدى خطط عقود العائد لدينا. يقوم محرك التوجيه الخاص بنا تلقائيًا بمراقبة فروق الأسعار في السوق وتنفيذ أوامر الشراء/البيع عبر البورصات العالمية. لأغراض العرض التوضيحي للعميل، استخدم CTA لمحاكاة عقد المراجحة وتنشيطه على الفور.',
+
     arbitrageGuideStep1Title: '1. أضف الرصيد',
     arbitrageGuideStep1Sub: 'USDT إلى محفظتك',
     arbitrageGuideStep2Title: '2. اختر العقد',
@@ -3748,10 +3713,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     arbitrageGuideStep3Sub: 'يتدفقون أدناه في الوقت الحقيقي',
     arbitrageGuideStep4Title: '4. تتبع الربح والخسارة',
     arbitrageGuideStep4Sub: 'احصل على فروق عائد على الاستثمار يوميًا',
-    arbitrageSimulateBtn: 'محاكاة التحكيم التجريبي',
-    arbitrageProcessingBtn: 'معالجة العرض التوضيحي...',
+
     portfolioGuideTitle: 'إدارة محفظتك',
-    portfolioGuideDesc: 'تمثل محفظتك إجمالي القيمة المقفلة والخطط النشطة والعائد المتراكم وإحصائيات طول عمر النظام. تتبع أشرطة تقدم العقد لمراقبة استثماراتك. لأغراض العرض التوضيحي للعميل، انقر فوق الزر الموجود على اليمين لمحاكاة أصل خطة المحفظة المباشرة وزرعه على الفور.',
+
     portfolioGuideStep1Title: '1. القيمة الإجمالية مقفلة',
     portfolioGuideStep1Sub: 'إجمالي رأس المال النشط في اللعب',
     portfolioGuideStep2Title: '2. العدد النشط',
@@ -3760,20 +3724,16 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     portfolioGuideStep3Sub: 'أشرطة التقدم تتبع النضج',
     portfolioGuideStep4Title: '4. طول العمر',
     portfolioGuideStep4Sub: 'الأيام النشطة منذ التسجيل',
-    portfolioSimulateBtn: 'محاكاة الأصول التجريبية',
-    portfolioProcessingBtn: 'معالجة العرض التوضيحي...',
+
     withdrawGuideTitle: 'سحب رأس المال الخاص بك',
-    withdrawGuideDesc: 'اطلب سداد رصيد محفظتك المتاح. في الحسابات القياسية، تستغرق معالجة السحب ما يصل إلى 24 ساعة. لأغراض العرض التجريبي للعميل، يمكنك النقر فوق الزر الموجود على اليمين لتزويد حسابك على الفور بمبلغ 5000.00 دولار أمريكي افتراضي.',
-    withdrawGuideStep1Title: '1. الصناديق التجريبية الأولية',
-    withdrawGuideStep1Sub: 'احصل على رصيد تجريبي فوري بقيمة 5 آلاف دولار',
+
     withdrawGuideStep2Title: '2. اختر الشبكة',
     withdrawGuideStep2Sub: 'USDT BEP20 (Binance Smart Chain)',
     withdrawGuideStep3Title: '3. الوجهة',
     withdrawGuideStep3Sub: 'أدخل عنوان المحفظة الوهمية',
     withdrawGuideStep4Title: '4. تتبع الطلب',
     withdrawGuideStep4Sub: 'مراقبة الحالة على اليمين',
-    withdrawSimulateBtn: 'محاكاة الصناديق التجريبية',
-    withdrawProcessingBtn: 'معالجة العرض التوضيحي...',
+
     p2pError: 'خطأ في نقل P2P',
     p2pSuccess: 'تم نقل P2P بنجاح',
     p2pTransferTitle: 'تحويل الرصيد P2P',
@@ -3974,7 +3934,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsStat4: 'Выведенные средства',
     earningsStat4Sub: 'Виртуальные выплаты',
     earningsHistorySubtitle: 'Все моделируемые источники дохода',
-    earningsEmpty: 'Нет истории транзакций. Завершите циклы имитации или внесите депозит, чтобы начать зарабатывать.',
+
     referralsStat1: 'Прямые рефер��лы',
     referralsStat1Sub: 'Сеть уровня 1',
     referralsStat2: 'Общая сеть',
@@ -4022,7 +3982,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewHideBalance: 'Скрыть',
     overviewShowBalance: 'Показать',
     overviewBalanceSuffix: 'Баланс',
-    overviewSimControls: 'Элементы управления симуляцией',
+
     overviewSimControlsSub: 'Имитируйте действия с помощью виртуальной валюты',
     overviewSimStep1: '1. Добавьте виртуальные средства',
     overviewSimStep1Sub: 'Мгновенно внесите симулированные доллары США на свой виртуальный баланс.',
@@ -4032,7 +3992,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewSimStep3: '3. Триггер дневной доходности',
     overviewSimStep3Sub: 'Имитировать ежедневный цикл таймера. Рассчитывает рентабельность инвестиций и распределяет комиссионные.',
     overviewSimTriggerRoi: 'Триггерная выплата по рентабельности инвестиций',
-    overviewSimStep4: '4. Сбросить симуляцию',
+
     overviewSimStep4Sub: 'Очистите всю смоделированную историю и начните заново с 0.',
     overviewSimWithdrawBtn: 'Вывести 500 долларов США',
     overviewSimResetBtn: 'Сбросить все',
@@ -4044,7 +4004,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewCommRate: 'Ставка комиссии',
     overviewTotalComm: 'Всего комиссий',
     overviewRecentActivity: 'Недавняя активность',
-    overviewNoActivity: 'Нет истории транзакций. Выполните действия по депозиту или моделированию, описанные выше.',
+
     settingsThemeModeDesc: 'Переключение предпочтений светлого/темного внешнего вида. В настоящее время:',
     settingsDarkMode: 'Темный режим',
     settingsLightMode: 'Светлый режим',
@@ -4115,7 +4075,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverRoi: 'Ежедневная система рентабельности инвестиций',
     handoverAdmin: 'Панель управления администратора',
     handoverSecurity: 'Безопасность и аутентификация',
-    handoverDemo: 'Моделирование и демо',
+
     handoverApi: 'Справочник по API',
     handoverDev: 'Инструменты разработчика',
     handoverComplete: 'Завершить',
@@ -4123,10 +4083,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverConfidential: 'Конфиденциально · Документ о передаче клиента',
     handoverBuildStatus: '✓ Проверенная производственная сборка',
     handoverRoutes: '43 скомпилированных маршрута',
-    demoDisclaimerText: 'Вы находитесь в демонстрационном режиме. Это тестовый аккаунт в песочнице с виртуальными средствами.',
-    demoDisclaimerBadge: 'ДЕМО-СЧЕТ',
+
     earningsGuideTitle: 'Как накапливается прибыль',
-    earningsGuideDesc: 'Чтобы начать зарабатывать, сначала внесите депозит в USDT, а затем подпишитесь на один из высокодоходных арбитражных планов Vexta. Доходность рассчитывается ежедневно по сложным процентам. Для демонстрационных целей клиента вы можете использовать кнопку справа, чтобы мгновенно активировать и просмотреть демо-доходы.',
+
     earningsGuideStep1Title: '1. Внесение средств',
     earningsGuideStep1Sub: 'Добавьте USDT на баланс',
     earningsGuideStep2Title: '2. Выберите план',
@@ -4135,10 +4094,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsGuideStep3Sub: 'Механизм маршрутизации исполнения сделок',
     earningsGuideStep4Title: '4. Собирайте доход',
     earningsGuideStep4Sub: 'Ежедневные обновления соединений',
-    earningsSimulateBtn: 'Имитировать демо-заработок',
-    earningsProcessingBtn: 'Обработка демо...',
+
     arbitrageGuideTitle: 'Как работает арбитражная торговля',
-    arbitrageGuideDesc: 'Начните активную позицию, внеся средства и выбрав один из наших планов доходных контрактов. Наш механизм маршрутизатора автоматически отслеживает рыночные спреды и выполняет команды покупки/продажи на глобальных биржах. В демонстрационных целях клиента используйте CTA, чтобы мгновенно смоделировать и активировать арбитражный контракт.',
+
     arbitrageGuideStep1Title: '1. Добавить баланс',
     arbitrageGuideStep1Sub: 'USDT на ваш кошелек',
     arbitrageGuideStep2Title: '2. Выберите контракт',
@@ -4147,10 +4105,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     arbitrageGuideStep3Sub: 'Трансляция ниже в режиме реального времени',
     arbitrageGuideStep4Title: '4. Отслеживание прибылей и убытков',
     arbitrageGuideStep4Sub: 'Зарабатывайте ежедневные спреды рентабельности инвестиций',
-    arbitrageSimulateBtn: 'Имитировать демо-арбитраж',
-    arbitrageProcessingBtn: 'Обработка демо...',
+
     portfolioGuideTitle: 'Управление вашим портфелем',
-    portfolioGuideDesc: 'Ваш портфель представляет собой общую заблокированную стоимость, активные планы, накопленную доходность и статистику долговечности системы. Отслеживайте индикаторы выполнения контракта, чтобы контролировать свои инвестиции. В демонстрационных целях клиента нажмите кнопку справа, чтобы немедленно смоделировать и задействовать действующий актив плана портфолио.',
+
     portfolioGuideStep1Title: '1. Общая стоимость заблокирована',
     portfolioGuideStep1Sub: 'Общий активный капитал в игре',
     portfolioGuideStep2Title: '2. Активный счетчик',
@@ -4159,20 +4116,16 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     portfolioGuideStep3Sub: 'Индикаторы прогресса отслеживают зрелость',
     portfolioGuideStep4Title: '4. Долголетие',
     portfolioGuideStep4Sub: 'Активных дней с момента регистрации',
-    portfolioSimulateBtn: 'Имитировать демонстрационный актив',
-    portfolioProcessingBtn: 'Обработка демо...',
+
     withdrawGuideTitle: 'Вывод вашего капитала',
-    withdrawGuideDesc: 'Запросите выплату доступного баланса вашего кошелька. На стандартных счетах обработка вывода занимает до 24 часов. В демонстрационных целях клиента вы можете нажать кнопку справа, чтобы мгновенно пополнить свой счет виртуальными долларами США на сумму 5 000,00 долларов США.',
-    withdrawGuideStep1Title: '1. Начальные демонстрационные фонды',
-    withdrawGuideStep1Sub: 'Получите мгновенный демо-баланс в размере 5 тысяч долларов США',
+
     withdrawGuideStep2Title: '2. Выберите сеть.',
     withdrawGuideStep2Sub: 'USDT BEP20 (Binance Smart Chain)',
     withdrawGuideStep3Title: '3. Пункт назначения',
     withdrawGuideStep3Sub: 'Введите ложный адрес кошелька',
     withdrawGuideStep4Title: '4. Отследить запрос',
     withdrawGuideStep4Sub: 'Статус монитора справа',
-    withdrawSimulateBtn: 'Имитировать демо-фонды',
-    withdrawProcessingBtn: 'Обработка демо...',
+
     p2pError: 'Ошибка P2P-передачи',
     p2pSuccess: 'P2P-перенос успешен',
     p2pTransferTitle: 'P2P-перевод баланса',
@@ -4373,7 +4326,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsStat4: 'निकाली गई धनराशि',
     earningsStat4Sub: 'आभासी भुगतान',
     earningsHistorySubtitle: 'सभी अनुरूपित आय स्रोत',
-    earningsEmpty: 'कोई लेनदेन इतिहास नहीं. कमाई शुरू करने के लिए मॉक सिमुलेशन चक्र पूरा करें या जमा करें।',
+
     referralsStat1: 'प्रत्���क्ष रेफरल',
     referralsStat1Sub: 'लेवल 1 नेटवर्क',
     referralsStat2: 'कुल नेटवर्क',
@@ -4421,7 +4374,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewHideBalance: 'छिपाओ',
     overviewShowBalance: 'दिखाओ',
     overviewBalanceSuffix: 'संतुलन',
-    overviewSimControls: 'सिमुलेशन नियंत्रण',
+
     overviewSimControlsSub: 'आभासी मुद्रा के साथ गतिविधियों का अनुकरण करें',
     overviewSimStep1: '1. वर्चुअल फंड जोड़ें',
     overviewSimStep1Sub: 'अपने वर्चुअल बैलेंस में तुरंत सिम्युलेटेड USD जमा करें।',
@@ -4431,7 +4384,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewSimStep3: '3. ट्रिगर दैनिक उपज',
     overviewSimStep3Sub: 'दैनिक टाइमर चक्र का अनुकरण करें। आरओआई की गणना करता है और कमीशन वितरित करता है।',
     overviewSimTriggerRoi: 'ट्रिगर आरओआई भुगतान',
-    overviewSimStep4: '4. सिमुलेशन रीसेट करें',
+
     overviewSimStep4Sub: 'सभी सिम्युलेटेड इतिहास साफ़ करें और 0 पर नए सिरे से प्रारंभ करें।',
     overviewSimWithdrawBtn: '$500 निकालो',
     overviewSimResetBtn: 'सभी रीसेट करें',
@@ -4443,7 +4396,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewCommRate: 'कमीशन दर',
     overviewTotalComm: 'कुल कमीशन',
     overviewRecentActivity: 'हाल की गतिविधि',
-    overviewNoActivity: 'कोई लेनदेन इतिहास नहीं. उपरोक्त जमा या सिमुलेशन क्रियाएँ निष्पादित करें।',
+
     settingsThemeModeDesc: 'प्रकाश/अंधेरे उपस्थिति प्राथमिकता को टॉगल करें। वर्तमान में:',
     settingsDarkMode: 'डार्क मोड',
     settingsLightMode: 'लाइट मोड',
@@ -4514,7 +4467,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverRoi: 'दैनिक आरओआई इंजन',
     handoverAdmin: 'व्यवस्थापक नियंत्रण कक्ष',
     handoverSecurity: 'सुरक्षा एवं प्रमाणीकरण',
-    handoverDemo: 'सिमुलेशन एवं डेमो',
+
     handoverApi: 'एपीआई संदर्भ',
     handoverDev: 'डेवलपर टूलींग',
     handoverComplete: 'पूर्ण',
@@ -4522,10 +4475,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverConfidential: 'गोपनीय · ग्राहक हैंडओवर दस्तावेज़',
     handoverBuildStatus: '✓ प्रोडक्शन बिल्ड सत्यापित',
     handoverRoutes: '43 संकलित मार्ग',
-    demoDisclaimerText: 'आप डेमो मोड में हैं. यह वर्चुअल फंड वाला एक सैंडबॉक्स परीक्षण खाता है।',
-    demoDisclaimerBadge: 'डेमो अकाउंट',
+
     earningsGuideTitle: 'कमाई कैसे जमा होती है',
-    earningsGuideDesc: 'कमाई शुरू करने के लिए, पहले यूएसडीटी जमा करें, फिर वेक्स्टा की उच्च-उपज मध्यस्थता योजनाओं में से एक की सदस्यता लें। रिटर्न की गणना प्रतिदिन चक्रवृद्धि ब्याज के साथ की जाती है। क्लाइंट डेमो उद्देश्यों के लिए, आप तुरंत ट्रिगर करने और डेमो आय देखने के लिए दाईं ओर दिए गए बटन का उपयोग कर सकते हैं।',
+
     earningsGuideStep1Title: '1. निधि जमा करना',
     earningsGuideStep1Sub: 'संतुलन में USDT जोड़ें',
     earningsGuideStep2Title: '2. योजना चुनें',
@@ -4534,10 +4486,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsGuideStep3Sub: 'रूटिंग इंजन व्यापार निष्पादन',
     earningsGuideStep4Title: '4. उपज एकत्रित करें',
     earningsGuideStep4Sub: 'दैनिक यौगिक अद्यतन',
-    earningsSimulateBtn: 'डेमो कमाई का अनुकरण करें',
-    earningsProcessingBtn: 'डेमो संसाधित किया जा रहा है...',
+
     arbitrageGuideTitle: 'आर्बिट्राज ट्रेडिंग कैसे काम करती है',
-    arbitrageGuideDesc: 'धनराशि जमा करके और हमारी उपज अनुबंध योजनाओं में से एक का चयन करके एक सक्रिय स्थिति शुरू करें। हमारा राउटर इंजन स्वचालित रूप से बाजार के प्रसार पर नज़र रखता है और वैश्विक एक्सचेंजों में खरीद/बिक्री कमांड निष्पादित करता है। क्लाइंट डेमो उद्देश्यों के लिए, मध्यस्थता अनुबंध को तुरंत अनुकरण और सक्रिय करने के लिए सीटीए का उपयोग करें।',
+
     arbitrageGuideStep1Title: '1. संतुलन जोड़ें',
     arbitrageGuideStep1Sub: 'आपके बटुए में USDT',
     arbitrageGuideStep2Title: '2. अनुबंध चुनें',
@@ -4546,10 +4497,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     arbitrageGuideStep3Sub: 'वास्तविक समय में नीचे स्ट्रीम किया गया',
     arbitrageGuideStep4Title: '4. ट्रैक पीएनएल',
     arbitrageGuideStep4Sub: 'दैनिक आरओआई स्प्रेड अर्जित करें',
-    arbitrageSimulateBtn: 'डेमो आर्बिट्रेज का अनुकरण करें',
-    arbitrageProcessingBtn: 'डेमो संसाधित किया जा रहा है...',
+
     portfolioGuideTitle: 'अपने पोर्टफोलियो का प्रबंधन',
-    portfolioGuideDesc: 'आपका पोर्टफोलियो आपके कुल लॉक किए गए मूल्य, सक्रिय योजनाओं, संचित उपज और सिस्टम दीर्घायु आंकड़ों का प्रतिनिधित्व करता है। अपने निवेश की निगरानी के लिए अनुबंध प्रगति बार ट्रैक करें। क्लाइंट डेमो उद्देश्यों के लिए, लाइव पोर्टफोलियो प्लान एसेट को तुरंत अनुकरण और सीड करने के लिए दाईं ओर बटन पर क्लिक करें।',
+
     portfolioGuideStep1Title: '1. कुल मूल्य लॉक किया गया',
     portfolioGuideStep1Sub: 'खेल में कुल सक्रिय पूंजी',
     portfolioGuideStep2Title: '2. सक्रिय गिनती',
@@ -4558,20 +4508,16 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     portfolioGuideStep3Sub: 'प्रगति पट्टियाँ परिपक्वता को ट्रैक करती हैं',
     portfolioGuideStep4Title: '4. दीर्घायु',
     portfolioGuideStep4Sub: 'पंजीकरण के ��ाद से सक्रिय दिन',
-    portfolioSimulateBtn: 'डेमो एसेट का अनुकरण करें',
-    portfolioProcessingBtn: 'डेमो संसाधित किया जा रहा है...',
+
     withdrawGuideTitle: 'अपनी पूंजी निकालना',
-    withdrawGuideDesc: 'अपने उपलब्ध वॉलेट शेष के भुगतान का अनुरोध करें। मानक खातों में, निकासी प्रक्रिया में 24 घंटे तक का समय लगता है। क्लाइंट डेमो उद्देश्यों के लिए, आप तुरंत अपने खाते को $5,000.00 वर्चुअल यूए��डीटी से जोड़ने के लिए दाईं ओर दिए गए बटन पर क्लिक कर सकते हैं।',
-    withdrawGuideStep1Title: '1. बीज डेमो फंड',
-    withdrawGuideStep1Sub: 'तुरंत $5k डेमो बैलेंस प्राप्त करें',
+
     withdrawGuideStep2Title: '2. नेटवर्क चुनें',
     withdrawGuideStep2Sub: 'USDT BEP20 (Binance Smart Chain)',
     withdrawGuideStep3Title: '3. गंतव्य',
     withdrawGuideStep3Sub: 'मॉक वॉलेट पता दर्ज करें',
     withdrawGuideStep4Title: '4. ट्रैक अनुरोध',
     withdrawGuideStep4Sub: 'दाईं ओर स्थिति की निगरानी करें',
-    withdrawSimulateBtn: 'डेमो फंड का अनुकरण करें',
-    withdrawProcessingBtn: 'डेमो संसाधित किया जा रहा है...',
+
     p2pError: 'पी2पी स्थानांतरण त्रुटि',
     p2pSuccess: 'पी2पी स्थानांतरण सफल',
     p2pTransferTitle: 'पी2पी बैलेंस ट्रांसफर',
@@ -4772,7 +4718,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsStat4: 'Abgehobene Gelder',
     earningsStat4Sub: 'Virtuelle Auszahlungen',
     earningsHistorySubtitle: 'Alle simulierten Einkommensquellen',
-    earningsEmpty: 'Keine Transaktionshistorie. Führen Sie Scheinsimulationszyklen durch oder zahlen Sie eine Einzahlung ein, um mit dem Verdienen zu beginnen.',
+
     referralsStat1: 'Direkte Empfehlungen',
     referralsStat1Sub: 'Netzwerk der Ebene 1',
     referralsStat2: 'Gesamtes Netzwerk',
@@ -4820,7 +4766,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewHideBalance: 'Verstecken',
     overviewShowBalance: 'Zeigen',
     overviewBalanceSuffix: 'Gleichgewicht',
-    overviewSimControls: 'Simulationskontrollen',
+
     overviewSimControlsSub: 'Simulieren Sie Aktivitäten mit virtueller Währung',
     overviewSimStep1: '1. Fügen Sie virtuelle Gelder hinzu',
     overviewSimStep1Sub: 'Zahlen Sie simulierte USD sofort auf Ihr virtuelles Guthaben ein.',
@@ -4830,7 +4776,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewSimStep3: '3. Tagesertrag auslösen',
     overviewSimStep3Sub: 'Simulieren Sie einen täglichen Timerzyklus. Berechnet den ROI und verteilt Provisionen.',
     overviewSimTriggerRoi: 'ROI-Auszahlung auslösen',
-    overviewSimStep4: '4. Simulation zurücksetzen',
+
     overviewSimStep4Sub: 'Löscht den gesamten simulierten Verlauf und beginnt neu bei 0.',
     overviewSimWithdrawBtn: '500 $ abheben',
     overviewSimResetBtn: 'Alles zurücksetzen',
@@ -4842,7 +4788,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     overviewCommRate: 'Provisionssatz',
     overviewTotalComm: 'Gesamtprovisionen',
     overviewRecentActivity: 'Letzte Aktivität',
-    overviewNoActivity: 'Keine Transaktionshistorie. Führen Sie die oben genannten Einzahlungs- oder Simulationsaktionen durch.',
+
     settingsThemeModeDesc: 'Schalten Sie die Einstellung für das helle/dunkle Erscheinungsbild um. Derzeit:',
     settingsDarkMode: 'Dunkler Modus',
     settingsLightMode: 'Lichtmodus',
@@ -4913,7 +4859,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverRoi: 'Täglicher ROI-Motor',
     handoverAdmin: 'Admin-Kontrollfeld',
     handoverSecurity: 'Sicherheit und Authentifizierung',
-    handoverDemo: 'Simulation und Demo',
+
     handoverApi: 'API-Referenz',
     handoverDev: 'Entwicklertools',
     handoverComplete: 'Komplett',
@@ -4921,10 +4867,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     handoverConfidential: 'Vertraulich · Kundenübergabedokument',
     handoverBuildStatus: '✓ Produktionsaufbau überprüft',
     handoverRoutes: '43 zusammengestellte Routen',
-    demoDisclaimerText: 'Sie befinden sich im Demo-Modus. Dies ist ein Sandbox-Testkonto mit virtuellen Mitteln.',
-    demoDisclaimerBadge: 'DEMO-KONTO',
+
     earningsGuideTitle: 'Wie sich Einnahmen ansammeln',
-    earningsGuideDesc: 'Um mit dem Verdienen zu beginnen, zahlen Sie zunächst USDT ein und abonnieren Sie dann einen der hochverzinslichen Arbitragepläne von Vexta. Die Renditen werden täglich mit Zinseszins berechnet. Für Kundendemozwecke können Sie die Schaltfläche rechts verwenden, um die Demo-Einnahmen sofort auszulösen und anzuzeigen.',
+
     earningsGuideStep1Title: '1. Geld einzahlen',
     earningsGuideStep1Sub: 'Fügen Sie USDT zum Guthaben hinzu',
     earningsGuideStep2Title: '2. Wählen Sie „Plan“.',
@@ -4933,10 +4878,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     earningsGuideStep3Sub: 'Routing-Engine-Handelsausführung',
     earningsGuideStep4Title: '4. Sammeln Sie den Ertrag',
     earningsGuideStep4Sub: 'Tägliche Compound-Updates',
-    earningsSimulateBtn: 'Simulieren Sie Demo-Einnahmen',
-    earningsProcessingBtn: 'Demo wird bearbeitet...',
+
     arbitrageGuideTitle: 'Wie Arbitrage-Handel funktioniert',
-    arbitrageGuideDesc: 'Starten Sie eine aktive Position, indem Sie Geld einzahlen und einen unserer Renditevertragspläne auswählen. Unsere Router-Engine überwacht automatisch die Marktspannen und führt Kauf-/Verkaufsbefehle an globalen Börsen aus. Für Kundendemozwecke können Sie den CTA verwenden, um einen Arbitragevertrag sofort zu simulieren und zu aktivieren.',
+
     arbitrageGuideStep1Title: '1. Guthaben hinzufügen',
     arbitrageGuideStep1Sub: 'USDT auf Ihr Wallet',
     arbitrageGuideStep2Title: '2. Wählen Sie Vertrag',
@@ -4945,10 +4889,9 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     arbitrageGuideStep3Sub: 'Unten in Echtzeit gestreamt',
     arbitrageGuideStep4Title: '4. PnL verfolgen',
     arbitrageGuideStep4Sub: 'Verdienen Sie tägliche ROI-Spreads',
-    arbitrageSimulateBtn: 'Simulieren Sie Demo-Arbitrage',
-    arbitrageProcessingBtn: 'Demo wird bearbeitet...',
+
     portfolioGuideTitle: 'Verwalten Sie Ihr Portfolio',
-    portfolioGuideDesc: 'Ihr Portfolio repräsentiert Ihren gesamten gesperrten Wert, aktive Pläne, kumulierte Erträge und Statistiken zur Systemlebensdauer. Verfolgen Sie Vertragsfortschrittsbalken, um Ihre Investitionen zu überwachen. Klicken Sie für Kundendemozwecke auf die Schaltfläche rechts, um sofort ein Live-Portfolioplan-Asset zu simulieren und zu starten.',
+
     portfolioGuideStep1Title: '1. Gesperrter Gesamtwert',
     portfolioGuideStep1Sub: 'Gesamtes aktives Kapital im Spiel',
     portfolioGuideStep2Title: '2. Aktive Zählung',
@@ -4957,20 +4900,16 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     portfolioGuideStep3Sub: 'Fortschrittsbalken zeigen die Reife an',
     portfolioGuideStep4Title: '4. Langlebigkeit',
     portfolioGuideStep4Sub: 'Aktive Tage seit der Registrierung',
-    portfolioSimulateBtn: 'Demo-Asset simulieren',
-    portfolioProcessingBtn: 'Demo wird bearbeitet...',
+
     withdrawGuideTitle: 'Abheben Ihres Kapitals',
-    withdrawGuideDesc: 'Fordern Sie eine Auszahlung Ihres verfügbaren Wallet-Guthabens an. Bei Standardkonten dauert die Auszahlungsbearbeitung bis zu 24 Stunden. Für Kundendemozwecke können Sie auf die Schaltfläche rechts klicken, um Ihr Konto sofort mit virtuellen USDT im Wert von 5.000,00 USD zu füllen.',
-    withdrawGuideStep1Title: '1. Seed-Demo-Fonds',
-    withdrawGuideStep1Sub: 'Erhalten Sie sofort ein Demo-Guthaben von 5.000 $',
+
     withdrawGuideStep2Title: '2. Wählen Sie Netzwerk',
     withdrawGuideStep2Sub: 'USDT BEP20 (Binance Smart Chain)',
     withdrawGuideStep3Title: '3. Ziel',
     withdrawGuideStep3Sub: 'Geben Sie die Pseudo-Wallet-Adresse ein',
     withdrawGuideStep4Title: '4. Anfrage verfolgen',
     withdrawGuideStep4Sub: 'Überwachen Sie den Status rechts',
-    withdrawSimulateBtn: 'Simulieren Sie Demofonds',
-    withdrawProcessingBtn: 'Demo wird bearbeitet...',
+
     p2pError: 'P2P-Übertragungsfehler',
     p2pSuccess: 'P2P-Übertragung erfolgreich',
     p2pTransferTitle: 'P2P-Guthabenübertragung',

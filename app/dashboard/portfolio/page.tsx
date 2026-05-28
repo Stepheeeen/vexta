@@ -3,12 +3,15 @@
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { TrendingUp, Loader2, Play, HelpCircle, ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
 
 interface StatsData {
   stats: {
     totalInvested: number;
+    operationalCapital: number;
+    pendingIntegration: number;
     totalEarned: number;
     totalCommissions: number;
     availableBalance: number;
@@ -19,6 +22,7 @@ interface StatsData {
     id: string;
     plan: string;
     amount: number;
+    activeCapital: number;
     dailyROI: number;
     duration: number;
     startDate: string;
@@ -31,6 +35,7 @@ interface StatsData {
 export default function PortfolioPage() {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const router = useRouter();
   const [data, setData] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [daysActive, setDaysActive] = useState(0);
@@ -79,47 +84,15 @@ export default function PortfolioPage() {
     fetchData();
   }, []);
 
-  const [simulating, setSimulating] = useState(false);
-
   const handleSimulate = async () => {
-    setSimulating(true);
-    try {
-      const res = await fetch('/api/dashboard/simulate-demo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'arbitrage' }),
-      });
-      const json = await res.json();
-      if (res.ok) {
-        toast({
-          title: 'Simulation Successful',
-          description: json.message || 'Demo portfolio asset activated successfully!',
-        });
-        await fetchData();
-      } else {
-        toast({
-          title: 'Simulation Failed',
-          description: json.error || 'Failed to simulate portfolio asset',
-          variant: 'destructive',
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      toast({
-        title: 'Network Error',
-        description: 'Error communicating with demo simulation server',
-        variant: 'destructive',
-      });
-    } finally {
-      setSimulating(false);
-    }
+    router.push('/dashboard/deposit');
   };
 
   const stats = [
-    { label: t('portfolioStat1'), value: `$${(data?.stats.totalInvested ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: t('portfolioStat1Sub') },
-    { label: t('portfolioStat2'),    value: `${data?.stats.activeInvestments ?? 0}`,        change: t('portfolioStat2Sub') },
-    { label: t('portfolioStat3'),       value: `$${(data?.stats.totalEarned ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,    change: t('portfolioStat3Sub') },
-    { label: t('portfolioStat4'),     value: `${daysActive}`,       change: t('portfolioStat4Sub') },
+    { label: 'Operational Capital', value: `$${(data?.stats.operationalCapital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: t('portfolioStat1Sub') },
+    { label: 'Pending Profits (48h)', value: `$${(data?.stats.pendingIntegration ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: 'Waiting to compound' },
+    { label: t('portfolioStat3'), value: `$${(data?.stats.totalEarned ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: t('portfolioStat3Sub') },
+    { label: t('portfolioStat4'), value: `${daysActive}`, change: t('portfolioStat4Sub') },
   ];
 
   return (
@@ -175,20 +148,10 @@ export default function PortfolioPage() {
               </div>
               <button
                 onClick={handleSimulate}
-                disabled={simulating}
-                className="flex-shrink-0 flex items-center gap-1.5 px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold shadow-md shadow-violet-600/15 transition-all hover:-translate-y-0.5 duration-200 disabled:opacity-50"
+                className="flex-shrink-0 flex items-center gap-1.5 px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold shadow-md shadow-violet-600/15 transition-all hover:-translate-y-0.5 duration-200"
               >
-                {simulating ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>{t('portfolioProcessingBtn')}</span>
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>{t('portfolioSimulateBtn')}</span>
-                  </>
-                )}
+                <ArrowRight className="w-3.5 h-3.5 fill-current" />
+                <span>{t('portfolioSimulateBtn')}</span>
               </button>
             </div>
           </div>
@@ -248,9 +211,9 @@ export default function PortfolioPage() {
                       {/* Stats */}
                       <div className="grid grid-cols-3 gap-4 mb-4">
                         {[
-                          { label: t('portfolioDeposited'), value: `$${plan.amount.toLocaleString()}` },
-                          { label: t('portfolioEarned'),    value: `$${plan.totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, green: true },
-                          { label: t('portfolioTargetReturn'), value: `$${targetReturn.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` },
+                          { label: 'Original Deposit', value: `$${plan.amount.toLocaleString()}` },
+                          { label: 'Operational Capital', value: `$${(plan.activeCapital ?? plan.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, green: true },
+                          { label: t('portfolioEarned'), value: `$${plan.totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` },
                         ].map(({ label, value, green }) => (
                           <div key={label}>
                             <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono mb-1">{label}</p>

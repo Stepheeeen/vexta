@@ -1,19 +1,16 @@
 'use client';
 
 import { DashboardLayout } from '@/components/dashboard-layout';
+import { useState, useEffect } from 'react';
 import {
-  useState, useEffect, useRef, useCallback
-} from 'react';
-import {
-  Copy, Check, ShieldCheck, Zap, AlertTriangle, ArrowRight,
-  Wallet, QrCode, Clock, Loader2, X, CheckCircle2, ChevronRight,
-  TrendingUp, Gift, Star, Rocket, History
+  ShieldCheck, ArrowRight, Wallet, Loader2,
+  TrendingUp, Star, Rocket, History,
+  ChevronRight,
+  Zap,
+  Crown
 } from 'lucide-react';
 import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
-
-const DEPOSIT_ADDRESS = '0x71C7656EC7ab88b098defB751B7401B5f6d8976F';
-const EXPIRY_SECONDS = 15 * 60; // 15 minutes
 
 interface Plan {
   id: string;
@@ -37,23 +34,23 @@ function PlanCard({ plan, onSelect }: { plan: Plan; onSelect: (amount: number) =
   const { t } = useTranslation();
   const icons: Record<string, React.ReactNode> = {
     'STARTER PLAN': <Zap className="w-5 h-5 text-emerald-400" />,
-    'PRIME PLAN': <Star className="w-5 h-5 text-amber-400" />,
-    'ULTRA PLAN': <Rocket className="w-5 h-5 text-violet-400" />,
+    'ADVANCE PLAN': <Star className="w-5 h-5 text-amber-400" />,
+    'ULTRA PLAN': <Crown className="w-5 h-5 text-violet-400" />,
   };
   const colors: Record<string, string> = {
     'STARTER PLAN': 'from-emerald-600/20 to-emerald-600/5 border-emerald-500/20',
-    'PRIME PLAN': 'from-amber-500/20 to-amber-500/5 border-amber-500/20',
+    'ADVANCE PLAN': 'from-amber-500/20 to-amber-500/5 border-amber-500/20',
     'ULTRA PLAN': 'from-violet-600/25 to-violet-600/5 border-violet-500/30',
   };
   const colorBadge: Record<string, string> = {
     'STARTER PLAN': 'bg-emerald-500/20 text-emerald-400',
-    'PRIME PLAN': 'bg-amber-500/20 text-amber-400',
+    'ADVANCE PLAN': 'bg-amber-500/20 text-amber-400',
     'ULTRA PLAN': 'bg-violet-500/20 text-violet-400',
   };
 
   return (
     <div className={`relative flex flex-col p-5 rounded-2xl border bg-gradient-to-br ${colors[plan.tag] || 'from-white/5 to-white/2 border-white/10'} transition-all hover:scale-[1.01] hover:shadow-lg group`}>
-      {plan.tag === 'PRIME PLAN' && (
+      {plan.tag === 'ADVANCE PLAN' && (
         <div className="absolute -top-2.5 right-4 bg-amber-500 text-white text-[9px] font-bold px-3 py-0.5 rounded-full uppercase tracking-wider shadow">
           Most Popular
         </div>
@@ -97,282 +94,7 @@ function PlanCard({ plan, onSelect }: { plan: Plan; onSelect: (amount: number) =
   );
 }
 
-// Simulated QR grid using CSS
-// Simulated QR grid using SVG with proper Finder Patterns
-function SimpleQR({ address }: { address: string }) {
-  const size = 17;
 
-  // Helper to determine if cell is within a finder pattern
-  const isFinderPattern = (r: number, c: number) => {
-    if (r < 7 && c < 7) return true; // Top-Left
-    if (r < 7 && c >= size - 7) return true; // Top-Right
-    if (r >= size - 7 && c < 7) return true; // Bottom-Left
-    return false;
-  };
-
-  // Helper to determine if a cell inside a finder pattern is filled
-  const getFinderCell = (r: number, c: number) => {
-    const dr = r >= size - 7 ? r - (size - 7) : r;
-    const dc = c >= size - 7 ? c - (size - 7) : c;
-    const maxVal = 6;
-    if (dr === 0 || dr === maxVal || dc === 0 || dc === maxVal) return true; // outer border
-    if (dr === 1 || dr === maxVal - 1 || dc === 1 || dc === maxVal - 1) return false; // spacer
-    return true; // center block
-  };
-
-  // Deterministically generate data cells
-  const cells: boolean[][] = [];
-  for (let r = 0; r < size; r++) {
-    const row: boolean[] = [];
-    for (let c = 0; c < size; c++) {
-      if (isFinderPattern(r, c)) {
-        row.push(getFinderCell(r, c));
-      } else {
-        const idx = r * size + c;
-        const charCode = address.charCodeAt(idx % address.length);
-        const filled = (charCode + idx * 7 + r * 3 + c * 11) % 2 === 0;
-        row.push(filled);
-      }
-    }
-    cells.push(row);
-  }
-
-  return (
-    <div className="w-full aspect-square p-2 bg-white rounded-2xl border border-slate-200/60 dark:border-white/5 flex items-center justify-center shadow-inner">
-      <svg
-        viewBox={`0 0 ${size} ${size}`}
-        className="w-full h-full text-slate-900"
-        shapeRendering="crispEdges"
-      >
-        {cells.map((row, r) =>
-          row.map((filled, c) => {
-            if (!filled) return null;
-            return (
-              <rect
-                key={`${r}-${c}`}
-                x={c}
-                y={r}
-                width={1}
-                height={1}
-                rx={0.18}
-                ry={0.18}
-                className="fill-current"
-              />
-            );
-          })
-        )}
-      </svg>
-    </div>
-  );
-}
-
-// Countdown timer hook
-function useCountdown(seconds: number) {
-  const [remaining, setRemaining] = useState(seconds);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    setRemaining(seconds);
-    intervalRef.current = setInterval(() => {
-      setRemaining(prev => Math.max(0, prev - 1));
-    }, 1000);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-  }, [seconds]);
-
-  const mm = String(Math.floor(remaining / 60)).padStart(2, '0');
-  const ss = String(remaining % 60).padStart(2, '0');
-  return { remaining, formatted: `${mm}:${ss}`, expired: remaining === 0 };
-}
-
-// CoinRemitter Checkout Modal
-function CheckoutModal({
-  amount,
-  onClose,
-  onInstant,
-}: {
-  amount: number;
-  onClose: () => void;
-  onInstant: () => Promise<void>;
-}) {
-  const { t } = useTranslation();
-  const { formatted, expired } = useCountdown(EXPIRY_SECONDS);
-  const [copied, setCopied] = useState(false);
-  const [txHash, setTxHash] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [confirming, setConfirming] = useState(false);
-  const [done, setDone] = useState(false);
-  const { toast } = useToast();
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(DEPOSIT_ADDRESS);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleInstant = async () => {
-    setConfirming(true);
-    try {
-      await onInstant();
-      setDone(true);
-    } catch {
-      toast({ title: 'Error', description: 'Simulation failed', variant: 'destructive' });
-    } finally {
-      setConfirming(false);
-    }
-  };
-
-  const handleHashSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!txHash.trim()) return;
-    setSubmitting(true);
-    try {
-      const res = await fetch('/api/deposit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount, network: 'USDT BEP20', txHash: txHash.trim(), instant: false }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error);
-      toast({ title: 'Submitted', description: 'TX Hash submitted. Pending admin review.' });
-      onClose();
-    } catch (err: any) {
-      toast({ title: 'Failed', description: err.message, variant: 'destructive' });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
-      <div className="relative w-full max-w-md bg-white dark:bg-[#0D1420] border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-        {/* Header strip */}
-        <div className="bg-gradient-to-r from-violet-600 to-blue-600 px-6 py-4 flex items-center justify-between rounded-t-3xl">
-          <div className="flex items-center gap-2">
-            <Wallet className="w-5 h-5 text-white" />
-            <span className="text-sm font-bold text-white">USDT BEP20 Payment</span>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        {done ? (
-          <div className="p-10 flex flex-col items-center text-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
-              <CheckCircle2 className="w-8 h-8 text-emerald-500" />
-            </div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t('depConfirmed')}</h3>
-            <p className="text-xs text-slate-500 dark:text-gray-400">{t('depConfirmedDesc')}</p>
-            <button
-              onClick={onClose}
-              className="mt-2 px-8 py-2.5 bg-violet-600 hover:bg-violet-700 text-white text-sm font-bold rounded-xl transition-colors cursor-pointer"
-            >
-              Back to Dashboard
-            </button>
-          </div>
-        ) : (
-          <div className="p-6 space-y-5">
-            {/* Amount */}
-            <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/3 rounded-2xl border border-slate-200 dark:border-white/8">
-              <div>
-                <p className="text-[10px] uppercase font-mono text-slate-400 tracking-widest mb-0.5">{t('depAmountDue')}</p>
-                <p className="text-2xl font-black text-slate-900 dark:text-white font-mono">
-                  ${amount.toLocaleString()} <span className="text-sm font-bold text-slate-400">USDT</span>
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-[10px] uppercase font-mono text-slate-400 tracking-widest mb-0.5">Network</p>
-                <span className="text-xs font-bold text-violet-600 dark:text-violet-400 bg-violet-500/10 px-2.5 py-0.5 rounded-full">BEP20</span>
-              </div>
-            </div>
-
-            {/* Timer */}
-            <div className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl border text-xs font-mono font-bold transition-colors ${
-              expired
-                ? 'bg-red-500/10 border-red-500/20 text-red-500'
-                : 'bg-amber-500/5 border-amber-500/15 text-amber-600 dark:text-amber-400'
-            }`}>
-              <Clock className={`w-4 h-4 flex-shrink-0 ${expired ? '' : 'animate-pulse'}`} />
-              <span>{expired ? t('depInvoiceExpired') : `Invoice expires in ${formatted}`}</span>
-            </div>
-
-            {/* QR + Address */}
-            <div className="grid grid-cols-5 gap-4 items-center">
-              <div className="col-span-2">
-                <SimpleQR address={DEPOSIT_ADDRESS} />
-              </div>
-              <div className="col-span-3 space-y-2.5">
-                <p className="text-[10px] text-slate-500 dark:text-gray-400 font-mono uppercase tracking-wider">{t('depSendUsdtTo')}</p>
-                <div className="flex items-center justify-between gap-1.5 p-2 bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl transition-all hover:border-slate-300 dark:hover:border-white/15">
-                  <span className="flex-1 font-mono text-[9px] text-slate-900 dark:text-white break-all select-all leading-normal">
-                    {DEPOSIT_ADDRESS}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleCopy}
-                    className="p-1.5 rounded-lg hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 transition-all flex-shrink-0 cursor-pointer"
-                    title="Copy wallet address"
-                  >
-                    {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                  </button>
-                </div>
-                <p className="text-[9px] text-slate-400 dark:text-gray-500 leading-relaxed">
-                  {t('depWarning')}
-                </p>
-              </div>
-            </div>
-
-            {/* Status pulse */}
-            <div className="flex items-center gap-2.5 p-3 bg-blue-500/5 border border-blue-500/20 rounded-xl">
-              <div className="relative w-2 h-2 flex-shrink-0">
-                <div className="absolute inset-0 rounded-full bg-blue-500 animate-ping opacity-75" />
-                <div className="w-2 h-2 rounded-full bg-blue-500" />
-              </div>
-              <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400">{t('depAwaiting')}</span>
-            </div>
-
-            {/* Instant Simulation Button */}
-            <button
-              onClick={handleInstant}
-              disabled={confirming || expired}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-bold shadow-lg shadow-emerald-600/10 transition-all hover:scale-[1.01] disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              {confirming ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>
-              ) : (
-                <><Zap className="w-4 h-4" /> {t('depSimulate')}</>
-              )}
-            </button>
-
-            {/* TX Hash form */}
-            <div className="border-t border-slate-200 dark:border-white/5 pt-4">
-              <p className="text-[10px] uppercase font-mono text-slate-400 tracking-wider mb-2">{t('depOrSubmit')}</p>
-              <form onSubmit={handleHashSubmit} className="flex gap-2 items-center">
-                <input
-                  type="text"
-                  value={txHash}
-                  onChange={e => setTxHash(e.target.value)}
-                  placeholder="0x..."
-                  className="h-10 flex-1 bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl px-4 text-xs font-mono text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-violet-500/50 focus:bg-white/5 transition-all"
-                />
-                <button
-                  type="submit"
-                  disabled={submitting || !txHash.trim()}
-                  className="h-10 px-5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-650 hover:from-violet-500 hover:to-indigo-500 text-white text-xs font-bold disabled:opacity-50 transition-all cursor-pointer flex items-center justify-center flex-shrink-0"
-                >
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : t('depSubmitBtn')}
-                </button>
-              </form>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
 
 export default function DepositPage() {
   const { t } = useTranslation();
@@ -384,8 +106,7 @@ export default function DepositPage() {
   const [totalDeposited, setTotalDeposited] = useState(0);
 
   const [amount, setAmount] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [modalAmount, setModalAmount] = useState(0);
+  const [submitting, setSubmitting] = useState(false);
 
   const statusColor: Record<string, string> = {
     pending: 'text-amber-600 dark:text-amber-400 bg-amber-500/10',
@@ -422,37 +143,38 @@ export default function DepositPage() {
     load();
   }, []);
 
-  const handleProceed = () => {
+  const handleProceed = async () => {
     const amt = parseFloat(amount);
     if (isNaN(amt) || amt < 10) {
       toast({ title: 'Invalid Amount', description: 'Minimum deposit is $10 USDT.', variant: 'destructive' });
       return;
     }
-    setModalAmount(amt);
-    setShowModal(true);
-  };
 
-  const handleInstantSimulation = async () => {
-    const res = await fetch('/api/deposit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: modalAmount, instant: true }),
-    });
-    const json = await res.json();
-    if (!res.ok) throw new Error(json.error || 'Simulation failed');
-    // refresh page after a short delay
-    setTimeout(() => window.location.reload(), 2000);
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/plisio/create-invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: amt }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.error || 'Failed to create payment invoice');
+
+      // Redirect to Plisio secure hosted payment page
+      if (data.invoiceUrl) {
+        window.location.href = data.invoiceUrl;
+      } else {
+        throw new Error('No invoice URL returned from server');
+      }
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+      setSubmitting(false);
+    }
   };
 
   return (
     <DashboardLayout>
-      {showModal && (
-        <CheckoutModal
-          amount={modalAmount}
-          onClose={() => setShowModal(false)}
-          onInstant={handleInstantSimulation}
-        />
-      )}
 
       {/* Header */}
       <div className="mb-8">
@@ -503,7 +225,7 @@ export default function DepositPage() {
 
           {/* ── Section 2: Deposit Panel & History side-by-side ────────── */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            
+
             {/* Left Column: Make a Deposit */}
             <section className="lg:col-span-5 space-y-5">
               <div className="flex items-center gap-2 mb-1">
@@ -555,10 +277,15 @@ export default function DepositPage() {
 
                 <button
                   onClick={handleProceed}
-                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white text-sm font-bold shadow-lg shadow-violet-600/25 transition-all hover:scale-[1.01] flex items-center justify-center gap-2"
+                  disabled={submitting}
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white text-sm font-bold shadow-lg shadow-violet-600/25 transition-all hover:scale-[1.01] flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {t('depProceed')}
-                  <ArrowRight className="w-4 h-4" />
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : (
+                    <>
+                      {t('depProceed')}
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
                 </button>
               </div>
             </section>

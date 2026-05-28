@@ -15,6 +15,8 @@ import { useToast } from '@/hooks/use-toast';
 interface StatsData {
   stats: {
     totalInvested: number;
+    operationalCapital: number;
+    pendingIntegration: number;
     totalEarned: number;
     totalCommissions: number;
     availableBalance: number;
@@ -360,9 +362,9 @@ export default function Dashboard() {
       change: data?.recentTransactions.length ? t('overviewLedger') : t('overviewFreshAccount'),
     },
     {
-      label: t('overviewInvested'),
-      value: `$${(data?.stats.totalInvested ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      change: `${data?.stats.activeInvestments ?? 0} ${t('overviewActivePlans')}`,
+      label: 'Operational Capital', // t('overviewInvested')
+      value: `$${(data?.stats.operationalCapital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      change: `+ $${(data?.stats.pendingIntegration ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Pending (48h)`,
     },
     {
       label: t('overviewEarned'),

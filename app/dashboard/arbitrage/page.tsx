@@ -3,6 +3,7 @@
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { BarChart3, TrendingUp, Clock, Loader2, Terminal, Shield, Cpu, Play, HelpCircle, ArrowRight, Wallet } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
 
@@ -106,6 +107,7 @@ interface StatsData {
 export default function ArbitragePage() {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const router = useRouter();
   const [data, setData] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -195,40 +197,8 @@ export default function ArbitragePage() {
     setLogs(initialLogs);
   }, []);
 
-  const [simulating, setSimulating] = useState(false);
-
   const handleSimulate = async () => {
-    setSimulating(true);
-    try {
-      const res = await fetch('/api/dashboard/simulate-demo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'arbitrage' }),
-      });
-      const json = await res.json();
-      if (res.ok) {
-        toast({
-          title: 'Simulation Successful',
-          description: json.message || 'Demo arbitrage contract activated successfully!',
-        });
-        await fetchData();
-      } else {
-        toast({
-          title: 'Simulation Failed',
-          description: json.error || 'Failed to activate demo arbitrage contract',
-          variant: 'destructive',
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      toast({
-        title: 'Network Error',
-        description: 'Error communicating with demo simulation server',
-        variant: 'destructive',
-      });
-    } finally {
-      setSimulating(false);
-    }
+    router.push('/dashboard/deposit');
   };
 
   useEffect(() => {
@@ -447,20 +417,10 @@ export default function ArbitragePage() {
               </div>
               <button
                 onClick={handleSimulate}
-                disabled={simulating}
-                className="flex-shrink-0 flex items-center gap-1.5 px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold shadow-md shadow-violet-600/15 transition-all hover:-translate-y-0.5 duration-200 disabled:opacity-50"
+                className="flex-shrink-0 flex items-center gap-1.5 px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold shadow-md shadow-violet-600/15 transition-all hover:-translate-y-0.5 duration-200"
               >
-                {simulating ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>{t('arbitrageProcessingBtn')}</span>
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>{t('arbitrageSimulateBtn')}</span>
-                  </>
-                )}
+                <ArrowRight className="w-3.5 h-3.5 fill-current" />
+                <span>{t('arbitrageSimulateBtn')}</span>
               </button>
             </div>
           </div>
@@ -558,24 +518,24 @@ export default function ArbitragePage() {
             <div className="mt-6 pt-6 border-t border-slate-200/60 dark:border-white/5">
               <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase tracking-widest mb-3">Recent Router Executions</p>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 text-left">
-                {recentTrades.map((t, idx) => (
+                {recentTrades.map((trade, idx) => (
                   <div key={idx} className="p-3 bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl flex flex-col justify-between">
                     <div className="flex justify-between items-center text-xs font-mono text-slate-600 dark:text-zinc-300 font-bold mb-2">
-                      <span>{t.timestamp}</span>
+                      <span>{trade.timestamp}</span>
                       <span className="text-emerald-500 dark:text-emerald-400 font-extrabold bg-emerald-500/10 px-1.5 py-0.5 rounded">{t('arbSuccess')}</span>
                     </div>
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs sm:text-sm font-extrabold font-mono text-slate-900 dark:text-white">{t.pair}</span>
-                      <span className="text-xs font-extrabold font-mono text-green-500 dark:text-emerald-400">+{t.spread}%</span>
+                      <span className="text-xs sm:text-sm font-extrabold font-mono text-slate-900 dark:text-white">{trade.pair}</span>
+                      <span className="text-xs font-extrabold font-mono text-green-500 dark:text-emerald-400">+{trade.spread}%</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-zinc-400 font-bold font-mono mb-2">
-                      <span className="font-bold text-slate-700 dark:text-zinc-300">{t.buyExchange}</span>
+                      <span className="font-bold text-slate-700 dark:text-zinc-350">{trade.buyExchange}</span>
                       <ArrowRight className="w-3 h-3 text-slate-400" />
-                      <span className="font-bold text-slate-700 dark:text-zinc-300">{t.sellExchange}</span>
+                      <span className="font-bold text-slate-700 dark:text-zinc-350">{trade.sellExchange}</span>
                     </div>
                     <div className="flex justify-between items-center pt-2 border-t border-slate-200/40 dark:border-white/5 text-xs font-mono">
                       <span className="text-slate-600 dark:text-zinc-300 font-bold font-mono">{t('arbProfit')}</span>
-                      <span className="text-[#00FF88] font-extrabold text-xs sm:text-sm">+${parseFloat(t.profit).toFixed(2)}</span>
+                      <span className="text-[#00FF88] font-extrabold text-xs sm:text-sm">+${parseFloat(trade.profit).toFixed(2)}</span>
                     </div>
                   </div>
                 ))}
@@ -606,7 +566,7 @@ export default function ArbitragePage() {
                   data.investments.map((plan, idx) => {
                     const active = plan.status === 'active';
                     let pair = 'BTC/USD';
-                    if (plan.plan.toUpperCase().includes('PRIME')) pair = 'ETH/USD';
+                    if (plan.plan.toUpperCase().includes('ADVANCE')) pair = 'ETH/USD';
                     if (plan.plan.toUpperCase().includes('ULTRA')) pair = 'SOL/USD';
                     
                     const earnedPct = plan.amount > 0 ? (plan.totalEarned / plan.amount) * 100 : 0;

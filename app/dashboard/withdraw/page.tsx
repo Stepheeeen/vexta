@@ -258,37 +258,7 @@ export default function WithdrawPage() {
   }, []);
 
   const handleSimulate = async () => {
-    setSimulating(true);
-    try {
-      const res = await fetch('/api/dashboard/simulate-demo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'deposit' }),
-      });
-      const json = await res.json();
-      if (res.ok) {
-        toast({
-          title: 'Simulation Successful',
-          description: json.message || 'Demo deposit of $5,000 completed successfully!',
-        });
-        await fetchWithdrawalData();
-      } else {
-        toast({
-          title: 'Simulation Failed',
-          description: json.error || 'Failed to simulate demo deposit',
-          variant: 'destructive',
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      toast({
-        title: 'Network Error',
-        description: 'Error communicating with demo simulation server',
-        variant: 'destructive',
-      });
-    } finally {
-      setSimulating(false);
-    }
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -439,20 +409,10 @@ export default function WithdrawPage() {
               </div>
               <button
                 onClick={handleSimulate}
-                disabled={simulating}
-                className="flex-shrink-0 flex items-center gap-1.5 px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold shadow-md shadow-violet-600/15 transition-all hover:-translate-y-0.5 duration-200 disabled:opacity-50"
+                className="flex-shrink-0 flex items-center gap-1.5 px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold shadow-md shadow-violet-600/15 transition-all hover:-translate-y-0.5 duration-200"
               >
-                {simulating ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>{t('withdrawProcessingBtn')}</span>
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>{t('withdrawSimulateBtn')}</span>
-                  </>
-                )}
+                <ArrowRight className="w-3.5 h-3.5 fill-current" />
+                <span>{t('withdrawSimulateBtn')}</span>
               </button>
             </div>
           </div>

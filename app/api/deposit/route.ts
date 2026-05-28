@@ -8,7 +8,6 @@ const schema = z.object({
   amount: z.number().positive().min(10, 'Minimum deposit is $10'),
   network: z.enum(['USDT BEP20']).optional().default('USDT BEP20'),
   txHash: z.string().optional(),
-  instant: z.boolean().default(false),
 });
 
 export async function POST(req: NextRequest) {
@@ -22,7 +21,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 });
     }
 
-    const { amount, network, txHash, instant } = parsed.data;
+    const { amount, network, txHash } = parsed.data;
 
     // Check system maintenance mode
     const settings = await prisma.settings.findFirst();
@@ -33,40 +32,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 1. If instant simulation deposit
-    if (instant) {
-      const result = await prisma.$transaction(async (tx) => {
-        // Lock user record
-        await tx.user.update({
-          where: { id: payload.userId },
-          data: { updatedAt: new Date() }
-        });
-
-        const txn = await tx.transaction.create({
-          data: {
-            userId: payload.userId,
-            type: 'deposit',
-            amount,
-            status: 'completed',
-            description: 'Simulated USD Deposit (Instant)',
-          },
-        });
-
-        await tx.user.update({
-          where: { id: payload.userId },
-          data: {
-            balance: { increment: amount },
-            activeDeposit: { increment: amount }
-          }
-        });
-
-        await distributeUnilevelCommission(payload.userId, amount, tx);
-
-        return txn;
-      });
-
-      return NextResponse.json({ message: 'Simulated deposit successful', transaction: result }, { status: 201 });
-    }
 
     // 2. Manual Blockchain Deposit Request
     if (!network || !txHash) {

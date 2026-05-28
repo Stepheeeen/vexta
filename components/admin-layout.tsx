@@ -146,6 +146,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   const notifRef = useRef<HTMLDivElement>(null);
   const langRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
+  const mobileProfileRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -183,7 +184,11 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       if (langRef.current && !langRef.current.contains(event.target as Node)) {
         setShowLang(false);
       }
-      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+      if (
+        profileRef.current && 
+        !profileRef.current.contains(event.target as Node) &&
+        (!mobileProfileRef.current || !mobileProfileRef.current.contains(event.target as Node))
+      ) {
         setShowProfile(false);
       }
     }
@@ -517,6 +522,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile Profile Drawer Panel */}
       <div
+        ref={mobileProfileRef}
         className={`md:hidden fixed inset-y-0 right-0 w-80 bg-white/95 dark:bg-[#0c0d14]/95 backdrop-blur-2xl border-l border-slate-200 dark:border-white/10 shadow-2xl z-[101] transform transition-transform duration-300 ease-out p-6 flex flex-col justify-between ${
           showProfile ? 'translate-x-0' : 'translate-x-full'
         }`}
@@ -627,14 +633,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
       {/* ── Page Content ───────────────────────────────────── */}
       <main className="relative z-10 pt-14 pb-20 md:pb-4 min-h-screen md:pl-20">
-        {/* Test Mode Disclaimer Banner */}
-        <div className="bg-amber-500/10 border-b border-amber-500/25 px-4 py-2 text-center text-xs font-medium text-amber-600 dark:text-amber-400 flex items-center justify-center gap-2 select-none backdrop-blur-md relative z-20">
-          <AlertTriangle className="w-4 h-4 shrink-0 animate-pulse text-amber-500" />
-          <span>{t('demoDisclaimerText')}</span>
-          <span className="bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded border border-amber-500/30">
-            {t('demoDisclaimerBadge')}
-          </span>
-        </div>
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {children}
         </div>

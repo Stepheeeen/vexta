@@ -218,7 +218,7 @@ export function Navbar() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-18">
+        <div className="flex items-center justify-between gap-4 lg:gap-8 h-16 lg:h-18">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <VextaLogo className="h-8 w-8 transition-transform duration-300 group-hover:scale-105" />
@@ -230,7 +230,7 @@ export function Navbar() {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden lg:flex items-center gap-1">
             {navLinks.map((item) => {
               const id = item.href.replace('/#', '').replace('#', '');
               if ((item as any).external) {
@@ -238,7 +238,7 @@ export function Navbar() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    className={`whitespace-nowrap px-2 lg:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       pathname === '/handover'
                         ? isLightHeader
                           ? 'text-violet-600 bg-violet-50'
@@ -257,7 +257,7 @@ export function Navbar() {
                   key={item.href}
                   href={item.href}
                   onClick={(e) => handleNav(e, item.href, item.external)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                  className={`whitespace-nowrap px-2 lg:px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     active === id
                       ? isLightHeader
                         ? 'text-violet-600 bg-slate-100'
@@ -274,7 +274,7 @@ export function Navbar() {
           </nav>
 
           {/* CTA buttons / Session Actions */}
-          <div className="hidden md:flex items-center gap-5">
+          <div className="hidden lg:flex items-center gap-2 lg:gap-5">
             {/* Theme Toggle */}
             <button
               onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
@@ -440,7 +440,7 @@ export function Navbar() {
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
-            className={`md:hidden p-3 transition-colors cursor-pointer relative z-50 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 ${
+            className={`lg:hidden p-3 transition-colors cursor-pointer relative z-50 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg hover:bg-white/10 ${
               isLightHeader ? 'text-slate-600 hover:text-slate-900' : 'text-slate-300 hover:text-white'
             }`}
             aria-label="Toggle menu"
@@ -452,7 +452,7 @@ export function Navbar() {
 
       {/* Mobile menu */}
       <div
-        className={`md:hidden transition-all duration-300 overflow-hidden ${
+        className={`lg:hidden transition-all duration-300 overflow-hidden ${
           isOpen ? 'max-h-[700px] opacity-100 pointer-events-auto' : 'max-h-0 opacity-0 pointer-events-none'
         }`}
       >

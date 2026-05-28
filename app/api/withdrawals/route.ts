@@ -3,9 +3,10 @@ import { z } from 'zod';
 import { getUserFromRequest } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getAvailableBalance, getWithdrawableBalances } from '@/lib/balance';
+import { deductWithdrawalFromCapital } from '@/lib/roi-engine';
 
 const schema = z.object({
-  amount:        z.number().positive().min(5, 'Minimum withdrawal is $5'),
+  amount:        z.number().positive().min(10, 'Minimum withdrawal is $10'),
   walletAddress: z.string().min(10, 'Invalid wallet address'),
   network:       z.enum(['BEP20']).default('BEP20'),
   type:          z.enum(['roi', 'commission']).default('roi'),
@@ -133,6 +134,11 @@ export async function POST(req: NextRequest) {
         where: { id: payload.userId },
         data: { balance: { decrement: amount } }
       });
+
+      // 3.5. Deduct from operational capital if it's an ROI withdrawal
+      if (type === 'roi') {
+        await deductWithdrawalFromCapital(payload.userId, amount, tx);
+      }
 
       const withdrawal = await tx.withdrawal.create({
         data: { 

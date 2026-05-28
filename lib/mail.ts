@@ -152,3 +152,66 @@ export async function sendWithdrawalOTPEmail(email: string, firstName: string, c
     return false;
   }
 }
+
+/**
+ * Sends a 6-digit email OTP to an admin before batch payout execution.
+ * This is the MFA gate for the Friday mass withdrawal payout action.
+ */
+export async function sendBatchPayoutOTPEmail(
+  email: string,
+  firstName: string,
+  code: string,
+  totalAmount: number,
+  withdrawalCount: number
+): Promise<boolean> {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey || apiKey === 're_123456789' || apiKey.startsWith('your_')) {
+    console.log(`\n==================================================`);
+    console.log(`📬  [EMAIL SIMULATION - BATCH PAYOUT OTP] To: ${email}`);
+    console.log(`💵  Batch Total: $${totalAmount.toFixed(2)} USDT (${withdrawalCount} withdrawals)`);
+    console.log(`🔑  OTP Code: ${code}`);
+    console.log(`==================================================\n`);
+    return true;
+  }
+
+  try {
+    const fromEmail = process.env.RESEND_FROM_EMAIL || `${SYSTEM_CONFIG.brand.name} Auth <onboarding@resend.dev>`;
+    const { error } = await resend.emails.send({
+      from: fromEmail,
+      to: email,
+      subject: `⚠️ ADMIN BATCH PAYOUT AUTHORIZATION — ${SYSTEM_CONFIG.brand.name}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 2px solid #f59e0b; border-radius: 12px; background-color: #0d1420; color: #ffffff;">
+          <h2 style="color: #f59e0b; font-weight: 700;">⚠️ Batch Payout Authorization Required</h2>
+          <p>Hi ${firstName},</p>
+          <p>An administrator is requesting to execute the <strong>Friday Batch Payout</strong>.</p>
+          <div style="background: #1a2436; border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 16px; margin: 16px 0;">
+            <p style="margin: 4px 0; color: #9ca3af; font-size: 13px;">Total USDT to be distributed:</p>
+            <p style="margin: 4px 0; font-size: 28px; font-weight: 800; color: #f59e0b;">$${totalAmount.toFixed(2)} USDT</p>
+            <p style="margin: 4px 0; color: #9ca3af; font-size: 13px;">${withdrawalCount} withdrawal request(s) will be approved.</p>
+          </div>
+          <p>Enter the 6-digit authorization code in the admin panel to proceed:</p>
+          <div style="background: #1a2436; color: #f59e0b; font-family: monospace; font-size: 28px; font-weight: 700; text-align: center; padding: 20px; margin: 20px 0; border-radius: 8px; letter-spacing: 6px; border: 1px solid rgba(245, 158, 11, 0.4);">
+            ${code}
+          </div>
+          <p style="color: #ef4444; font-weight: bold;">
+            ⚠️ Ensure the Plisio wallet has been funded with exactly $${totalAmount.toFixed(2)} USDT before executing.
+          </p>
+          <p style="color: #808A9D; font-size: 12px; margin-top: 30px;">
+            This code expires in 15 minutes. If you did not initiate this action, secure your admin account immediately.
+          </p>
+        </div>
+      `,
+    });
+
+    if (error) {
+      console.error('[Resend Batch Payout OTP Error]', error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('[Resend Batch Payout OTP Exception]', err);
+    return false;
+  }
+}

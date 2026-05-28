@@ -40,6 +40,12 @@ model User {
   balance         Float    @default(0)
   uplineId        String?  @db.ObjectId
 
+  // ─── Compounding Capital Tracking ──────────────────────────────────────────
+  /// Current total active capital generating returns (sum of all investment activeCapitals)
+  operationalCapital  Float    @default(0)
+  /// Running total of profits sitting in the 48-hour pending queue (not yet compounded)
+  pendingIntegration  Float    @default(0)
+
   // Sponsored & Leadership System
   isSponsored           Boolean  @default(false)
   sponsoredType         String?  // "free" | "goal_locked"
@@ -58,6 +64,8 @@ model User {
   referralsAsReferrer   ReferralLink[] @relation("Referrer")
   referralsAsReferred   ReferralLink[] @relation("Referred")
   commissions           Commission[]
+  pendingProfits        PendingProfitEntry[]
+  plisioInvoices        PlisioInvoice[]
 }
 
 // ─── Investment Plans ─────────────────────────────────────────────────────────
@@ -67,8 +75,9 @@ model Plan {
   name       String  @unique
   tag        String
   minDeposit Float
-  dailyROI   Float   // e.g. 0.020 = 2%
-  duration   Int     // days
+  dailyROI   Float   // e.g. 0.010 = 1%
+  duration   Int     // business days (200)
+  bonus      Float   @default(0) // tier bonus rate e.g. 0.10 = 10%
   isActive   Boolean @default(true)
 
   investments Investment[]
@@ -80,8 +89,14 @@ model Investment {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   userId      String   @db.ObjectId
   planId      String   @db.ObjectId
-  amount      Float
-  bonusAmount Float    @default(0)
+  amount      Float    // Original deposited principal
+  bonusAmount Float    @default(0) // Deprecated — use tierBonus
+  /// Instant tier bonus applied to activeCapital at activation (10% or 20%)
+  tierBonus   Float    @default(0)
+  /// Current compounding base: starts as amount + tierBonus, grows as pending profits integrate
+  activeCapital       Float    @default(0)
+  /// Number of business days ROI has been distributed (caps contract at 200)
+  businessDaysElapsed Int      @default(0)
   startDate   DateTime @default(now())
   endDate     DateTime
   status      String   @default("active") // active | completed | cancelled
@@ -89,9 +104,10 @@ model Investment {
   createdAt   DateTime @default(now())
   isVirtual   Boolean  @default(false)
 
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  plan     Plan      @relation(fields: [planId], references: [id])
-  dailyROIs DailyROIEntry[]
+  user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan           Plan                 @relation(fields: [planId], references: [id])
+  dailyROIs      DailyROIEntry[]
+  pendingProfits PendingProfitEntry[]
 }
 
 model DailyROIEntry {
@@ -101,6 +117,74 @@ model DailyROIEntry {
   date         DateTime @default(now())
 
   investment Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+}
+
+// ─── 48-Hour Pending Integration Queue ───────────────────────────────────────
+
+/// Timestamped ledger entry for each day's profit.
+/// Profits are credited to user.balance immediately but only compound into
+/// investment.activeCapital after 48 business hours (unlocksAt).
+model PendingProfitEntry {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String    @db.ObjectId
+  investmentId String    @db.ObjectId
+  amount       Float
+  /// The business day this profit was earned (used for display & ordering)
+  earnedOnDate DateTime
+  /// Exactly 2 business days after earnedOnDate — when this entry promotes to activeCapital
+  unlocksAt    DateTime
+  /// Null = still pending; set to current timestamp when promoted to active capital
+  integratedAt DateTime?
+  isVirtual    Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  investment Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+
+  @@index([userId, integratedAt])
+  @@index([integratedAt, unlocksAt])
+}
+
+// ─── Plisio Payment Gateway ───────────────────────────────────────────────────
+
+/// Tracks every Plisio invoice created for user deposits.
+/// Auto-forwarding is configured on Plisio dashboard → PLISIO_MASTER_WALLET.
+model PlisioInvoice {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String    @db.ObjectId
+  /// Plisio's internal order/invoice ID — used to match IPN callbacks
+  txnId        String    @unique
+  amount       Float
+  currency     String    @default("USDT")
+  network      String    @default("BEP20")
+  status       String    @default("pending") // pending | completed | expired | failed
+  /// On-chain transaction hash confirmed by Plisio
+  plisioTxHash String?
+  /// Plisio-hosted payment page URL to redirect user
+  invoiceUrl   String?
+  /// Raw JSON blob of the last IPN webhook payload (for audit/debugging)
+  rawWebhook   String?
+  activatedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Friday Batch Payout Audit Trail ─────────────────────────────────────────
+
+/// Each row represents one Friday's withdrawal batch export run.
+model BatchPayoutRun {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  generatedAt       DateTime  @default(now())
+  totalAmount       Float
+  withdrawalCount   Int
+  /// Raw CSV content stored for admin download (Plisio mass-payment format)
+  csvData           String
+  status            String    @default("generated") // generated | funded | executed | completed
+  executedAt        DateTime?
+  executedByAdminId String?   @db.ObjectId
+  notes             String?
 }
 
 // ─── Referrals ────────────────────────────────────────────────────────────────
@@ -135,7 +219,7 @@ model Commission {
 model Transaction {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   userId      String   @db.ObjectId
-  type        String   // deposit | withdrawal | roi | commission
+  type        String   // deposit | withdrawal | roi | commission | daily_roi
   amount      Float
   status      String   @default("completed") // pending | completed | failed
   description String?
@@ -162,6 +246,8 @@ model Withdrawal {
   createdAt     DateTime  @default(now())
   processedAt   DateTime?
   type          String    @default("roi") // "roi" | "commission"
+  /// ID of the BatchPayoutRun this withdrawal was included in
+  batchRunId    String?   @db.ObjectId
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -175,6 +261,7 @@ model Settings {
   referralRate      Float     @default(15.0)
   tradingFee        Float     @default(2.0)
   withdrawalFee     Float     @default(6.0)
+  isRoiRunning      Boolean   @default(false)
 }
 
 model Resource {
@@ -188,5 +275,3 @@ model Resource {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
-
-

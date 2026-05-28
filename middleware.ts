@@ -64,7 +64,7 @@ export async function middleware(req: NextRequest) {
   }
 
   // Protect dashboard and private API routes
-  if (pathname.startsWith(DASHBOARD_PREFIX) || pathname.startsWith('/api/')) {
+  if (pathname.startsWith(DASHBOARD_PREFIX) || (pathname.startsWith('/api/') && !pathname.startsWith('/api/plisio'))) {
     const token = req.cookies.get('vexta_token')?.value;
 
     if (!token) {

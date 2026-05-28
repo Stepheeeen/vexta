@@ -62,9 +62,11 @@ export async function GET(req: NextRequest) {
   const availableBalance = await getAvailableBalance(userId);
   const pools = await getWithdrawableBalances(userId);
   
-  const userSponsorship = await prisma.user.findUnique({
+  const userRecord = await prisma.user.findUnique({
     where: { id: userId },
     select: {
+      operationalCapital: true,
+      pendingIntegration: true,
       isSponsored: true,
       sponsoredType: true,
       sponsoredGoalAmount: true,
@@ -79,16 +81,19 @@ export async function GET(req: NextRequest) {
       totalInvested: +totalInvested.toFixed(2),
       totalEarned: +totalEarnedFinal.toFixed(2),
       totalCommissions: +totalCommissions.toFixed(2),
+      operationalCapital: userRecord?.operationalCapital || 0,
+      pendingIntegration: userRecord?.pendingIntegration || 0,
       availableBalance,
       activeInvestments,
       directReferrals,
     },
     pools,
-    userSponsorship,
+    userSponsorship: userRecord,
     investments: investments.map((i) => ({
       id: i.id,
       plan: i.plan.name,
       amount: i.amount,
+      activeCapital: i.activeCapital,
       dailyROI: i.plan.dailyROI,
       duration: i.plan.duration,
       startDate: i.startDate,

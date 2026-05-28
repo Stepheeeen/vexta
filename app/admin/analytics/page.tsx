@@ -57,7 +57,7 @@ export default function AdminAnalytics() {
     );
   }
 
-  const chartData = [35, 45, 40, 58, 52, 65, 78, 85, 70, 88, 80, 95];
+  const chartData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
   
   // Dynamically translate months using Selected Language
   const locale = localeMap[language as keyof typeof localeMap] || 'en-US';
@@ -78,7 +78,7 @@ export default function AdminAnalytics() {
             <p className="text-slate-500 dark:text-gray-400 text-xs font-medium mb-1 truncate">{t('adminMetricTotalUsers') || 'Total Users'}</p>
             <p className="text-2xl font-bold text-violet-600 dark:text-violet-400 mb-2 truncate">{stats?.totalUsers ?? 0}</p>
           </div>
-          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono truncate">+12.5% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
+          <p className="text-[10px] text-slate-400 font-mono truncate">0% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
         </div>
         <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
           <div>
@@ -87,7 +87,7 @@ export default function AdminAnalytics() {
               ${stats?.totalVolume != null ? stats.totalVolume.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '0'}
             </p>
           </div>
-          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono truncate">+18.2% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
+          <p className="text-[10px] text-slate-400 font-mono truncate">0% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
         </div>
         <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
           <div>
@@ -96,7 +96,7 @@ export default function AdminAnalytics() {
               ${stats?.totalWithdrawals != null ? stats.totalWithdrawals.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '0'}
             </p>
           </div>
-          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono truncate">+14.1% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
+          <p className="text-[10px] text-slate-400 font-mono truncate">0% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
         </div>
         <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
           <div>
@@ -105,7 +105,7 @@ export default function AdminAnalytics() {
               ${stats?.totalVolume != null ? stats.totalVolume.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '0'}
             </p>
           </div>
-          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono truncate">+18.2% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
+          <p className="text-[10px] text-slate-400 font-mono truncate">0% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
         </div>
         <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
           <div>
@@ -114,14 +114,14 @@ export default function AdminAnalytics() {
               ${stats && stats.totalUsers > 0 ? (stats.totalVolume / stats.totalUsers).toLocaleString(undefined, { maximumFractionDigits: 0 }) : '0'}
             </p>
           </div>
-          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono truncate">+5.3% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
+          <p className="text-[10px] text-slate-400 font-mono truncate">0% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
         </div>
         <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
           <div>
             <p className="text-slate-500 dark:text-gray-400 text-xs font-medium mb-1 truncate">{t('adminAnalyticsRetention') || 'Retention Rate'}</p>
-            <p className="text-2xl font-bold text-violet-600 dark:text-violet-400 mb-2 truncate">98.4%</p>
+            <p className="text-2xl font-bold text-violet-600 dark:text-violet-400 mb-2 truncate">0%</p>
           </div>
-          <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono truncate">+2.1% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
+          <p className="text-[10px] text-slate-400 font-mono truncate">0% {t('adminAnalyticsFromLastMonth') || 'from last month'}</p>
         </div>
       </div>
 
@@ -192,29 +192,29 @@ export default function AdminAnalytics() {
           <div className="space-y-4">
             <div>
               <div className="flex justify-between mb-2">
-                <span className="text-slate-500 dark:text-gray-400">{t('adminAnalyticsPlanStarter') || 'STARTER PLAN'} (45%)</span>
+                <span className="text-slate-500 dark:text-gray-400">{t('adminAnalyticsPlanStarter') || 'STARTER PLAN'} (0%)</span>
                 <span className="text-violet-600 dark:text-violet-400 font-bold">{t('adminAnalyticsActive') || 'Active'}</span>
               </div>
               <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-3">
-                <div className="bg-violet-500 h-3 rounded-full" style={{ width: '45%' }} />
+                <div className="bg-violet-500 h-3 rounded-full" style={{ width: '0%' }} />
               </div>
             </div>
             <div>
               <div className="flex justify-between mb-2">
-                <span className="text-slate-500 dark:text-gray-400">{t('adminAnalyticsPlanPopular') || 'PRIME PLAN'} (35%)</span>
+                <span className="text-slate-500 dark:text-gray-400">{t('adminAnalyticsPlanPopular') || 'PRIME PLAN'} (0%)</span>
                 <span className="text-emerald-600 dark:text-emerald-400 font-bold">{t('adminAnalyticsActive') || 'Active'}</span>
               </div>
               <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-3">
-                <div className="bg-emerald-500 h-3 rounded-full" style={{ width: '35%' }} />
+                <div className="bg-emerald-500 h-3 rounded-full" style={{ width: '0%' }} />
               </div>
             </div>
             <div>
               <div className="flex justify-between mb-2">
-                <span className="text-slate-500 dark:text-gray-400">{t('adminAnalyticsPlanAdvanced') || 'ULTRA PLAN'} (20%)</span>
+                <span className="text-slate-500 dark:text-gray-400">{t('adminAnalyticsPlanAdvanced') || 'ULTRA PLAN'} (0%)</span>
                 <span className="text-amber-600 dark:text-amber-400 font-bold">{t('adminAnalyticsActive') || 'Active'}</span>
               </div>
               <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-3">
-                <div className="bg-amber-500 h-3 rounded-full" style={{ width: '20%' }} />
+                <div className="bg-amber-500 h-3 rounded-full" style={{ width: '0%' }} />
               </div>
             </div>
           </div>
@@ -229,37 +229,37 @@ export default function AdminAnalytics() {
             <div>
               <div className="flex justify-between mb-1">
                 <span className="text-slate-500 dark:text-gray-400 text-sm">{t('adminAnalyticsNorthAmerica') || 'North America'}</span>
-                <span className="text-slate-900 dark:text-white font-bold text-sm">38%{stats?.totalVolume ? ` ($${(stats.totalVolume * 0.38).toLocaleString(undefined, { maximumFractionDigits: 0 })})` : ''}</span>
+                <span className="text-slate-900 dark:text-white font-bold text-sm">0%</span>
               </div>
               <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
-                <div className="bg-violet-500 h-2 rounded-full" style={{ width: '38%' }} />
+                <div className="bg-violet-500 h-2 rounded-full" style={{ width: '0%' }} />
               </div>
             </div>
             <div>
               <div className="flex justify-between mb-1">
                 <span className="text-slate-500 dark:text-gray-400 text-sm">{t('adminAnalyticsEurope') || 'Europe'}</span>
-                <span className="text-slate-900 dark:text-white font-bold text-sm">32%{stats?.totalVolume ? ` ($${(stats.totalVolume * 0.32).toLocaleString(undefined, { maximumFractionDigits: 0 })})` : ''}</span>
+                <span className="text-slate-900 dark:text-white font-bold text-sm">0%</span>
               </div>
               <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
-                <div className="bg-violet-500 h-2 rounded-full" style={{ width: '32%' }} />
+                <div className="bg-violet-500 h-2 rounded-full" style={{ width: '0%' }} />
               </div>
             </div>
             <div>
               <div className="flex justify-between mb-1">
                 <span className="text-slate-500 dark:text-gray-400 text-sm">{t('adminAnalyticsAsiaPacific') || 'Asia Pacific'}</span>
-                <span className="text-slate-900 dark:text-white font-bold text-sm">25%{stats?.totalVolume ? ` ($${(stats.totalVolume * 0.25).toLocaleString(undefined, { maximumFractionDigits: 0 })})` : ''}</span>
+                <span className="text-slate-900 dark:text-white font-bold text-sm">0%</span>
               </div>
               <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
-                <div className="bg-violet-500 h-2 rounded-full" style={{ width: '25%' }} />
+                <div className="bg-violet-500 h-2 rounded-full" style={{ width: '0%' }} />
               </div>
             </div>
             <div>
               <div className="flex justify-between mb-1">
                 <span className="text-slate-500 dark:text-gray-400 text-sm">{t('adminAnalyticsOther') || 'Other'}</span>
-                <span className="text-slate-900 dark:text-white font-bold text-sm">5%{stats?.totalVolume ? ` ($${(stats.totalVolume * 0.05).toLocaleString(undefined, { maximumFractionDigits: 0 })})` : ''}</span>
+                <span className="text-slate-900 dark:text-white font-bold text-sm">0%</span>
               </div>
               <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
-                <div className="bg-violet-500 h-2 rounded-full" style={{ width: '5%' }} />
+                <div className="bg-violet-500 h-2 rounded-full" style={{ width: '0%' }} />
               </div>
             </div>
           </div>
@@ -269,10 +269,10 @@ export default function AdminAnalytics() {
           <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">{t('adminAnalyticsAssets') || 'Top Assets'}</h3>
           <div className="space-y-3">
             {[
-              { asset: 'Bitcoin (BTC)', volume: '45%', pct: 45 },
-              { asset: 'Ethereum (ETH)', volume: '30%', pct: 30 },
-              { asset: 'USDT', volume: '15%', pct: 15 },
-              { asset: t('adminAnalyticsOthers') || 'Others', volume: '10%', pct: 10 },
+              { asset: 'Bitcoin (BTC)', volume: '0%', pct: 0 },
+              { asset: 'Ethereum (ETH)', volume: '0%', pct: 0 },
+              { asset: 'USDT', volume: '0%', pct: 0 },
+              { asset: t('adminAnalyticsOthers') || 'Others', volume: '0%', pct: 0 },
             ].map((item) => (
               <div key={item.asset}>
                 <div className="flex justify-between mb-1">
@@ -291,10 +291,10 @@ export default function AdminAnalytics() {
           <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">{t('adminAnalyticsSegments') || 'User Segments'}</h3>
           <div className="space-y-3">
             {[
-              { segment: t('adminAnalyticsWhales') || 'Whales (>$1k)', count: 24, pct: 4.7 },
-              { segment: t('adminAnalyticsHighValue') || 'High Value ($600-$1k)', count: 128, pct: 24.4 },
-              { segment: t('adminAnalyticsRegular') || 'Regular ($100-$600)', count: 248, pct: 47.3 },
-              { segment: t('adminAnalyticsStarter') || 'Starter ($10-$100)', count: 123, pct: 23.6 },
+              { segment: t('adminAnalyticsWhales') || 'Whales (>$1k)', count: 0, pct: 0 },
+              { segment: t('adminAnalyticsHighValue') || 'High Value ($600-$1k)', count: 0, pct: 0 },
+              { segment: t('adminAnalyticsRegular') || 'Regular ($100-$600)', count: 0, pct: 0 },
+              { segment: t('adminAnalyticsStarter') || 'Starter ($10-$100)', count: 0, pct: 0 },
             ].map((item) => (
               <div key={item.segment}>
                 <div className="flex justify-between mb-1">

@@ -13,20 +13,21 @@ import { prisma } from '@/lib/prisma';
 
 describe('ROI Engine', () => {
   describe('calculateDailyROI', () => {
+    // calculateDailyROI now takes only activeCapital (rate is fixed at 1% from system config)
     it('calculates 1.0% daily on $1000', () => {
-      expect(calculateDailyROI(1000, 0.01)).toBe(10.00);
+      expect(calculateDailyROI(1000)).toBe(10.00);
     });
 
     it('calculates 1.0% daily on $5000', () => {
-      expect(calculateDailyROI(5000, 0.01)).toBe(50.00);
+      expect(calculateDailyROI(5000)).toBe(50.00);
     });
 
     it('calculates 1.0% daily on $20000', () => {
-      expect(calculateDailyROI(20000, 0.01)).toBe(200.00);
+      expect(calculateDailyROI(20000)).toBe(200.00);
     });
 
     it('rounds to 2 decimal places', () => {
-      expect(calculateDailyROI(333, 0.01)).toBe(3.33);
+      expect(calculateDailyROI(333)).toBe(3.33);
     });
   });
 
@@ -60,34 +61,44 @@ describe('ROI Engine', () => {
       jest.useRealTimers();
     });
 
-    describe('processDailyROI (Investment-based daily ROI)', () => {
-      it('skips processing on Saturday (weekend)', async () => {
+    describe('processDailyROI (two-phase daily ROI)', () => {
+      // processDailyROI now returns { promoted, amountPromoted, processed, totalPaid }
+      it('skips Phase B processing on Saturday (weekend)', async () => {
         // 2026-05-23 is Saturday
         jest.setSystemTime(new Date('2026-05-23T12:00:00Z'));
-        
+
+        // Phase A (promotePendingProfits) will run regardless of day
+        (prisma.pendingProfitEntry.findMany as jest.Mock).mockResolvedValue([]);
+        (prisma.investment.findMany as jest.Mock).mockResolvedValue([]);
+
         const result = await processDailyROI();
-        expect(result).toEqual({ processed: 0, totalPaid: 0 });
-        expect(prisma.investment.findMany).not.toHaveBeenCalled();
+        // Phase B skips on weekends so processed/totalPaid = 0
+        expect(result.processed).toBe(0);
+        expect(result.totalPaid).toBe(0);
       });
 
-      it('skips processing on Sunday (weekend)', async () => {
+      it('skips Phase B processing on Sunday (weekend)', async () => {
         // 2026-05-24 is Sunday
         jest.setSystemTime(new Date('2026-05-24T12:00:00Z'));
-        
+
+        (prisma.pendingProfitEntry.findMany as jest.Mock).mockResolvedValue([]);
+        (prisma.investment.findMany as jest.Mock).mockResolvedValue([]);
+
         const result = await processDailyROI();
-        expect(result).toEqual({ processed: 0, totalPaid: 0 });
-        expect(prisma.investment.findMany).not.toHaveBeenCalled();
+        expect(result.processed).toBe(0);
+        expect(result.totalPaid).toBe(0);
       });
 
       it('processes investments on Wednesday (weekday)', async () => {
         // 2026-05-27 is Wednesday
         jest.setSystemTime(new Date('2026-05-27T12:00:00Z'));
-        
-        // Mock findMany to return empty array so it finishes gracefully without further DB updates
+
+        (prisma.pendingProfitEntry.findMany as jest.Mock).mockResolvedValue([]);
         (prisma.investment.findMany as jest.Mock).mockResolvedValue([]);
-        
+
         const result = await processDailyROI();
-        expect(result).toEqual({ processed: 0, totalPaid: 0 });
+        expect(result.processed).toBe(0);
+        expect(result.totalPaid).toBe(0);
         expect(prisma.investment.findMany).toHaveBeenCalled();
       });
     });
@@ -115,26 +126,33 @@ describe('ROI Engine', () => {
         // 2026-05-24 is Sunday
         jest.setSystemTime(new Date('2026-05-24T12:00:00Z'));
 
-        // Mock Settings.findFirst and user.findMany to avoid database errors
+        // Mock DB calls to avoid real database errors
         (prisma.settings.findFirst as any).mockResolvedValue({ id: 'settings_id', lastDailyRun: null });
         (prisma.settings.update as any).mockResolvedValue({});
-        (prisma.user.findMany as jest.Mock).mockResolvedValue([]);
+        (prisma.pendingProfitEntry.findMany as jest.Mock).mockResolvedValue([]);
+        (prisma.investment.findMany as jest.Mock).mockResolvedValue([]);
 
         const result = await runDailyRoiDistribution(true);
-        expect(result).toEqual({ usersPaid: 0, totalDistributed: 0 });
+        // Result now includes promoted/amountPromoted from Phase A
+        expect(result.usersPaid).toBe(0);
+        expect(result.totalDistributed).toBe(0);
+        expect(result.promoted).toBe(0);
+        expect(result.amountPromoted).toBe(0);
       });
 
       it('runs successfully on Wednesday (weekday) without bypassWeekendCheck', async () => {
         // 2026-05-27 is Wednesday
         jest.setSystemTime(new Date('2026-05-27T12:00:00Z'));
 
-        // Mock Settings.findFirst and user.findMany to avoid database errors
+        // Mock DB calls to avoid real database errors
         (prisma.settings.findFirst as any).mockResolvedValue({ id: 'settings_id', lastDailyRun: null });
         (prisma.settings.update as any).mockResolvedValue({});
-        (prisma.user.findMany as jest.Mock).mockResolvedValue([]);
+        (prisma.pendingProfitEntry.findMany as jest.Mock).mockResolvedValue([]);
+        (prisma.investment.findMany as jest.Mock).mockResolvedValue([]);
 
         const result = await runDailyRoiDistribution(false);
-        expect(result).toEqual({ usersPaid: 0, totalDistributed: 0 });
+        expect(result.usersPaid).toBe(0);
+        expect(result.totalDistributed).toBe(0);
       });
     });
   });

@@ -3,6 +3,7 @@
 import { DashboardLayout } from '@/components/dashboard-layout';
 import { Wallet, ArrowUpRight, ArrowDownRight, Calendar, Loader2, Play, HelpCircle, ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
 
@@ -41,6 +42,7 @@ const typeColor: Record<string, string> = {
 export default function EarningsPage() {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const router = useRouter();
   const [statsData, setStatsData] = useState<StatsData | null>(null);
   const [earningsData, setEarningsData] = useState<EarningsData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -80,40 +82,8 @@ export default function EarningsPage() {
     fetchData();
   }, []);
 
-  const [simulating, setSimulating] = useState(false);
-
   const handleSimulate = async () => {
-    setSimulating(true);
-    try {
-      const res = await fetch('/api/dashboard/simulate-demo', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'earnings' }),
-      });
-      const json = await res.json();
-      if (res.ok) {
-        toast({
-          title: 'Simulation Successful',
-          description: json.message || 'Demo earnings simulated successfully!',
-        });
-        await fetchData();
-      } else {
-        toast({
-          title: 'Simulation Failed',
-          description: json.error || 'Failed to simulate earnings',
-          variant: 'destructive',
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      toast({
-        title: 'Network Error',
-        description: 'Error communicating with demo simulation server',
-        variant: 'destructive',
-      });
-    } finally {
-      setSimulating(false);
-    }
+    router.push('/dashboard/arbitrage');
   };
 
   const totalEarned = (statsData?.stats.totalEarned ?? 0) + (statsData?.stats.totalCommissions ?? 0);
@@ -187,20 +157,10 @@ export default function EarningsPage() {
               </div>
               <button
                 onClick={handleSimulate}
-                disabled={simulating}
-                className="flex-shrink-0 flex items-center gap-1.5 px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold shadow-md shadow-violet-600/15 transition-all hover:-translate-y-0.5 duration-200 disabled:opacity-50"
+                className="flex-shrink-0 flex items-center gap-1.5 px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold shadow-md shadow-violet-600/15 transition-all hover:-translate-y-0.5 duration-200"
               >
-                {simulating ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>{t('earningsProcessingBtn')}</span>
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>{t('earningsSimulateBtn')}</span>
-                  </>
-                )}
+                <ArrowRight className="w-3.5 h-3.5 fill-current" />
+                <span>{t('earningsSimulateBtn')}</span>
               </button>
             </div>
           </div>

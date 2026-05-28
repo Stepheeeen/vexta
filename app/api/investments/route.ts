@@ -4,6 +4,8 @@ import { getUserFromRequest } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { propagateCommissions } from '@/lib/referral-engine';
 import { getAvailableBalance } from '@/lib/balance';
+import { SYSTEM_CONFIG } from '@/lib/config/system';
+import { addBusinessDays } from '@/lib/roi-engine';
 
 const createSchema = z.object({
   planId: z.string().min(1),
@@ -24,7 +26,7 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ investments });
 }
 
-// POST /api/investments — create a new investment
+// POST /api/investments — create a new investment (deducts from user balance)
 export async function POST(req: NextRequest) {
   const payload = getUserFromRequest(req);
   if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -43,6 +45,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Plan not found or inactive' }, { status: 404 });
     }
 
+    // Check maintenance mode
+    const settings = await prisma.settings.findFirst();
+    if (settings?.maintenanceMode && payload.role !== 'admin') {
+      return NextResponse.json({ error: 'System is currently under maintenance. New investments are temporarily disabled.' }, { status: 503 });
+    }
+
     if (amount < plan.minDeposit) {
       return NextResponse.json(
         { error: `Minimum deposit for ${plan.name} is $${plan.minDeposit}` },
@@ -51,70 +59,87 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      // 1. Lock user document
+      // 1. Lock user document (optimistic concurrency on MongoDB)
       await tx.user.update({
         where: { id: payload.userId },
-        data: { updatedAt: new Date() }
+        data:  { updatedAt: new Date() },
       });
 
-      // 2. Calculate available balance inside transaction
+      // 2. Verify available balance inside transaction
       const availableBalance = await getAvailableBalance(payload.userId, tx);
-
       if (amount > availableBalance) {
         throw new Error('INSUFFICIENT_BALANCE');
       }
 
+      // 3. Calculate tier bonus per spec:
+      //    Starter ($10–$999):   0% bonus
+      //    Prime   ($1,000+):   +10% bonus
+      //    Ultra   ($3,000+):   +20% bonus
+      const tierBonus = (plan as any).bonus ? +(amount * (plan as any).bonus).toFixed(2) : 0;
+
+      // activeCapital = principal + instant tier bonus (generates returns from Day 1)
+      const activeCapital = +(amount + tierBonus).toFixed(2);
+
+      // 4. Contract end date: startDate + plan.duration calendar days (approximate)
+      //    Actual enforcement is via businessDaysElapsed counter in the ROI engine.
       const startDate = new Date();
-      const endDate = new Date();
-      endDate.setDate(endDate.getDate() + plan.duration);
+      const endDate   = addBusinessDays(startDate, plan.duration);
 
-      let bonusAmount = 0;
-      if (amount >= 3000) {
-        bonusAmount = amount * 0.30;
-      } else if (amount >= 1000) {
-        bonusAmount = amount * 0.10;
-      }
-
+      // 5. Create the investment record
       const investment = await tx.investment.create({
         data: {
-          userId: payload.userId,
+          userId:      payload.userId,
           planId,
           amount,
-          bonusAmount,
+          bonusAmount: tierBonus, // kept for backwards compat
+          tierBonus,
+          activeCapital,
           startDate,
           endDate,
           status: 'active',
-        },
+        } as any,
       });
 
-      // Deposit transaction
+      // 6. Deposit transaction record (funds moved from balance to investment)
       await tx.transaction.create({
         data: {
-          userId: payload.userId,
-          type: 'deposit',
+          userId:      payload.userId,
+          type:        'deposit',
           amount,
-          status: 'completed',
-          description: `Investment activated — ${plan.name}`,
-          reference: investment.id,
+          status:      'completed',
+          description: `Investment activated — ${plan.name}${tierBonus > 0 ? ` (+$${tierBonus.toFixed(2)} tier bonus)` : ''}`,
+          reference:   investment.id,
         },
       });
 
-      // Decrement the user's persisted balance field and set planRate
+      // 7. Deduct from user balance, update operational capital and planRate
       await tx.user.update({
         where: { id: payload.userId },
         data: {
-          balance: { decrement: amount },
-          planRate: plan.dailyROI * 100,
-        }
+          balance:           { decrement: amount },
+          planRate:          plan.dailyROI * 100,
+          // operationalCapital tracks the sum of all active investment activeCapitals
+          operationalCapital: { increment: activeCapital },
+          // activeDeposit kept for backwards compat with existing dashboard queries
+          activeDeposit:     { increment: amount },
+        } as any,
       });
 
-      // Propagate referral commissions
+      // 8. Propagate referral commissions on the deposited amount
       await propagateCommissions(payload.userId, investment.id, amount, tx);
 
-      return investment;
+      return { investment, tierBonus, activeCapital };
     });
 
-    return NextResponse.json({ message: 'Investment activated', investment: result }, { status: 201 });
+    return NextResponse.json(
+      {
+        message:       'Investment activated',
+        investment:    result.investment,
+        tierBonus:     result.tierBonus,
+        activeCapital: result.activeCapital,
+      },
+      { status: 201 }
+    );
   } catch (err: any) {
     if (err.message === 'INSUFFICIENT_BALANCE') {
       return NextResponse.json(

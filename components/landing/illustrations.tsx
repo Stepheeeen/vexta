@@ -1,6 +1,8 @@
 // Custom SVG illustration components for the Vexta landing page
 // Each illustration is a self-contained, themed SVG using the violet/blue palette
 
+import { useTranslation } from '@/components/translation-provider';
+
 export function IllustrationCreateAccount() {
   return (
     <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
