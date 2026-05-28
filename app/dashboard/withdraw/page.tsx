@@ -1,7 +1,7 @@
 'use client';
 
 import { DashboardLayout } from '@/components/dashboard-layout';
-import { ArrowUpRight, ArrowDownRight, Wallet, AlertCircle, Loader2, ArrowLeftRight, CheckCircle2, Play, HelpCircle, Send, Users } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, Wallet, AlertCircle, Loader2, ArrowLeftRight, CheckCircle2, Play, HelpCircle, Send, Users, ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
