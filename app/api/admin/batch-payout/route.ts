@@ -21,7 +21,10 @@ export async function GET(req: NextRequest) {
   }
 
   const pendingWithdrawals = await prisma.withdrawal.findMany({
-    where: { status: 'pending' },
+    where: { 
+      status: 'pending',
+      user: { withdrawalsBlocked: false }
+    },
     include: {
       user: { select: { firstName: true, lastName: true, email: true } },
     },
@@ -88,12 +91,13 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
 }
 
-// ─── Generate batch export ───────────────────────────────────────────────────
-
 async function handleGenerate(adminId: string): Promise<NextResponse> {
-  // Fetch all pending withdrawals at this moment
+  // Fetch all pending withdrawals at this moment, excluding blocked users
   const pendingWithdrawals = await prisma.withdrawal.findMany({
-    where:   { status: 'pending' },
+    where: { 
+      status: 'pending',
+      user: { withdrawalsBlocked: false }
+    },
     include: { user: { select: { firstName: true, lastName: true, email: true } } },
     orderBy: { createdAt: 'asc' },
   });

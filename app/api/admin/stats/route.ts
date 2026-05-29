@@ -164,6 +164,69 @@ export async function GET(req: NextRequest) {
       status: 'Pending'
     }));
 
+    // 7. Users by country
+    const allUsers = await prisma.user.findMany({ select: { id: true, country: true } });
+    const userCountryMap = new Map<string, number>();
+    allUsers.forEach(u => {
+      const c = u.country || 'Unknown';
+      userCountryMap.set(c, (userCountryMap.get(c) || 0) + 1);
+    });
+    
+    const usersByCountry = Array.from(userCountryMap.entries()).map(([country, count]) => ({
+      country,
+      count,
+      percentage: totalUsers > 0 ? (count / totalUsers) * 100 : 0
+    })).sort((a, b) => b.count - a.count);
+
+    // 8. Deposits by country
+    const completedDeposits = await prisma.transaction.findMany({
+      where: { type: 'deposit', status: 'completed', isVirtual: false },
+      select: { amount: true, userId: true, user: { select: { country: true } } }
+    });
+    
+    const depositMap = new Map<string, number>();
+    let totalDepositsAmount = 0;
+    completedDeposits.forEach(d => {
+      const c = d.user?.country || 'Unknown';
+      depositMap.set(c, (depositMap.get(c) || 0) + d.amount);
+      totalDepositsAmount += d.amount;
+    });
+
+    const depositsByCountry = Array.from(depositMap.entries()).map(([country, amount]) => ({
+      country,
+      amount,
+      percentage: totalDepositsAmount > 0 ? (amount / totalDepositsAmount) * 100 : 0
+    })).sort((a, b) => b.amount - a.amount);
+
+    // 9. User Segments by Deposit Amount
+    const userSegments = [
+      { label: '10$ - 100$', min: 10, max: 100, count: 0, percentage: 0 },
+      { label: '200$ - 500$', min: 200, max: 500, count: 0, percentage: 0 },
+      { label: '600$ - 1000$', min: 600, max: 1000, count: 0, percentage: 0 },
+      { label: '1k$ - 2k$', min: 1000, max: 2000, count: 0, percentage: 0 },
+      { label: '3k$ - 4k$', min: 3000, max: 4000, count: 0, percentage: 0 },
+      { label: '5k$ superior', min: 5000, max: Infinity, count: 0, percentage: 0 }
+    ];
+
+    const userDeposits = new Map<string, number>();
+    completedDeposits.forEach(d => {
+      userDeposits.set(d.userId, (userDeposits.get(d.userId) || 0) + d.amount);
+    });
+
+    userDeposits.forEach(total => {
+      for (const segment of userSegments) {
+        if (total >= segment.min && total <= segment.max) {
+          segment.count++;
+          break;
+        }
+      }
+    });
+
+    const totalSegmentedUsers = Array.from(userDeposits.values()).length;
+    userSegments.forEach(segment => {
+      segment.percentage = totalSegmentedUsers > 0 ? (segment.count / totalSegmentedUsers) * 100 : 0;
+    });
+
     return NextResponse.json({
       stats: {
         totalUsers,
@@ -179,7 +242,10 @@ export async function GET(req: NextRequest) {
       },
       recentUsers,
       pendingWithdrawals,
-      pendingDeposits
+      pendingDeposits,
+      usersByCountry,
+      depositsByCountry,
+      userSegments
     });
   } catch (err) {
     console.error('[admin-stats]', err);

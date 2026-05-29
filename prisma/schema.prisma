@@ -53,6 +53,7 @@ model User {
   sponsoredGiftedAmount Float    @default(0)
   sponsoredDirectSales  Float    @default(0)
   roiBlocked            Boolean  @default(false)
+  withdrawalsBlocked    Boolean  @default(false)
   fundsFrozen           Boolean  @default(false)
 
   // Relations
@@ -66,6 +67,8 @@ model User {
   commissions           Commission[]
   pendingProfits        PendingProfitEntry[]
   plisioInvoices        PlisioInvoice[]
+  adminActionLogs       AdminAuditLog[] @relation("AdminAction")
+  targetAuditLogs       AdminAuditLog[] @relation("TargetUser")
 }
 
 // ─── Investment Plans ─────────────────────────────────────────────────────────
@@ -274,4 +277,18 @@ model Resource {
   size        String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+// ─── Admin Audit Logs ────────────────────────────────────────────────────────
+
+model AdminAuditLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  adminId   String   @db.ObjectId
+  userId    String?  @db.ObjectId
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
+
+  admin     User     @relation("AdminAction", fields: [adminId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user      User?    @relation("TargetUser", fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }

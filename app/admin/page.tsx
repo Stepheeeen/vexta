@@ -49,6 +49,9 @@ export default function AdminDashboard() {
   const [recentUsers, setRecentUsers] = useState<User[]>([]);
   const [pendingWithdrawals, setPendingWithdrawals] = useState<Withdrawal[]>([]);
   const [pendingDeposits, setPendingDeposits] = useState<Deposit[]>([]);
+  const [usersByCountry, setUsersByCountry] = useState<any[]>([]);
+  const [depositsByCountry, setDepositsByCountry] = useState<any[]>([]);
+  const [userSegments, setUserSegments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,6 +76,9 @@ export default function AdminDashboard() {
       setRecentUsers(data.recentUsers);
       setPendingWithdrawals(data.pendingWithdrawals);
       setPendingDeposits(data.pendingDeposits || []);
+      setUsersByCountry(data.usersByCountry || []);
+      setDepositsByCountry(data.depositsByCountry || []);
+      setUserSegments(data.userSegments || []);
     } catch (err: any) {
       setError(err.message || 'An error occurred');
     } finally {
@@ -153,7 +159,7 @@ export default function AdminDashboard() {
                   <p className="text-slate-500 dark:text-gray-400 text-xs font-medium mb-1 truncate">{stat.label}</p>
                   <p className="text-slate-900 dark:text-white text-xl font-bold">{stat.value}</p>
                 </div>
-                <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-violet-600 dark:text-violet-400 shrink-0">
                   <Icon className="w-4.5 h-4.5" />
                 </div>
               </div>
@@ -276,6 +282,69 @@ export default function AdminDashboard() {
           <Link href="/admin/analytics" className="w-full mt-6 py-3 block text-center border border-slate-200 dark:border-white/10 text-slate-700 dark:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl font-medium transition-colors">
             {t('adminViewAnalytics') || 'View Analytics'}
           </Link>
+        </div>
+      </div>
+
+      {/* Geographical Distribution & User Segments */}
+      <div className="grid lg:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm flex flex-col">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{t('adminUsersByCountry') || 'Users by Country'}</h3>
+          <div className="space-y-4 flex-1">
+            {usersByCountry.map((stat, i) => (
+              <div key={i} className="flex flex-col">
+                <div className="flex justify-between mb-1 text-sm font-medium">
+                  <span className="text-slate-700 dark:text-gray-300">{stat.country}</span>
+                  <span className="text-slate-900 dark:text-white">{stat.count} ({stat.percentage.toFixed(1)}%)</span>
+                </div>
+                <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
+                  <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${stat.percentage}%` }} />
+                </div>
+              </div>
+            ))}
+            {usersByCountry.length === 0 && (
+              <p className="text-sm text-slate-500 dark:text-gray-400">No data available.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm flex flex-col">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{t('adminDepositsByCountry') || 'Deposits by Country'}</h3>
+          <div className="space-y-4 flex-1">
+            {depositsByCountry.map((stat, i) => (
+              <div key={i} className="flex flex-col">
+                <div className="flex justify-between mb-1 text-sm font-medium">
+                  <span className="text-slate-700 dark:text-gray-300">{stat.country}</span>
+                  <span className="text-emerald-600 dark:text-emerald-400">${stat.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })} ({stat.percentage.toFixed(1)}%)</span>
+                </div>
+                <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
+                  <div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${stat.percentage}%` }} />
+                </div>
+              </div>
+            ))}
+            {depositsByCountry.length === 0 && (
+              <p className="text-sm text-slate-500 dark:text-gray-400">No data available.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm flex flex-col">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">{t('adminUserSegments') || 'User Segments'}</h3>
+          <div className="space-y-4 flex-1">
+            {userSegments.map((stat, i) => (
+              <div key={i} className="flex flex-col">
+                <div className="flex justify-between mb-1 text-sm font-medium">
+                  <span className="text-slate-700 dark:text-gray-300">{stat.label}</span>
+                  <span className="text-violet-600 dark:text-violet-400">{stat.count} ({stat.percentage.toFixed(1)}%)</span>
+                </div>
+                <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
+                  <div className="bg-violet-500 h-2 rounded-full" style={{ width: `${stat.percentage}%` }} />
+                </div>
+              </div>
+            ))}
+            {userSegments.length === 0 && (
+              <p className="text-sm text-slate-500 dark:text-gray-400">No data available.</p>
+            )}
+          </div>
         </div>
       </div>
 

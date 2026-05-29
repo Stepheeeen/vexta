@@ -191,7 +191,7 @@ function ProfitCalculator() {
     const bonusAmt = amount * bonusPct;
     const startingCapital = amount + bonusAmt;
     const dailyReturn = startingCapital * 0.01;
-    const endingBalance = startingCapital * 3.0;
+    const endingBalance = startingCapital * 4.42;
     const netProfit = endingBalance - amount;
     return { tier, bonusPct: (bonusPct * 100).toFixed(0) + '%', bonusAmt, startingCapital, dailyReturn, endingBalance, netProfit };
   };
@@ -247,25 +247,22 @@ function ProfitCalculator() {
             { label: t('depSignupBonus'), value: "+" + calc.bonusPct + " (+$" + calc.bonusAmt.toFixed(2) + ")", color: 'text-emerald-600 dark:text-emerald-400' },
             { label: t('depOperatingCapital'), value: "$" + calc.startingCapital.toFixed(2) },
             { label: t('depDailyReturn'), value: "$" + calc.dailyReturn.toFixed(2) + " / day", color: 'text-emerald-600 dark:text-emerald-400' },
-            { label: t('depPayoutLimit'), value: '300.0% ROI' },
+            { label: t('depPayoutLimit'), value: '200 Business Days', color: 'text-black dark:text-white text-sm font-black' },
           ].map(({ label, value, color }) => (
-            <div key={label} className="flex justify-between items-center text-xs">
+            <div key={label} className={`flex justify-between items-center text-xs ${color?.includes('text-sm') ? 'mt-1' : ''}`}>
               <span className="text-slate-600 dark:text-zinc-400 font-semibold font-mono">{label}</span>
               <span className={`font-bold font-mono ${color || 'text-slate-900 dark:text-white'}`}>{value}</span>
             </div>
           ))}
 
-          <div className="border-t border-slate-200 dark:border-white/5 pt-2.5 space-y-2">
+          <div className="border-t border-slate-200 dark:border-white/5 pt-3">
             <div className="flex justify-between items-center">
-              <span className="text-xs text-slate-600 dark:text-zinc-300 font-bold font-mono">{t("dashMaxReturn")}</span>
+              <div className="flex flex-col">
+                <span className="text-xs text-slate-600 dark:text-zinc-300 font-bold font-mono">{t("dashMaxReturn")} (Compound Interest)</span>
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold font-mono mt-0.5">442% in 200 day</span>
+              </div>
               <span className="text-base font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400">
                 {"$" + calc.endingBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-              </span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-slate-600 dark:text-zinc-300 font-bold font-mono">{t("dashNetProfit")}</span>
-              <span className="text-sm font-black font-mono text-emerald-600 dark:text-emerald-400">
-                {"+" + calc.netProfit.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </span>
             </div>
           </div>

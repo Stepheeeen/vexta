@@ -220,6 +220,12 @@ export default function AdminUsers() {
                         >
                           <ShieldAlert className="w-4 h-4" />
                         </button>
+                        <Link
+                          href={`/admin/users/${user.id}`}
+                          className="text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 font-medium text-sm px-3 py-1 bg-blue-500/10 rounded-lg transition-colors"
+                        >
+                          View
+                        </Link>
                       </div>
                     </td>
                   </tr>

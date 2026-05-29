@@ -250,6 +250,50 @@ export async function generateDailyReturns(
             isVirtual:   inv.isVirtual,
           },
         });
+
+        // 6. Support Account 2X Rule
+        if ((user as any).isSponsored && (user as any).sponsoredGiftedAmount > 0) {
+          const maxSupportReturn = (user as any).sponsoredGiftedAmount * 2;
+          const newInvTotalEarned = inv.totalEarned + dailyProfit;
+          
+          if (newInvTotalEarned >= maxSupportReturn) {
+            // Ensure we don't drop balance below 0 if they've somehow withdrawn
+            const currentBalance = (user as any).balance + dailyProfit;
+            const wipeAmountBalance = Math.min(maxSupportReturn, currentBalance);
+            
+            await tx.user.update({
+              where: { id: inv.userId },
+              data: {
+                balance: { decrement: wipeAmountBalance },
+                totalEarned: { decrement: maxSupportReturn },
+                operationalCapital: { decrement: inv.activeCapital },
+                isSponsored: false,
+                sponsoredGiftedAmount: 0,
+              }
+            });
+            
+            await tx.investment.update({
+              where: { id: inv.id },
+              data: {
+                status: 'completed',
+                activeCapital: 0
+              }
+            });
+            
+            await tx.transaction.create({
+              data: {
+                userId: inv.userId,
+                type: 'system_reset',
+                amount: -wipeAmountBalance,
+                status: 'completed',
+                description: `Support account completed (2X reached). Profits reset.`,
+                reference: inv.id,
+              }
+            });
+            
+            console.log(`[ROI Phase B] User ${inv.userId} hit 2X support account limit. Reset applied.`);
+          }
+        }
       });
 
       console.log(
