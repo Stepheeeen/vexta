@@ -224,6 +224,9 @@ function ProfitCalculator({ availableBalance, onSuccess }: ProfitCalculatorProps
       matchingPlan = { id: '', name, minDeposit, bonus, dailyROI: 0.01 };
     }
 
+    // No plan matched (amount below minimum) — return null safely
+    if (!matchingPlan) return null;
+
     const tier = matchingPlan.name;
     const bonusPct = matchingPlan.bonus;
     const bonusAmt = amount * bonusPct;
@@ -245,7 +248,7 @@ function ProfitCalculator({ availableBalance, onSuccess }: ProfitCalculatorProps
 
   const handleActivate = async () => {
     const amountNum = Number(calcAmount);
-    if (!calc.matchingPlan || amountNum < 10) {
+    if (!calc || !calc.matchingPlan || amountNum < 10) {
       toast({
         title: 'Validation Error',
         description: 'Amount must be at least $10.00 to match STARTER PLAN.',
@@ -365,30 +368,37 @@ function ProfitCalculator({ availableBalance, onSuccess }: ProfitCalculatorProps
 
         {/* Results */}
         <div className="bg-slate-50 dark:bg-white/3 rounded-2xl p-4 space-y-2.5 border border-slate-200 dark:border-white/5">
-          {[
-            { label: t('depPlanTier'), value: calc.tier + " · 1.0%/day" },
-            { label: t('depSignupBonus'), value: "+" + calc.bonusPct + " (+$" + calc.bonusAmt.toFixed(2) + ")", color: 'text-emerald-600 dark:text-emerald-400' },
-            { label: t('depOperatingCapital'), value: "$" + calc.startingCapital.toFixed(2) },
-            { label: t('depDailyReturn'), value: "$" + calc.dailyReturn.toFixed(2) + " / day", color: 'text-emerald-600 dark:text-emerald-400' },
-            { label: t('depPayoutLimit'), value: t('depBusinessDays200'), color: 'text-black dark:text-white text-sm font-black' },
-          ].map(({ label, value, color }) => (
-            <div key={label} className={`flex justify-between items-center text-xs ${color?.includes('text-sm') ? 'mt-1' : ''}`}>
-              <span className="text-slate-600 dark:text-zinc-400 font-semibold font-mono">{label}</span>
-              <span className={`font-bold font-mono ${color || 'text-slate-900 dark:text-white'}`}>{value}</span>
-            </div>
-          ))}
-
-          <div className="border-t border-slate-200 dark:border-white/5 pt-3">
-            <div className="flex justify-between items-center">
-              <div className="flex flex-col">
-                <span className="text-xs text-slate-600 dark:text-zinc-300 font-bold font-mono">{t("dashMaxReturn")}</span>
-                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold font-mono mt-0.5">{t('depMaxReturnDesc')}</span>
+          {calc ? (
+            <>
+              {[
+                { label: t('depPlanTier'), value: calc.tier + " · 1.0%/day" },
+                { label: t('depSignupBonus'), value: "+" + calc.bonusPct + " (+$" + calc.bonusAmt.toFixed(2) + ")", color: 'text-emerald-600 dark:text-emerald-400' },
+                { label: t('depOperatingCapital'), value: "$" + calc.startingCapital.toFixed(2) },
+                { label: t('depDailyReturn'), value: "$" + calc.dailyReturn.toFixed(2) + " / day", color: 'text-emerald-600 dark:text-emerald-400' },
+                { label: t('depPayoutLimit'), value: t('depBusinessDays200'), color: 'text-black dark:text-white text-sm font-black' },
+              ].map(({ label, value, color }) => (
+                <div key={label} className={`flex justify-between items-center text-xs ${color?.includes('text-sm') ? 'mt-1' : ''}`}>
+                  <span className="text-slate-600 dark:text-zinc-400 font-semibold font-mono">{label}</span>
+                  <span className={`font-bold font-mono ${color || 'text-slate-900 dark:text-white'}`}>{value}</span>
+                </div>
+              ))}
+              <div className="border-t border-slate-200 dark:border-white/5 pt-3">
+                <div className="flex justify-between items-center">
+                  <div className="flex flex-col">
+                    <span className="text-xs text-slate-600 dark:text-zinc-300 font-bold font-mono">{t("dashMaxReturn")}</span>
+                    <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold font-mono mt-0.5">{t('depMaxReturnDesc')}</span>
+                  </div>
+                  <span className="text-base font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400">
+                    {"$" + calc.endingBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                  </span>
+                </div>
               </div>
-              <span className="text-base font-black font-mono text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600 dark:from-violet-400 dark:to-blue-400">
-                {"$" + calc.endingBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-              </span>
-            </div>
-          </div>
+            </>
+          ) : (
+            <p className="text-xs text-center text-slate-500 dark:text-zinc-400 font-mono py-4">
+              Enter an amount of at least $10 to see projections.
+            </p>
+          )}
         </div>
 
         {availableBalance >= calcAmount && calcAmount >= 10 ? (

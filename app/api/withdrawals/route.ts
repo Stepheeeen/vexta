@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify OTP
-    if ((userRecord as any).verificationCode !== verificationCode || !(userRecord as any).verificationCodeExpires || new Date() > (userRecord as any).verificationCodeExpires) {
+    if (userRecord.verificationCode !== verificationCode || !userRecord.verificationCodeExpires || new Date() > userRecord.verificationCodeExpires) {
       return NextResponse.json({ error: 'Invalid or expired verification code' }, { status: 400 });
     }
 
@@ -96,11 +96,11 @@ export async function POST(req: NextRequest) {
         data: { updatedAt: new Date() }
       });
 
-      if ((user as any).fundsFrozen) {
+      if (user.fundsFrozen) {
         throw new Error('FUNDS_FROZEN');
       }
 
-      if ((user as any).withdrawalsBlocked) {
+      if (user.withdrawalsBlocked) {
         throw new Error('WITHDRAWALS_BLOCKED');
       }
 
@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Free sponsored check
-      if ((user as any).isSponsored && (user as any).sponsoredType === 'free' && type === 'roi') {
+      if (user.isSponsored && user.sponsoredType === 'free' && type === 'roi') {
         // Calculate historical ROI withdrawn inside transaction
         const roiWithdrawnResult = await tx.withdrawal.aggregate({
           where: { userId: payload.userId, status: { in: ['approved', 'pending'] }, type: 'roi' },
@@ -122,21 +122,25 @@ export async function POST(req: NextRequest) {
         const totalRoiWithdrawn = roiWithdrawnResult._sum.amount ?? 0;
 
         if ((totalRoiWithdrawn + amount) > 12) {
-          if ((user as any).sponsoredDirectSales < 10) {
+          if (user.sponsoredDirectSales < 10) {
             // Lock user's ROI withdrawals
             await tx.user.update({
               where: { id: payload.userId },
-              data: { roiBlocked: true } as any
+              data: { roiBlocked: true }
             });
             throw new Error('FREE_ROI_LOCKED');
           }
         }
       }
 
-      const fee = 0.01;
-      const netAmount = Number((amount - fee).toFixed(2));
+      // Platform Maintenance Fee: $0.01 (flat, per-withdrawal)
+      // The full `amount` is debited from the user's balance.
+      // The admin disburses `netAmount` to the user's wallet — the $0.01
+      // difference is the platform's retained maintenance fee.
+      const MAINTENANCE_FEE = 0.01;
+      const netAmount = Number((amount - MAINTENANCE_FEE).toFixed(2));
 
-      // 3. Decrement user's persisted balance field
+      // 3. Decrement user's persisted balance by the full requested amount
       await tx.user.update({
         where: { id: payload.userId },
         data: { balance: { decrement: amount } }
@@ -150,12 +154,13 @@ export async function POST(req: NextRequest) {
       const withdrawal = await tx.withdrawal.create({
         data: { 
           userId: payload.userId, 
-          amount, 
+          amount,       // gross amount requested (full balance deduction)
           walletAddress, 
           network, 
           type,
           status: 'pending',
-          note: `Flat fee: $0.01 | Net payout: $${netAmount.toFixed(2)}`
+          // Admin should disburse netAmount to user; $0.01 retained by platform
+          note: `Maintenance fee: $${MAINTENANCE_FEE.toFixed(2)} | Net payout: $${netAmount.toFixed(2)}`
         },
       });
 

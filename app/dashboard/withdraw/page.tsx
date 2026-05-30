@@ -1,10 +1,8 @@
 'use client';
 
 import { DashboardLayout } from '@/components/dashboard-layout';
-import { ArrowUpRight, ArrowDownRight, Wallet, AlertCircle, Loader2, ArrowLeftRight, CheckCircle2, Play, HelpCircle, Send, Users, ArrowRight } from 'lucide-react';
+import { Wallet, AlertCircle, Loader2, ArrowLeftRight, CheckCircle2, HelpCircle, Send, Users, ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
 
@@ -80,8 +78,6 @@ function P2PTransferPanel({ balance, onSuccess }: { balance: number; onSuccess: 
             {t('withdrawLive')}
           </div>
         </div>
-
-
 
         {done ? (
           <div className="flex items-center justify-center gap-3 py-6 bg-violet-500/5 border border-violet-500/10 rounded-2xl">
@@ -175,7 +171,6 @@ const sectionClass =
   'bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200 dark:border-white/5 rounded-2xl p-6 mb-5';
 
 export default function WithdrawPage() {
-  const router = useRouter();
   const { t } = useTranslation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
@@ -212,7 +207,6 @@ export default function WithdrawPage() {
   const [requiresOtp, setRequiresOtp] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [pageError, setPageError] = useState<string | null>(null);
-  const [simulating, setSimulating] = useState(false);
 
   const fetchWithdrawalData = async () => {
     try {
@@ -585,8 +579,8 @@ export default function WithdrawPage() {
                 </div>
               </div>
 
-              {/* ── Payout Summary ──────────────────────────────────── */}
-              {amount && parseFloat(amount) > 0 && (
+              {/* ── Payout Summary (only shown for valid ≥$10 amounts) ── */}
+              {amount && parseFloat(amount) >= 10 && (
                 <div className="rounded-2xl border border-violet-500/20 bg-violet-500/5 dark:bg-violet-600/5 p-4 mb-2">
                   <p className="text-[10px] font-extrabold uppercase tracking-widest text-violet-600 dark:text-violet-400 mb-3">
                     {t('withdrawPayoutSummaryTitle') || 'Payout Summary'}
