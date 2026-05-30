@@ -52,6 +52,10 @@ export async function POST(req: NextRequest) {
     const userRecord = await prisma.user.findUnique({ where: { id: payload.userId } });
     if (!userRecord) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
+    if (userRecord.withdrawalsBlocked) {
+      return NextResponse.json({ error: 'Your withdrawals have been blocked by an administrator. Please contact support.' }, { status: 400 });
+    }
+
     if (!verificationCode) {
       // Preliminary balance check
       const pools = await getWithdrawableBalances(payload.userId, prisma as any);
@@ -96,6 +100,10 @@ export async function POST(req: NextRequest) {
         throw new Error('FUNDS_FROZEN');
       }
 
+      if ((user as any).withdrawalsBlocked) {
+        throw new Error('WITHDRAWALS_BLOCKED');
+      }
+
       // 2. Calculate available balance inside transaction
       const pools = await getWithdrawableBalances(payload.userId, tx);
       const availableInPool = type === 'roi' ? pools.availableRoi : pools.availableCommission;
@@ -125,8 +133,7 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      const feeRate = settings ? settings.withdrawalFee / 100 : 0.06;
-      const fee = Number((amount * feeRate).toFixed(2));
+      const fee = 0.01;
       const netAmount = Number((amount - fee).toFixed(2));
 
       // 3. Decrement user's persisted balance field
@@ -148,7 +155,7 @@ export async function POST(req: NextRequest) {
           network, 
           type,
           status: 'pending',
-          note: `${(feeRate * 100).toFixed(0)}% fee: $${fee.toFixed(2)} | Net payout: $${netAmount.toFixed(2)}`
+          note: `Flat fee: $0.01 | Net payout: $${netAmount.toFixed(2)}`
         },
       });
 
@@ -159,7 +166,7 @@ export async function POST(req: NextRequest) {
           type: 'withdrawal',
           amount: -amount,
           status: 'pending',
-          description: `Withdrawal request (${type === 'roi' ? 'ROI' : 'Commission'}) — ${network} (Net: $${netAmount.toFixed(2)}, Fee: $${fee.toFixed(2)})`,
+          description: `Withdrawal request (${type === 'roi' ? 'ROI' : 'Commission'}) — ${network} (Net: $${netAmount.toFixed(2)}, Fee: $0.01)`,
           reference: withdrawal.id,
         },
       });
@@ -175,6 +182,12 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ message: 'Withdrawal request submitted', withdrawal: result }, { status: 201 });
   } catch (err: any) {
+    if (err.message === 'WITHDRAWALS_BLOCKED') {
+      return NextResponse.json(
+        { error: 'Your withdrawals have been blocked by an administrator. Please contact support.' },
+        { status: 400 }
+      );
+    }
     if (err.message === 'FUNDS_FROZEN') {
       return NextResponse.json(
         { error: 'Your account funds are temporarily frozen. Please contact support.' },

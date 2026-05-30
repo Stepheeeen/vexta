@@ -66,13 +66,13 @@ export async function GET(req: NextRequest) {
     where: { id: userId },
     select: {
       operationalCapital: true,
-      pendingIntegration: true,
       isSponsored: true,
       sponsoredType: true,
       sponsoredGoalAmount: true,
       sponsoredDirectSales: true,
       roiBlocked: true,
       fundsFrozen: true,
+      withdrawalsBlocked: true,
     } as any
   });
 
@@ -82,7 +82,6 @@ export async function GET(req: NextRequest) {
       totalEarned: +totalEarnedFinal.toFixed(2),
       totalCommissions: +totalCommissions.toFixed(2),
       operationalCapital: (userRecord as any)?.operationalCapital || 0,
-      pendingIntegration: (userRecord as any)?.pendingIntegration || 0,
       availableBalance,
       activeInvestments,
       directReferrals,

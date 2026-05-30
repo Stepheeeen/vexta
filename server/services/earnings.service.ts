@@ -6,15 +6,13 @@ import { processDailyROI } from '../../lib/roi-engine';
  *
  * This is the main entry-point called by the /api/admin/run-daily-roi cron route.
  *
- * Delegates to lib/roi-engine.ts which executes in two phases:
- *   Phase A — Promote pending profits whose 48-business-hour lock has expired.
- *   Phase B — Generate today's 1% daily returns on current activeCapital.
+ * Delegates to lib/roi-engine.ts which generates today's 1% daily returns on current activeCapital.
  *
  * @param bypassWeekendCheck If true, bypasses the Monday–Friday day-of-week validation.
  */
 export async function runDailyRoiDistribution(
   bypassWeekendCheck = false
-): Promise<{ usersPaid: number; totalDistributed: number; promoted: number; amountPromoted: number }> {
+): Promise<{ usersPaid: number; totalDistributed: number }> {
   console.log('[EarningsService] Starting daily ROI distribution...');
 
   // Guard: check day-of-week (Monday–Friday only)
@@ -59,9 +57,9 @@ export async function runDailyRoiDistribution(
     throw new Error('Failed to acquire ROI distribution lock. Another process may be running.');
   }
 
-  let result;
+  let result: { processed: number, totalPaid: number };
   try {
-    // Run the two-phase engine
+    // Run the ROI engine
     result = await processDailyROI(bypassWeekendCheck);
   } finally {
     // Always release the lock, even if the engine throws
@@ -73,14 +71,11 @@ export async function runDailyRoiDistribution(
 
   console.log(
     `[EarningsService] Complete. ` +
-    `Phase A promoted ${result.promoted} entries ($${result.amountPromoted.toFixed(2)}). ` +
-    `Phase B paid ${result.processed} investments ($${result.totalPaid.toFixed(2)}).`
+    `Paid ${result.processed} investments ($${result.totalPaid.toFixed(2)}).`
   );
 
   return {
     usersPaid:       result.processed,
     totalDistributed: result.totalPaid,
-    promoted:        result.promoted,
-    amountPromoted:  result.amountPromoted,
   };
 }

@@ -18,7 +18,6 @@ async function main() {
       totalEarned: 0,
       totalCommission: 0,
       operationalCapital: 0,
-      pendingIntegration: 0,
       sponsoredGoalAmount: 0,
       sponsoredGiftedAmount: 0,
       sponsoredDirectSales: 0
@@ -30,7 +29,6 @@ async function main() {
   const delTx = await prisma.transaction.deleteMany({});
   const delInv = await prisma.investment.deleteMany({});
   const delRoi = await prisma.dailyROIEntry.deleteMany({});
-  const delPending = await prisma.pendingProfitEntry.deleteMany({});
   const delWd = await prisma.withdrawal.deleteMany({});
   const delComm = await prisma.commission.deleteMany({});
   const delPlisio = await prisma.plisioInvoice.deleteMany({});

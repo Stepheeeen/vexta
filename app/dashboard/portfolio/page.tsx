@@ -11,7 +11,6 @@ interface StatsData {
   stats: {
     totalInvested: number;
     operationalCapital: number;
-    pendingIntegration: number;
     totalEarned: number;
     totalCommissions: number;
     availableBalance: number;
@@ -89,8 +88,8 @@ export default function PortfolioPage() {
   };
 
   const stats = [
-    { label: 'Operational Capital', value: `$${(data?.stats.operationalCapital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: t('portfolioStat1Sub') },
-    { label: 'Pending Profits (48h)', value: `$${(data?.stats.pendingIntegration ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: 'Waiting to compound' },
+    { label: t('depOperatingCapital'), value: `$${(data?.stats.operationalCapital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: t('portfolioStat1Sub') },
+    { label: t('portfolioActiveContracts'), value: `${data?.stats.activeInvestments ?? 0}`, change: t('portfolioActiveContractsSub') },
     { label: t('portfolioStat3'), value: `$${(data?.stats.totalEarned ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: t('portfolioStat3Sub') },
     { label: t('portfolioStat4'), value: `${daysActive}`, change: t('portfolioStat4Sub') },
   ];
@@ -185,7 +184,8 @@ export default function PortfolioPage() {
               {data && data.investments.length > 0 ? (
                 data.investments.map((plan, idx) => {
                   const active = plan.status === 'active';
-                  const targetReturn = plan.amount * 3;
+                  const activeCapital = plan.activeCapital ?? plan.amount;
+                  const targetReturn = activeCapital * 2;
                   const progress = targetReturn > 0
                     ? Math.min(100, Math.max(0, Math.round((plan.totalEarned / targetReturn) * 100)))
                     : 0;
@@ -200,7 +200,7 @@ export default function PortfolioPage() {
                           </div>
                           <div>
                             <p className="text-sm font-semibold text-slate-900 dark:text-white">{plan.plan}</p>
-                            <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{(plan.dailyROI * 100).toFixed(1)}% daily</p>
+                            <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{(plan.dailyROI * 100).toFixed(1)}% {t('daily')}</p>
                           </div>
                         </div>
                         <span className={`text-[9px] font-mono px-2.5 py-1 rounded-full ${active ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-gray-500'}`}>
@@ -211,8 +211,8 @@ export default function PortfolioPage() {
                       {/* Stats */}
                       <div className="grid grid-cols-3 gap-4 mb-4">
                         {[
-                          { label: 'Original Deposit', value: `$${plan.amount.toLocaleString()}` },
-                          { label: 'Operational Capital', value: `$${(plan.activeCapital ?? plan.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, green: true },
+                          { label: t('portfolioOriginalDeposit'), value: `$${plan.amount.toLocaleString()}` },
+                          { label: t('depOperatingCapital'), value: `$${(plan.activeCapital ?? plan.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, green: true },
                           { label: t('portfolioEarned'), value: `$${plan.totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` },
                         ].map(({ label, value, green }) => (
                           <div key={label}>

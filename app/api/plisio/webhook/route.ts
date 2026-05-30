@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'crypto';
 import { prisma } from '@/lib/prisma';
-import { distributeUnilevelCommission } from '@/server/services/commission.service';
+
 import { SYSTEM_CONFIG } from '@/lib/config/system';
 
 // Plisio IPN callback status constants
@@ -58,8 +58,7 @@ function computeTierBonus(amount: number, planBonus: number): number {
  * On `completed`:
  *   1. Credits user.balance and user.operationalCapital.
  *   2. Creates a deposit Transaction record.
- *   3. Distributes unilevel commissions.
- *   4. Marks PlisioInvoice as completed.
+ *   3. Marks PlisioInvoice as completed.
  *
  * On `expired` / `cancelled` / `error`:
  *   - Updates invoice status only. No balance changes.
@@ -200,8 +199,6 @@ async function handleCompletedPayment(
       });
     });
 
-    // 4. Distribute unilevel commissions (outside main transaction for fail-silent behaviour)
-    await distributeUnilevelCommission(userId, amount);
 
     console.log(`[plisio/webhook] ✅ Activated $${amount.toFixed(2)} deposit for user ${userId} (txn: ${invoice.txnId})`);
   } catch (err) {

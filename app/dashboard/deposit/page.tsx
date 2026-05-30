@@ -52,7 +52,7 @@ function PlanCard({ plan, onSelect }: { plan: Plan; onSelect: (amount: number) =
     <div className={`relative flex flex-col p-5 rounded-2xl border bg-gradient-to-br ${colors[plan.tag] || 'from-white/5 to-white/2 border-white/10'} transition-all hover:scale-[1.01] hover:shadow-lg group`}>
       {plan.tag === 'ADVANCE PLAN' && (
         <div className="absolute -top-2.5 right-4 bg-amber-500 text-white text-[9px] font-bold px-3 py-0.5 rounded-full uppercase tracking-wider shadow">
-          Most Popular
+          {t('mostPopular')}
         </div>
       )}
 
@@ -124,7 +124,8 @@ export default function DepositPage() {
 
         if (plansRes.ok) {
           const plansData = await plansRes.json();
-          setPlans(plansData.plans || []);
+          const sorted = (plansData.plans || []).sort((a: any, b: any) => a.minDeposit - b.minDeposit);
+          setPlans(sorted);
         }
 
         if (statsRes.ok) {
@@ -206,7 +207,7 @@ export default function DepositPage() {
           <section>
             <div className="flex items-center gap-2 mb-5">
               <TrendingUp className="w-5 h-5 text-violet-500" />
-              <h2 className="text-base font-bold text-slate-900 dark:text-white">Investment Plans</h2>
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">{t('depInvPlans')}</h2>
             </div>
             {plans.length === 0 ? (
               <p className="text-sm text-slate-400 dark:text-gray-500 font-mono">{t('depNoPlans')}</p>
@@ -238,13 +239,13 @@ export default function DepositPage() {
                 <div className="flex items-center gap-2 p-3 bg-violet-500/5 border border-violet-500/20 rounded-xl">
                   <ShieldCheck className="w-4 h-4 text-violet-500" />
                   <span className="text-[10px] font-mono font-bold text-violet-600 dark:text-violet-400 uppercase tracking-wider">
-                    USDT · BEP20 · Binance Smart Chain Only
+                    {t('depNetworkBscOnly')}
                   </span>
                 </div>
 
                 <div>
                   <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                    Deposit Amount (USDT)
+                    {t('depAmountUsdt')}
                   </label>
                   <div className="relative">
                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">$</span>
@@ -324,7 +325,7 @@ export default function DepositPage() {
                     {deposits.map((dep) => (
                       <div key={dep.id} className="flex items-center justify-between px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-white/1 transition-colors">
                         <div>
-                          <p className="text-xs font-semibold text-slate-800 dark:text-white">{dep.description || 'Deposit'}</p>
+                          <p className="text-xs font-semibold text-slate-800 dark:text-white">{dep.description || t('deposit')}</p>
                           <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono mt-0.5">
                             {new Date(dep.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                           </p>

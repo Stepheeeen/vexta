@@ -30,6 +30,7 @@ async function main() {
         lastName: 'Admin',
         referralCode: generateReferralCode('Vexta', 'Admin'),
         isVerified: true,
+        role: 'admin',
         country: 'United States',
         whatsappOrTelegram: '+1234567890',
       },

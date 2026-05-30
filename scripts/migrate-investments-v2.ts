@@ -81,7 +81,6 @@ async function main() {
       where: { id: user.id },
       data: {
         operationalCapital: +operationalCapital.toFixed(2),
-        pendingIntegration: 0, // Clean slate — existing investments get no pending queue history
       },
     });
     userUpdated++;

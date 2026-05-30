@@ -41,16 +41,16 @@ export default function ResourcesPage() {
   }, []);
 
   const fileTypes = [
-    { value: 'all', label: 'All Files' },
-    { value: 'business_explanation', label: 'Business Explainers' },
-    { value: 'pdf', label: 'PDF Guides' },
-    { value: 'presentation', label: 'Presentations' },
-    { value: 'video', label: 'Videos' },
-    { value: 'marketing', label: 'Marketing Media' }
+    { value: 'all', label: t('resAllFiles') },
+    { value: 'business_explanation', label: t('resBusinessExplainers') },
+    { value: 'pdf', label: t('resPdfGuides') },
+    { value: 'presentation', label: t('resPresentations') },
+    { value: 'video', label: t('resVideos') },
+    { value: 'marketing', label: t('resMarketingMedia') }
   ];
 
   const languages = [
-    { value: 'all', label: 'All Languages' },
+    { value: 'all', label: t('resAllLanguages') },
     { value: 'en', label: 'English 🇺🇸' },
     { value: 'es', label: 'Español 🇪🇸' },
     { value: 'vi', label: 'Tiếng Việt 🇻🇳' },
@@ -107,7 +107,7 @@ export default function ResourcesPage() {
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-gray-500" />
             <input
               type="text"
-              placeholder="Search resource..."
+              placeholder={t('resSearchPlaceholder')}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-white/8 rounded-xl bg-slate-50 dark:bg-white/3 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:border-violet-500 focus:bg-white/5 transition-all"
@@ -192,7 +192,7 @@ export default function ResourcesPage() {
 
               <div className="mt-5 pt-4 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
                 <span className="text-[10px] font-mono text-slate-400 dark:text-gray-500">
-                  {item.size || 'Unknown size'}
+                  {item.size || t('resUnknownSize')}
                 </span>
                 <a
                   href={item.url}

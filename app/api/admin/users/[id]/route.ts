@@ -60,7 +60,8 @@ async function getNetworkStats(userId: string) {
 }
 
 // GET user details and network stats
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const payload = getUserFromRequest(req);
   if (!payload || payload.role !== 'admin') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -68,7 +69,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
   try {
     const user = await prisma.user.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -113,7 +114,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // POST admin actions
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id: userId } = await params;
   const payload = getUserFromRequest(req);
   if (!payload || payload.role !== 'admin') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
@@ -121,7 +123,6 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   try {
     const { action, value, reason } = await req.json();
-    const userId = params.id;
     
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });

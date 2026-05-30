@@ -11,7 +11,7 @@ const mockPrisma = {
   referralLink: { findUnique: jest.fn(), findMany: jest.fn(), create: jest.fn(), upsert: jest.fn(), count: jest.fn() },
   withdrawal:  { create: jest.fn(), findMany: jest.fn(), aggregate: jest.fn(), update: jest.fn(), updateMany: jest.fn(), findUnique: jest.fn() },
   dailyROIEntry: { create: jest.fn(), findFirst: jest.fn(), deleteMany: jest.fn() },
-  settings:    { findFirst: jest.fn(), create: jest.fn(), update: jest.fn() },
+  settings:    { findFirst: jest.fn(), create: jest.fn(), update: jest.fn(), updateMany: jest.fn() },
 
   // ─── New models (v2) ────────────────────────────────────────────────────────
   pendingProfitEntry: { create: jest.fn(), findMany: jest.fn(), findUnique: jest.fn(), update: jest.fn(), updateMany: jest.fn() },

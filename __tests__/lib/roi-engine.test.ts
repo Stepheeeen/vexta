@@ -67,8 +67,6 @@ describe('ROI Engine', () => {
         // 2026-05-23 is Saturday
         jest.setSystemTime(new Date('2026-05-23T12:00:00Z'));
 
-        // Phase A (promotePendingProfits) will run regardless of day
-        (prisma.pendingProfitEntry.findMany as jest.Mock).mockResolvedValue([]);
         (prisma.investment.findMany as jest.Mock).mockResolvedValue([]);
 
         const result = await processDailyROI();
@@ -81,7 +79,6 @@ describe('ROI Engine', () => {
         // 2026-05-24 is Sunday
         jest.setSystemTime(new Date('2026-05-24T12:00:00Z'));
 
-        (prisma.pendingProfitEntry.findMany as jest.Mock).mockResolvedValue([]);
         (prisma.investment.findMany as jest.Mock).mockResolvedValue([]);
 
         const result = await processDailyROI();
@@ -93,7 +90,6 @@ describe('ROI Engine', () => {
         // 2026-05-27 is Wednesday
         jest.setSystemTime(new Date('2026-05-27T12:00:00Z'));
 
-        (prisma.pendingProfitEntry.findMany as jest.Mock).mockResolvedValue([]);
         (prisma.investment.findMany as jest.Mock).mockResolvedValue([]);
 
         const result = await processDailyROI();
@@ -129,15 +125,12 @@ describe('ROI Engine', () => {
         // Mock DB calls to avoid real database errors
         (prisma.settings.findFirst as any).mockResolvedValue({ id: 'settings_id', lastDailyRun: null });
         (prisma.settings.update as any).mockResolvedValue({});
-        (prisma.pendingProfitEntry.findMany as jest.Mock).mockResolvedValue([]);
+        (prisma.settings.updateMany as any).mockResolvedValue({ count: 1 });
         (prisma.investment.findMany as jest.Mock).mockResolvedValue([]);
 
         const result = await runDailyRoiDistribution(true);
-        // Result now includes promoted/amountPromoted from Phase A
         expect(result.usersPaid).toBe(0);
         expect(result.totalDistributed).toBe(0);
-        expect(result.promoted).toBe(0);
-        expect(result.amountPromoted).toBe(0);
       });
 
       it('runs successfully on Wednesday (weekday) without bypassWeekendCheck', async () => {
@@ -147,7 +140,7 @@ describe('ROI Engine', () => {
         // Mock DB calls to avoid real database errors
         (prisma.settings.findFirst as any).mockResolvedValue({ id: 'settings_id', lastDailyRun: null });
         (prisma.settings.update as any).mockResolvedValue({});
-        (prisma.pendingProfitEntry.findMany as jest.Mock).mockResolvedValue([]);
+        (prisma.settings.updateMany as any).mockResolvedValue({ count: 1 });
         (prisma.investment.findMany as jest.Mock).mockResolvedValue([]);
 
         const result = await runDailyRoiDistribution(false);

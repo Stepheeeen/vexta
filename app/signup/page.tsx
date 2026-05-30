@@ -53,15 +53,15 @@ export default function SignUp() {
   const validateStep = (currentStep: number) => {
     const newErrors: Record<string, string> = {};
     if (currentStep === 1) {
-      if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
-      if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
-      if (!formData.email.includes('@') || !formData.email.includes('.')) newErrors.email = 'Valid email is required';
-      if (!formData.country.trim()) newErrors.country = 'Country is required';
+      if (!formData.firstName.trim()) newErrors.firstName = t('signupFirstNameRequired');
+      if (!formData.lastName.trim()) newErrors.lastName = t('signupLastNameRequired');
+      if (!formData.email.includes('@') || !formData.email.includes('.')) newErrors.email = t('signupValidEmailRequired');
+      if (!formData.country.trim()) newErrors.country = t('signupCountryRequired');
     } else if (currentStep === 2) {
-      if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
-      if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+      if (formData.password.length < 8) newErrors.password = t('signupPasswordLengthError');
+      if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = t('signupPasswordsMismatch');
     } else if (currentStep === 3) {
-      if (!formData.acceptTerms) newErrors.acceptTerms = 'You must agree to the Terms of Service';
+      if (!formData.acceptTerms) newErrors.acceptTerms = t('signupAgreeTermsError');
     }
     
     setErrors(newErrors);
@@ -115,7 +115,7 @@ export default function SignUp() {
           </Link>
           <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 dark:bg-[#1A1F2E]/80 border border-slate-200 dark:border-[#00FF88]/30 backdrop-blur-md">
             <Activity className="w-4 h-4 text-violet-600 dark:text-[#00FF88] animate-pulse" />
-            <span className="text-xs text-violet-600 dark:text-[#00FF88] font-mono tracking-wider">NODE INITIALIZATION</span>
+            <span className="text-xs text-violet-600 dark:text-[#00FF88] font-mono tracking-wider">{t('nodeInitialization')}</span>
           </div>
         </div>
 
@@ -210,7 +210,7 @@ export default function SignUp() {
                     }}
                     className={`w-full bg-slate-50 dark:bg-white/5 border ${errors.country ? 'border-red-500/50 focus:ring-red-500/50' : 'border-slate-200 dark:border-white/5 focus:border-violet-500/50 dark:focus:border-[#00D9FF]/50 focus:ring-violet-500/50 dark:focus:ring-[#00D9FF]/50'} rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#FFFFFF] focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono text-sm`}
                   >
-                    <option value="" className="text-slate-400 dark:text-white/30 bg-white dark:bg-[#0F1419]">Select Country</option>
+                    <option value="" className="text-slate-400 dark:text-white/30 bg-white dark:bg-[#0F1419]">{t('signupSelectCountry')}</option>
                     {countries.map((country) => (
                       <option key={country} value={country} className="bg-white dark:bg-[#0F1419]">
                         {country}

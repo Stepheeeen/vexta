@@ -43,8 +43,6 @@ model User {
   // ─── Compounding Capital Tracking ──────────────────────────────────────────
   /// Current total active capital generating returns (sum of all investment activeCapitals)
   operationalCapital  Float    @default(0)
-  /// Running total of profits sitting in the 48-hour pending queue (not yet compounded)
-  pendingIntegration  Float    @default(0)
 
   // Sponsored & Leadership System
   isSponsored           Boolean  @default(false)
@@ -65,7 +63,6 @@ model User {
   referralsAsReferrer   ReferralLink[] @relation("Referrer")
   referralsAsReferred   ReferralLink[] @relation("Referred")
   commissions           Commission[]
-  pendingProfits        PendingProfitEntry[]
   plisioInvoices        PlisioInvoice[]
   adminActionLogs       AdminAuditLog[] @relation("AdminAction")
   targetAuditLogs       AdminAuditLog[] @relation("TargetUser")
@@ -110,7 +107,6 @@ model Investment {
   user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   plan           Plan                 @relation(fields: [planId], references: [id])
   dailyROIs      DailyROIEntry[]
-  pendingProfits PendingProfitEntry[]
 }
 
 model DailyROIEntry {
@@ -120,32 +116,6 @@ model DailyROIEntry {
   date         DateTime @default(now())
 
   investment Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
-}
-
-// ─── 48-Hour Pending Integration Queue ───────────────────────────────────────
-
-/// Timestamped ledger entry for each day's profit.
-/// Profits are credited to user.balance immediately but only compound into
-/// investment.activeCapital after 48 business hours (unlocksAt).
-model PendingProfitEntry {
-  id           String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId       String    @db.ObjectId
-  investmentId String    @db.ObjectId
-  amount       Float
-  /// The business day this profit was earned (used for display & ordering)
-  earnedOnDate DateTime
-  /// Exactly 2 business days after earnedOnDate — when this entry promotes to activeCapital
-  unlocksAt    DateTime
-  /// Null = still pending; set to current timestamp when promoted to active capital
-  integratedAt DateTime?
-  isVirtual    Boolean   @default(false)
-  createdAt    DateTime  @default(now())
-
-  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  investment Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
-
-  @@index([userId, integratedAt])
-  @@index([integratedAt, unlocksAt])
 }
 
 // ─── Plisio Payment Gateway ───────────────────────────────────────────────────

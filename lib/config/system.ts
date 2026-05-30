@@ -59,7 +59,7 @@ export const SYSTEM_CONFIG = {
       minDeposit: 3000,
       dailyROI:   0.010, // 1% per business day
       duration:   200,
-      bonus:      0.20,  // +20% instant bonus on activeCapital (e.g. $3,000 → $3,600)
+      bonus:      0.30,  // +30% instant bonus on activeCapital (e.g. $3,000 → $3,900)
       name: 'ULTRA PLAN',
       tag:  'ULTRA PLAN',
     },

@@ -81,17 +81,7 @@ function P2PTransferPanel({ balance, onSuccess }: { balance: number; onSuccess: 
           </div>
         </div>
 
-        {/* Fee comparison mini banner */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white/70 dark:bg-black/30 rounded-2xl border border-slate-200 dark:border-white/5 mb-5 text-xs">
-          <div className="flex flex-wrap items-center gap-2 font-mono">
-            <span className="text-red-650 dark:text-red-400 font-bold">{t("withdrawExtFee")}</span>
-            <span className="text-slate-400 dark:text-slate-600">{t("withdrawVs")}</span>
-            <span className="text-violet-700 dark:text-violet-400 font-bold">{t("withdrawP2PZero")}</span>
-          </div>
-          <span className="self-start sm:self-auto text-violet-700 dark:text-violet-400 text-[10px] bg-violet-500/10 px-3 py-1 rounded-xl border border-violet-500/20 font-bold uppercase tracking-wider">
-            {t('withdrawSaveUpTo')}
-          </span>
-        </div>
+
 
         {done ? (
           <div className="flex items-center justify-center gap-3 py-6 bg-violet-500/5 border border-violet-500/10 rounded-2xl">
@@ -207,6 +197,7 @@ export default function WithdrawPage() {
     sponsoredDirectSales: number;
     roiBlocked: boolean;
     fundsFrozen: boolean;
+    withdrawalsBlocked: boolean;
   } | null>(null);
 
   const [withdrawType, setWithdrawType] = useState<'roi' | 'commission'>('roi');
@@ -417,90 +408,7 @@ export default function WithdrawPage() {
             </div>
           </div>
 
-          {/* ── Commission Comparison Block ──────────────────────────── */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
 
-            {/* Card 1 — 6% fee (high, discouraging) */}
-            <div className="relative flex flex-col gap-3 p-5 rounded-2xl border border-orange-400/30 bg-gradient-to-br from-orange-500/10 via-red-500/5 to-transparent">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-500/20 border border-orange-500/30 flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg">💸</span>
-                </div>
-                <div>
-                  <p className="text-base font-extrabold text-orange-500 dark:text-orange-400 leading-tight">6% Commission</p>
-                  <p className="text-[11px] font-mono text-slate-600 dark:text-zinc-400 uppercase tracking-wider font-semibold">{t("withdrawExtTitle")}</p>
-                </div>
-              </div>
-              <p className="text-xs sm:text-sm text-slate-700 dark:text-zinc-300 leading-relaxed font-medium">
-                {t("withdrawExtDesc1")}
-              </p>
-              <div className="mt-auto flex items-center gap-1.5 pt-2 border-t border-orange-400/10">
-                <div className="w-1.5 h-1.5 rounded-full bg-orange-400 flex-shrink-0" />
-                <span className="text-xs font-mono text-orange-400 font-bold">{t("withdrawHighTier")}</span>
-              </div>
-            </div>
-
-            {/* Card 2 — 2% fee (lower, still costs money) */}
-            <div className="relative flex flex-col gap-3 p-5 rounded-2xl border border-cyan-500/30 bg-gradient-to-br from-cyan-500/10 via-teal-500/5 to-transparent">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg">📉</span>
-                </div>
-                <div>
-                  <p className="text-base font-extrabold text-cyan-500 dark:text-cyan-400 leading-tight">2% Commission</p>
-                  <p className="text-[11px] font-mono text-slate-600 dark:text-zinc-400 uppercase tracking-wider font-semibold">{t("withdrawExtTitle")}</p>
-                </div>
-              </div>
-              <p className="text-xs sm:text-sm text-slate-700 dark:text-zinc-300 leading-relaxed font-medium">
-                Applies to withdrawals of <span className="font-extrabold text-cyan-600 dark:text-cyan-400">$600 or more</span>. Reduced fee for larger amounts.
-              </p>
-              <div className="mt-auto flex items-center gap-1.5 pt-2 border-t border-cyan-400/10">
-                <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 flex-shrink-0" />
-                <span className="text-xs font-mono text-cyan-400 font-bold">{t("withdrawRedTier")}</span>
-              </div>
-            </div>
-
-            {/* Card 3 — FREE P2P (featured, glowing, recommended) */}
-            <div className="relative flex flex-col gap-3 p-5 rounded-2xl border border-emerald-400/50 bg-gradient-to-br from-emerald-500/20 via-green-500/10 to-emerald-600/5 shadow-lg shadow-emerald-500/10 overflow-hidden">
-              {/* Glow pulse behind card */}
-              <div className="absolute inset-0 rounded-2xl bg-emerald-500/5 animate-pulse pointer-events-none" />
-
-              {/* RECOMMENDED badge */}
-              <div className="absolute top-3 right-3 bg-emerald-500 text-white text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-1 rounded-full shadow-md shadow-emerald-500/40 flex items-center gap-1">
-                <span>⭐</span> Recommended
-              </div>
-
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/45 flex items-center justify-center flex-shrink-0 shadow-sm shadow-emerald-500/20">
-                  <span className="text-lg">🚀</span>
-                </div>
-                <div>
-                  <p className="text-base font-black text-emerald-400 dark:text-emerald-300 leading-tight tracking-tight">{t("withdrawFreeP2p")}</p>
-                  <p className="text-[11px] font-mono text-emerald-600 dark:text-emerald-400 uppercase tracking-wider font-extrabold">{t("withdrawZeroFees")}</p>
-                </div>
-              </div>
-
-              <p className="text-xs sm:text-sm text-slate-800 dark:text-zinc-100 leading-relaxed font-semibold relative z-10">
-                {t("withdrawP2pDescLong")}
-              </p>
-
-              <div className="mt-auto flex items-center justify-between pt-2 border-t border-emerald-400/20 relative z-10">
-                <div className="flex items-center gap-1.5">
-                  <div className="relative w-1.5 h-1.5">
-                    <div className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-75" />
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  </div>
-                  <span className="text-xs font-mono text-emerald-500 dark:text-emerald-400 font-extrabold">{t("withdrawNoDed")}</span>
-                </div>
-                <a
-                  href="/dashboard"
-                  className="text-xs font-bold text-emerald-500 hover:text-emerald-400 underline underline-offset-2 transition-colors"
-                >
-                  Use P2P →
-                </a>
-              </div>
-            </div>
-          </div>
 
           {/* ── P2P Quick Transfer Panel ─────────────────────────────── */}
           <P2PTransferPanel balance={balance} onSuccess={fetchWithdrawalData} />
@@ -582,7 +490,7 @@ export default function WithdrawPage() {
                         </span>
                       </div>
                       <p className="text-[11px] leading-relaxed">
-                        To unlock virtual ROI withdrawals, you must generate double the value of your assigned package in direct sales (Level 1 only).
+                        {t('withdrawGoalDesc')}
                       </p>
                       {userSponsorship.sponsoredDirectSales < userSponsorship.sponsoredGoalAmount ? (
                         <div className="w-full bg-slate-200 dark:bg-white/5 h-1.5 rounded-full overflow-hidden">
@@ -592,14 +500,14 @@ export default function WithdrawPage() {
                           />
                         </div>
                       ) : (
-                        <p className="text-emerald-600 dark:text-emerald-400 font-bold">✓ Goal completed! Pending admin approval to unlock.</p>
+                        <p className="text-emerald-600 dark:text-emerald-400 font-bold">{t('withdrawGoalCompleted')}</p>
                       )}
                     </div>
                   ) : (
                     <div className="space-y-1">
                       <p className="font-bold text-amber-600 dark:text-amber-400">{t("withdrawFreeLimit")}</p>
                       <p className="text-[11px] leading-relaxed">
-                        ROI withdrawals are limited to $12 USD. To withdraw more than $12 USD, you must refer real investments totaling at least $10 USD. Network commissions can be withdrawn normally.
+                        {t('withdrawFreeLimitDesc')}
                       </p>
                     </div>
                   )}
@@ -610,6 +518,13 @@ export default function WithdrawPage() {
                 <div className="mb-6 p-4 rounded-xl border bg-red-500/10 border-red-500/20 text-red-500 text-xs font-bold flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{t("withdrawFrozen")}</span>
+                </div>
+              )}
+
+              {userSponsorship?.withdrawalsBlocked && (
+                <div className="mb-6 p-4 rounded-xl border bg-red-500/10 border-red-500/20 text-red-500 text-xs font-bold flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{t('withdrawAdminBlocked')}</span>
                 </div>
               )}
 
@@ -649,7 +564,7 @@ export default function WithdrawPage() {
                     placeholder="0.00"
                     className={inputClass}
                     required
-                    disabled={submitting}
+                    disabled={submitting || userSponsorship?.withdrawalsBlocked || userSponsorship?.fundsFrozen}
                   />
                 </div>
 
@@ -662,13 +577,52 @@ export default function WithdrawPage() {
                     placeholder={t('withdrawAddressPlaceholder')}
                     className={inputClass}
                     required
-                    disabled={submitting}
+                    disabled={submitting || userSponsorship?.withdrawalsBlocked || userSponsorship?.fundsFrozen}
                   />
                   <span className="block text-xs text-slate-500 dark:text-zinc-400 font-semibold font-mono mt-1.5 leading-relaxed">
                     {t('withdrawWalletHint')}
                   </span>
                 </div>
               </div>
+
+              {/* ── Payout Summary ──────────────────────────────────── */}
+              {amount && parseFloat(amount) > 0 && (
+                <div className="rounded-2xl border border-violet-500/20 bg-violet-500/5 dark:bg-violet-600/5 p-4 mb-2">
+                  <p className="text-[10px] font-extrabold uppercase tracking-widest text-violet-600 dark:text-violet-400 mb-3">
+                    {t('withdrawPayoutSummaryTitle') || 'Payout Summary'}
+                  </p>
+                  <div className="space-y-2 text-xs font-mono">
+                    {/* Requested Amount */}
+                    <div className="flex justify-between items-center text-slate-700 dark:text-zinc-300">
+                      <span className="font-semibold">{t('withdrawReqAmountLabel') || 'Requested Amount'}</span>
+                      <span className="font-bold">
+                        ${parseFloat(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                    {/* Platform Maintenance Fee */}
+                    <div className="flex justify-between items-center text-slate-600 dark:text-zinc-400">
+                      <span className="font-semibold flex items-center gap-1.5">
+                        {t('withdrawMaintenanceFeeLabel') || 'Platform Maintenance Fee'}
+                        <span className="text-[9px] bg-slate-200 dark:bg-white/10 text-slate-500 dark:text-zinc-400 px-1.5 py-0.5 rounded-md uppercase tracking-wide font-bold">
+                          Fixed
+                        </span>
+                      </span>
+                      <span className="font-bold text-amber-500 dark:text-amber-400">-$0.01</span>
+                    </div>
+                    {/* Divider */}
+                    <div className="border-t border-violet-500/15 pt-2 mt-1">
+                      <div className="flex justify-between items-center">
+                        <span className="font-extrabold text-slate-900 dark:text-white uppercase tracking-wide text-[10px]">
+                          {t('withdrawNetPayoutLabel') || 'You Receive'}
+                        </span>
+                        <span className="font-extrabold text-emerald-600 dark:text-emerald-400 text-sm">
+                          ${Math.max(0, parseFloat(amount) - 0.01).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {requiresOtp && (
                 <div className="p-4 bg-slate-100/50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl">
@@ -693,7 +647,7 @@ export default function WithdrawPage() {
 
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || userSponsorship?.withdrawalsBlocked || userSponsorship?.fundsFrozen}
                 className="w-full py-3 text-xs font-extrabold text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-md shadow-violet-600/15"
               >
                 {submitting ? (

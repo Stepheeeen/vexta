@@ -30,11 +30,11 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.email.includes('@') || !formData.email.includes('.')) {
-      setError('Please enter a valid email address.');
+      setError(t('forgotPasswordInvalidEmail'));
       return;
     }
     if (formData.password.length < 1) {
-      setError('Password is required.');
+      setError(t('loginPasswordRequired'));
       return;
     }
 
@@ -82,7 +82,7 @@ export default function Login() {
           </Link>
           <div className="mt-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 dark:bg-[#1A1F2E]/80 border border-slate-200 dark:border-[#00D9FF]/30 backdrop-blur-md">
             <Activity className="w-4 h-4 text-violet-600 dark:text-[#00D9FF] animate-pulse" />
-            <span className="text-xs text-violet-600 dark:text-[#00D9FF] font-mono tracking-wider">SECURE CONNECTION</span>
+            <span className="text-xs text-violet-600 dark:text-[#00D9FF] font-mono tracking-wider">{t('secureConnection')}</span>
           </div>
         </div>
 

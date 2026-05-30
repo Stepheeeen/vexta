@@ -60,91 +60,18 @@ export function calculateTotalROIPercent(_dailyRate: number, _days: number): num
   return 300.0;
 }
 
-// ─── Phase A: Promote Matured Pending Profits ─────────────────────────────────
+// ─── Generate Today's Returns ───────────────────────────────────────
 
 /**
- * Phase A of the daily cron.
- *
- * Finds all PendingProfitEntry rows where:
- *   - unlocksAt <= now  (48 business hours have elapsed)
- *   - integratedAt IS NULL  (not yet promoted)
- *
- * For each entry it:
- *   1. Increments investment.activeCapital by the entry amount.
- *   2. Decrements user.pendingIntegration by the entry amount.
- *   3. Increments user.operationalCapital by the entry amount.
- *   4. Marks the entry integratedAt = now.
- *
- * Returns total amount promoted and number of entries processed.
- */
-export async function promotePendingProfits(): Promise<{ promoted: number; totalAmount: number }> {
-  const now = new Date();
-
-  const maturedEntries = await prisma.pendingProfitEntry.findMany({
-    where: {
-      integratedAt: null,
-      unlocksAt: { lte: now },
-    },
-    orderBy: { unlocksAt: 'asc' },
-  });
-
-  let promoted = 0;
-  let totalAmount = 0;
-
-  for (const entry of maturedEntries) {
-    try {
-      await prisma.$transaction(async (tx) => {
-        // Idempotency guard: re-check inside transaction
-        const fresh = await tx.pendingProfitEntry.findUnique({ where: { id: entry.id } });
-        if (!fresh || fresh.integratedAt !== null) return;
-
-        // 1. Promote to investment activeCapital
-        await tx.investment.update({
-          where: { id: entry.investmentId },
-          data: { activeCapital: { increment: entry.amount } },
-        });
-
-        // 2. Update user capital counters
-        await tx.user.update({
-          where: { id: entry.userId },
-          data: {
-            operationalCapital: { increment: entry.amount },
-            pendingIntegration: { decrement: entry.amount },
-          },
-        });
-
-        // 3. Mark entry as integrated
-        await tx.pendingProfitEntry.update({
-          where: { id: entry.id },
-          data: { integratedAt: now },
-        });
-      });
-
-      promoted++;
-      totalAmount = +(totalAmount + entry.amount).toFixed(2);
-    } catch (err) {
-      console.error(`[ROI Phase A] Failed to promote entry ${entry.id}:`, err);
-    }
-  }
-
-  console.log(`[ROI Phase A] Promoted ${promoted} entries, total $${totalAmount.toFixed(2)} into active capital.`);
-  return { promoted, totalAmount };
-}
-
-// ─── Phase B: Generate Today's Returns ───────────────────────────────────────
-
-/**
- * Phase B of the daily cron.
+ * Generates daily returns.
  *
  * For every active investment that hasn't completed its 200-business-day lifecycle:
  *   1. Calculates dailyProfit = investment.activeCapital * 1%.
  *   2. Credits user.balance immediately (withdrawable now).
- *   3. Creates a PendingProfitEntry with unlocksAt = today + 2 business days.
- *   4. Increments user.pendingIntegration.
- *   5. Increments investment.businessDaysElapsed + investment.totalEarned.
- *   6. Creates a DailyROIEntry (existing audit log).
- *   7. Creates a Transaction record (type: daily_roi).
- *   8. If businessDaysElapsed reaches maxContractDays, marks investment completed.
+ *   3. Increments investment.businessDaysElapsed + investment.totalEarned.
+ *   4. Creates a DailyROIEntry (existing audit log).
+ *   5. Creates a Transaction record (type: daily_roi).
+ *   6. If businessDaysElapsed reaches maxContractDays, marks investment completed.
  *
  * Skips weekends automatically. Returns a summary of users paid.
  */
@@ -157,12 +84,10 @@ export async function generateDailyReturns(
   if (!bypassWeekendCheck) {
     const day = today.getDay();
     if (day === 0 || day === 6) {
-      console.log('[ROI Phase B] Skipping — weekend.');
+      console.log('[ROI] Skipping — weekend.');
       return { processed: 0, totalPaid: 0 };
     }
   }
-
-  const unlocksAt = addBusinessDays(today, pendingDelayDays);
 
   const activeInvestments = await prisma.investment.findMany({
     where: {
@@ -203,23 +128,10 @@ export async function generateDailyReturns(
           data: {
             balance:           { increment: dailyProfit },
             totalEarned:       { increment: dailyProfit },
-            pendingIntegration: { increment: dailyProfit },
           },
         });
 
-        // 2. Create pending profit entry (delayed compounding queue)
-        await tx.pendingProfitEntry.create({
-          data: {
-            userId:       inv.userId,
-            investmentId: inv.id,
-            amount:       dailyProfit,
-            earnedOnDate: today,
-            unlocksAt,
-            isVirtual:    inv.isVirtual,
-          },
-        });
-
-        // 3. Update investment counters
+        // 2. Update investment counters
         await tx.investment.update({
           where: { id: inv.id },
           data: {
@@ -229,7 +141,7 @@ export async function generateDailyReturns(
           },
         });
 
-        // 4. DailyROIEntry audit log
+        // 3. DailyROIEntry audit log
         await tx.dailyROIEntry.create({
           data: {
             investmentId: inv.id,
@@ -238,7 +150,7 @@ export async function generateDailyReturns(
           },
         });
 
-        // 5. Transaction ledger record
+        // 4. Transaction ledger record
         await tx.transaction.create({
           data: {
             userId:      inv.userId,
@@ -251,7 +163,7 @@ export async function generateDailyReturns(
           },
         });
 
-        // 6. Support Account 2X Rule
+        // 5. Support Account 2X Rule
         if ((user as any).isSponsored && (user as any).sponsoredGiftedAmount > 0) {
           const maxSupportReturn = (user as any).sponsoredGiftedAmount * 2;
           const newInvTotalEarned = inv.totalEarned + dailyProfit;
@@ -291,54 +203,43 @@ export async function generateDailyReturns(
               }
             });
             
-            console.log(`[ROI Phase B] User ${inv.userId} hit 2X support account limit. Reset applied.`);
+            console.log(`[ROI] User ${inv.userId} hit 2X support account limit. Reset applied.`);
           }
         }
       });
 
       console.log(
-        `[ROI Phase B] Day ${newDaysElapsed}/${maxContractDays} | ` +
+        `[ROI] Day ${newDaysElapsed}/${maxContractDays} | ` +
         `$${dailyProfit.toFixed(2)} → user:${inv.userId} | inv:${inv.id}${willComplete ? ' [COMPLETED]' : ''}`
       );
       processed++;
       totalPaid = +(totalPaid + dailyProfit).toFixed(2);
     } catch (err) {
-      console.error(`[ROI Phase B] Failed for investment ${inv.id}:`, err);
+      console.error(`[ROI] Failed for investment ${inv.id}:`, err);
     }
   }
 
-  console.log(`[ROI Phase B] Generated returns for ${processed} investments. Total: $${totalPaid.toFixed(2)}`);
+  console.log(`[ROI] Generated returns for ${processed} investments. Total: $${totalPaid.toFixed(2)}`);
   return { processed, totalPaid };
 }
 
 // ─── Main Entry Point (called by cron) ───────────────────────────────────────
 
 /**
- * Full daily ROI run. Executes in two phases:
- *
- * Phase A — Promote pending profits whose 48-business-hour lock has expired
- *            into the investment's activeCapital (compounding base).
- *
- * Phase B — Calculate today's 1% return on each investment's current
- *            activeCapital and queue the profit in PendingProfitEntry.
- *
- * Order matters: A runs first so that today's base reflects yesterday's promotions.
+ * Full daily ROI run. Executes generation of daily returns.
  */
 export async function processDailyROI(
   bypassWeekendCheck = false
-): Promise<{ promoted: number; amountPromoted: number; processed: number; totalPaid: number }> {
-  console.log('[ROI] Starting daily two-phase distribution...');
+): Promise<{ processed: number; totalPaid: number }> {
+  console.log('[ROI] Starting daily distribution...');
 
-  const phaseA = await promotePendingProfits();
-  const phaseB = await generateDailyReturns(bypassWeekendCheck);
+  const result = await generateDailyReturns(bypassWeekendCheck);
 
-  console.log(`[ROI] Complete. Promoted: ${phaseA.promoted} entries ($${phaseA.totalAmount.toFixed(2)}). Paid: ${phaseB.processed} investments ($${phaseB.totalPaid.toFixed(2)}).`);
+  console.log(`[ROI] Complete. Paid: ${result.processed} investments ($${result.totalPaid.toFixed(2)}).`);
 
   return {
-    promoted:       phaseA.promoted,
-    amountPromoted: phaseA.totalAmount,
-    processed:      phaseB.processed,
-    totalPaid:      phaseB.totalPaid,
+    processed:      result.processed,
+    totalPaid:      result.totalPaid,
   };
 }
 
@@ -395,10 +296,7 @@ export async function upsertPlans() {
 // ─── Withdrawal Logic ─────────────────────────────────────────────────────────
 
 /**
- * Deducts a withdrawn amount from a user's pending profits and operational capital.
- * Priority:
- * 1. Deduct from PendingProfitEntries (oldest first).
- * 2. If remainder > 0, deduct from active Investment activeCapitals.
+ * Deducts a withdrawn amount from a user's operational capital.
  */
 export async function deductWithdrawalFromCapital(
   userId: string,
@@ -407,43 +305,6 @@ export async function deductWithdrawalFromCapital(
 ) {
   let remainingAmount = amount;
 
-  // 1. Deduct from Pending Profits first
-  // Find all pending profits that haven't been integrated yet
-  const pendingEntries = await tx.pendingProfitEntry.findMany({
-    where: { userId, integratedAt: null },
-    orderBy: { earnedOnDate: 'asc' }, // older ones first
-  });
-
-  for (const entry of pendingEntries) {
-    if (remainingAmount <= 0) break;
-
-    if (entry.amount <= remainingAmount) {
-      // Consume the entire entry
-      await tx.pendingProfitEntry.delete({ where: { id: entry.id } });
-      
-      // Update user pendingIntegration count
-      await tx.user.update({
-        where: { id: userId },
-        data: { pendingIntegration: { decrement: entry.amount } }
-      });
-      remainingAmount = +(remainingAmount - entry.amount).toFixed(2);
-    } else {
-      // Consume partial entry
-      await tx.pendingProfitEntry.update({
-        where: { id: entry.id },
-        data: { amount: +(entry.amount - remainingAmount).toFixed(2) }
-      });
-
-      // Update user pendingIntegration count
-      await tx.user.update({
-        where: { id: userId },
-        data: { pendingIntegration: { decrement: remainingAmount } }
-      });
-      remainingAmount = 0;
-    }
-  }
-
-  // 2. If there's still a remaining amount, deduct from active operational capital
   if (remainingAmount > 0) {
     const activeInvestments = await tx.investment.findMany({
       where: { userId, status: 'active', activeCapital: { gt: 0 } },

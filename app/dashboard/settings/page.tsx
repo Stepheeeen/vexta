@@ -176,7 +176,7 @@ export default function SettingsPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">Account</p>
+          <p className="text-[10px] font-mono text-violet-600 dark:text-violet-400 uppercase tracking-[0.2em] mb-1">{t('settingsAccount')}</p>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{t('settings')}</h1>
         </div>
         <button
@@ -410,6 +410,7 @@ export default function SettingsPage() {
 }
 
 function DeleteAccountModal({ onClose, onDeleted }: { onClose: () => void; onDeleted: () => void }) {
+  const { t } = useTranslation();
   const [step, setStep] = useState<'confirm' | 'otp'>('confirm');
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
@@ -473,7 +474,7 @@ function DeleteAccountModal({ onClose, onDeleted }: { onClose: () => void; onDel
         <div className="bg-gradient-to-r from-red-600 to-rose-600 px-6 py-4 flex items-center justify-between rounded-t-3xl">
           <div className="flex items-center gap-2">
             <LogOut className="w-5 h-5 text-white" />
-            <span className="text-sm font-bold text-white">Delete Account Verification</span>
+            <span className="text-sm font-bold text-white">{t('delAccVerifyTitle')}</span>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors">
             <X className="w-4 h-4" />
@@ -490,17 +491,17 @@ function DeleteAccountModal({ onClose, onDeleted }: { onClose: () => void; onDel
           {step === 'confirm' ? (
             <>
               <div className="space-y-3">
-                <p className="text-sm font-bold text-slate-900 dark:text-white">Are you absolutely sure you want to delete your account?</p>
-                <div className="p-3.5 bg-red-500/5 border border-red-500/15 rounded-2xl text-xs text-red-650 dark:text-red-400 space-y-2 leading-relaxed">
-                  <p className="font-bold">⚠️ Warning: This action is permanent and cannot be undone!</p>
+                <p className="text-sm font-bold text-slate-900 dark:text-white">{t('delAccConfirmQuestion')}</p>
+                <div className="p-3.5 bg-red-500/5 border border-red-500/15 rounded-2xl text-xs text-red-600 dark:text-red-400 space-y-2 leading-relaxed">
+                  <p className="font-bold">{t('delAccWarning')}</p>
                   <ul className="list-disc pl-4 space-y-1">
-                    <li>All your active positions and investments will be terminated.</li>
-                    <li>Your account balance and earnings history will be completely erased.</li>
-                    <li>Any referrals or commission trees connected to you will be unlinked.</li>
+                    <li>{t('delAccBullet1')}</li>
+                    <li>{t('delAccBullet2')}</li>
+                    <li>{t('delAccBullet3')}</li>
                   </ul>
                 </div>
                 <p className="text-xs text-slate-500 dark:text-gray-400">
-                  To continue, we will send a 6-digit verification code (OTP) to your registered email address.
+                  {t('delAccOtpNote')}
                 </p>
               </div>
 
@@ -510,7 +511,7 @@ function DeleteAccountModal({ onClose, onDeleted }: { onClose: () => void; onDel
                   onClick={onClose}
                   className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-xs font-bold text-slate-650 dark:text-slate-300 transition-colors"
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
                 <button
                   type="button"
@@ -518,7 +519,7 @@ function DeleteAccountModal({ onClose, onDeleted }: { onClose: () => void; onDel
                   disabled={loading}
                   className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send OTP Email'}
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t('delAccSendOtp')}
                 </button>
               </div>
             </>
@@ -526,16 +527,16 @@ function DeleteAccountModal({ onClose, onDeleted }: { onClose: () => void; onDel
             <form onSubmit={handleVerifyDelete} className="space-y-4">
               <div className="space-y-2">
                 <p className="text-xs text-slate-500 dark:text-gray-400">
-                  We've sent an OTP code to your registered email. Please enter it below to confirm permanent deletion.
+                  {t('delAccOtpSentDesc')}
                 </p>
                 <div>
-                  <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2">6-Digit OTP Code</label>
+                  <label className="block text-[10px] font-mono text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2">{t('delAccOtpCodeLabel')}</label>
                   <input
                     type="text"
                     maxLength={6}
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                    placeholder="Enter 6-digit OTP"
+                    placeholder={t('delAccOtpPlaceholder')}
                     className="w-full text-center tracking-[0.5em] text-lg font-black h-12 bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl px-4 focus:outline-none focus:border-red-500/50 transition-all font-mono text-slate-900 dark:text-white"
                     required
                   />
@@ -543,14 +544,14 @@ function DeleteAccountModal({ onClose, onDeleted }: { onClose: () => void; onDel
               </div>
 
               <div className="flex items-center justify-between text-xs pt-1">
-                <span className="text-slate-500 dark:text-gray-500">Didn't receive it?</span>
+                <span className="text-slate-500 dark:text-gray-500">{t('delAccDidNotReceive')}</span>
                 <button
                   type="button"
                   onClick={handleRequestOTP}
                   disabled={loading || timer > 0}
                   className="text-red-500 hover:underline font-bold disabled:opacity-50 disabled:no-underline cursor-pointer"
                 >
-                  {timer > 0 ? `Resend in ${timer}s` : 'Resend Code'}
+                  {timer > 0 ? `${t('delAccResendTimer')} ${timer}s` : t('delAccResendCode')}
                 </button>
               </div>
 
@@ -560,14 +561,14 @@ function DeleteAccountModal({ onClose, onDeleted }: { onClose: () => void; onDel
                   onClick={() => setStep('confirm')}
                   className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-xs font-bold text-slate-650 dark:text-slate-300 transition-colors"
                 >
-                  Back
+                  {t('back')}
                 </button>
                 <button
                   type="submit"
                   disabled={loading || otp.length !== 6}
                   className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white text-xs font-bold shadow-lg shadow-red-600/10 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                 >
-                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Deletion'}
+                  {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : t('delAccConfirmBtn')}
                 </button>
               </div>
             </form>

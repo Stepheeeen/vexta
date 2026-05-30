@@ -95,6 +95,7 @@ interface StatsData {
     id: string;
     plan: string;
     amount: number;
+    activeCapital: number;
     dailyROI: number;
     duration: number;
     startDate: string;
@@ -116,10 +117,9 @@ export default function ArbitragePage() {
   const [logs, setLogs] = useState<string[]>([]);
   const consoleContainerRef = useRef<HTMLDivElement | null>(null);
 
-  // New states for investment card and live routing
-  const [plans, setPlans] = useState<any[]>([]);
-  const [investAmount, setInvestAmount] = useState('');
-  const [investing, setInvesting] = useState(false);
+  // Live AI bot latency & routing speed metrics
+  const [latency, setLatency] = useState(12);
+  const [opsRate, setOpsRate] = useState(4210);
 
   const [activeTrade, setActiveTrade] = useState<{
     pair: string;
@@ -168,12 +168,7 @@ export default function ArbitragePage() {
       const json = await res.json();
       setData(json);
 
-      // Fetch plans for investment card
-      const resPlans = await fetch('/api/plans');
-      if (resPlans.ok) {
-        const plansJson = await resPlans.json();
-        setPlans(plansJson.plans || []);
-      }
+
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'An error occurred while fetching stats');
@@ -226,6 +221,8 @@ export default function ArbitragePage() {
       };
 
       setActiveTrade(newTrade);
+      setLatency(Math.floor(Math.random() * 8 + 8));
+      setOpsRate(Math.floor(Math.random() * 200 + 4100));
 
       const poolA = ['Pool Alpha', 'Vault Gamma'][Math.floor(Math.random() * 2)];
       const poolB = ['Pool Beta', 'Vault Delta'][Math.floor(Math.random() * 2)];
@@ -262,69 +259,7 @@ export default function ArbitragePage() {
     }
   }, [logs]);
 
-  const handleInvest = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const amountNum = parseFloat(investAmount);
-    if (isNaN(amountNum) || amountNum <= 0) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please enter a valid investment amount.',
-        variant: 'destructive',
-      });
-      return;
-    }
 
-    // Find matching plan
-    const matching = plans
-      .sort((a, b) => b.minDeposit - a.minDeposit)
-      .find(p => amountNum >= p.minDeposit);
-
-    if (!matching) {
-      toast({
-        title: 'Validation Error',
-        description: 'Amount must be at least $10.00 to match STARTER PLAN.',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    const available = data?.stats.availableBalance ?? 0;
-    if (amountNum > available) {
-      toast({
-        title: 'Insufficient Balance',
-        description: `Your available balance is $${available.toFixed(2)}.`,
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setInvesting(true);
-    try {
-      const res = await fetch('/api/investments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId: matching.id, amount: amountNum }),
-      });
-      const json = await res.json();
-      if (!res.ok) {
-        throw new Error(json.error || 'Failed to activate investment');
-      }
-      toast({
-        title: 'Investment Activated',
-        description: `Successfully activated ${matching.name} with $${amountNum.toFixed(2)}.`,
-      });
-      setInvestAmount('');
-      await fetchData();
-    } catch (err: any) {
-      toast({
-        title: 'Investment Failed',
-        description: err.message || 'An error occurred while creating investment.',
-        variant: 'destructive',
-      });
-    } finally {
-      setInvesting(false);
-    }
-  };
 
   // Compute stats
   const activeCount = data?.stats.activeInvestments ?? 0;
@@ -344,13 +279,7 @@ export default function ArbitragePage() {
     { label: t('arbitrageStat4'), value: avgSpread,             sub: t('arbitrageStat4Sub') },
   ];
 
-  const amountNum = parseFloat(investAmount);
-  const matchingPlan = plans.length > 0 && !isNaN(amountNum)
-    ? plans
-        .slice()
-        .sort((a, b) => b.minDeposit - a.minDeposit)
-        .find(p => amountNum >= p.minDeposit)
-    : null;
+
 
   return (
     <DashboardLayout>
@@ -497,26 +426,26 @@ export default function ArbitragePage() {
             {/* Bottom ticket details */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-200/60 dark:border-white/5 text-left">
               <div>
-                <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase">Trade Volume</p>
+                <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase">{t('arbTradeVol')}</p>
                 <p className="text-xs sm:text-sm font-extrabold font-mono text-slate-900 dark:text-white mt-1">{activeTrade.amount} BTC</p>
               </div>
               <div>
-                <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase">Execution Fee</p>
+                <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase">{t('arbExecFee')}</p>
                 <p className="text-xs sm:text-sm font-extrabold font-mono text-emerald-500 mt-1">{t('arbZeroFee')}</p>
               </div>
               <div>
-                <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase">Gross Spread PnL</p>
+                <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase">{t('arbGrossSpread')}</p>
                 <p className="text-xs sm:text-sm font-extrabold font-mono text-slate-900 dark:text-white mt-1">+{activeTrade.spread}%</p>
               </div>
               <div>
-                <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase">Net Simulated profit</p>
+                <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase">{t('arbNetProfit')}</p>
                 <p className="text-xs sm:text-sm font-extrabold font-mono text-[#00FF88] mt-1">+${activeTrade.profit}</p>
               </div>
             </div>
 
             {/* Scrolling Feed of Recent Executed Trades */}
             <div className="mt-6 pt-6 border-t border-slate-200/60 dark:border-white/5">
-              <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase tracking-widest mb-3">Recent Router Executions</p>
+              <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase tracking-widest mb-3">{t('arbRecentExec')}</p>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 text-left">
                 {recentTrades.map((trade, idx) => (
                   <div key={idx} className="p-3 bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl flex flex-col justify-between">
@@ -569,7 +498,7 @@ export default function ArbitragePage() {
                     if (plan.plan.toUpperCase().includes('ADVANCE')) pair = 'ETH/USD';
                     if (plan.plan.toUpperCase().includes('ULTRA')) pair = 'SOL/USD';
                     
-                    const earnedPct = plan.amount > 0 ? (plan.totalEarned / plan.amount) * 100 : 0;
+                    const earnedPct = plan.activeCapital > 0 ? (plan.totalEarned / plan.activeCapital) * 100 : 0;
 
                     return (
                       <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-all text-left">
@@ -580,7 +509,7 @@ export default function ArbitragePage() {
                           <div className="min-w-0">
                             <p className="text-sm sm:text-base font-bold text-slate-900 dark:text-white font-mono">{pair} ({plan.plan})</p>
                             <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="text-xs font-bold text-slate-600 dark:text-zinc-300 font-mono">Progress: {earnedPct.toFixed(1)}% / 300.0%</span>
+                              <span className="text-xs font-bold text-slate-600 dark:text-zinc-300 font-mono">Progress: {earnedPct.toFixed(1)}% / 200.0%</span>
                             </div>
                           </div>
                         </div>
@@ -611,156 +540,80 @@ export default function ArbitragePage() {
               </div>
             </div>
 
-            {/* Right: Stacked Invest Card and Terminal */}
-            <div className="space-y-6">
-              {/* Invest Capital Card */}
-              <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none flex flex-col text-left">
-              <div>
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
-                    <Wallet className="w-4 h-4 text-violet-600 dark:text-violet-400" />
-                  </div>
-                  <div>
-                    <h2 className="text-sm sm:text-base font-bold text-slate-950 dark:text-white">{t('enterAmount') || 'Invest Capital'}</h2>
-                    <p className="text-xs font-semibold text-slate-600 dark:text-zinc-400 font-mono">{t('arbDeployFunds')}</p>
-                  </div>
+            {/* Right: Live Arbitrage Engine Log Console (Enhanced AI Operations) */}
+            <div className="flex flex-col bg-slate-950 border border-slate-900 rounded-2xl p-5 shadow-sm dark:shadow-none h-[580px] text-[#00FF88]">
+              <div className="flex items-center gap-3 mb-4 border-b border-slate-900 pb-3">
+                <div className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
+                  <Terminal className="w-4 h-4 text-green-400" />
                 </div>
-
-                {/* Balance display */}
-                <div className="p-4 bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl mb-5 flex justify-between items-center">
-                  <div>
-                    <span className="text-xs font-bold text-slate-600 dark:text-zinc-400 block uppercase font-mono">{t('arbAvailBal')}</span>
-                    <span className="text-lg sm:text-xl font-extrabold text-slate-950 dark:text-white font-mono">
-                      ${(data?.stats.availableBalance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </span>
-                  </div>
-                  <span className="text-xs font-extrabold font-mono text-violet-600 dark:text-violet-400 bg-violet-500/10 px-2 py-0.5 rounded-full">USDT</span>
+                <div>
+                  <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono">{t('arbitrageConsoleTitle') || 'LIVE ARBITRAGE ENGINE'}</h2>
+                  <p className="text-[9px] text-slate-400 font-mono">{t('arbitrageConsoleSubtitle') || 'Monitoring active pairs'}</p>
                 </div>
-
-                <form onSubmit={handleInvest} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold font-mono text-slate-700 dark:text-zinc-300 uppercase tracking-wider mb-2">{t("arbInvAmount")}</label>
-                    <div className="relative">
-                      <span className="absolute left-4 top-3 text-slate-600 dark:text-zinc-300 font-mono text-sm font-bold">$</span>
-                      <input
-                        type="number"
-                        step="any"
-                        value={investAmount}
-                        onChange={(e) => setInvestAmount(e.target.value)}
-                        placeholder="0.00"
-                        className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/8 rounded-xl pl-8 pr-4 py-2.5 text-sm text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-zinc-500 focus:outline-none focus:border-violet-500/50 focus:bg-white/5 transition-all font-mono"
-                        required
-                        disabled={investing}
-                      />
-                    </div>
-                    {/* Quick percents */}
-                    <div className="grid grid-cols-4 gap-2 mt-2">
-                      {[0.25, 0.50, 0.75, 1.0].map((pct) => (
-                        <button
-                          key={pct}
-                          type="button"
-                          onClick={() => {
-                            const bal = data?.stats.availableBalance ?? 0;
-                            setInvestAmount((bal * pct).toFixed(2));
-                          }}
-                          className="py-1.5 text-xs font-bold font-mono bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 border border-slate-200 dark:border-white/5 rounded text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white transition-all"
-                        >
-                          {pct === 1.0 ? 'MAX' : `${pct * 100}%`}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Reactive Plan Info */}
-                  {matchingPlan ? (
-                    <div className="p-4 bg-violet-500/5 border border-violet-500/10 rounded-xl space-y-2.5 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-slate-600 dark:text-zinc-400 font-bold font-mono">{t("arbPlanDetected")}</span>
-                        <span className="font-extrabold text-violet-600 dark:text-violet-400 font-mono">{matchingPlan.name}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-600 dark:text-zinc-400 font-bold font-mono">{t("arbDailyYield")}</span>
-                        <span className="font-extrabold text-green-500 dark:text-green-400 font-mono">+{(matchingPlan.dailyROI * 100).toFixed(2)}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-600 dark:text-zinc-400 font-bold font-mono">{t("arbPayoutLimit")}</span>
-                        <span className="font-extrabold text-slate-900 dark:text-white font-mono">300.0% Return</span>
-                      </div>
-                      <div className="flex justify-between pt-1.5 border-t border-slate-200/50 dark:border-white/5">
-                        <span className="text-slate-600 dark:text-zinc-400 font-bold font-mono">{t("arbProjReturn")}</span>
-                        <span className="font-extrabold text-[#00FF88] font-mono">+${((amountNum || 0) * 3.0).toFixed(2)}</span>
-                      </div>
-                    </div>
-                  ) : investAmount && amountNum < 10 ? (
-                    <div className="p-3 bg-red-500/5 border border-red-500/10 rounded-xl text-center">
-                      <span className="text-xs font-bold font-mono text-red-500">{t("arbMinInv")}</span>
-                    </div>
-                  ) : null}
-
-                  <button
-                    type="submit"
-                    disabled={investing || !matchingPlan}
-                    className="w-full py-3 text-xs font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-md shadow-violet-600/15"
-                  >
-                    {investing ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>{t("arbProcessing")}</span>
-                      </>
-                    ) : (
-                      <span>{t("arbActivate")}</span>
-                    )}
-                  </button>
-                </form>
+                <div className="ml-auto flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-[8px] font-mono text-green-500">{t("arbMonitor")}</span>
+                </div>
               </div>
 
-              {/* Live Arbitrage Engine Log Console */}
-              <div className="bg-slate-950 border border-slate-900 rounded-2xl p-5 shadow-sm dark:shadow-none flex flex-col h-[400px] text-[#00FF88]">
-                <div className="flex items-center gap-3 mb-4 border-b border-slate-900 pb-3">
-                  <div className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
-                    <Terminal className="w-4 h-4 text-green-400" />
-                  </div>
-                  <div>
-                    <h2 className="text-xs font-bold text-white uppercase tracking-wider font-mono">{t('arbitrageConsoleTitle') || 'LIVE ARBITRAGE ENGINE'}</h2>
-                    <p className="text-[9px] text-slate-400 font-mono">{t('arbitrageConsoleSubtitle') || 'Monitoring active pairs'}</p>
-                  </div>
-                  <div className="ml-auto flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                    <span className="text-[8px] font-mono text-green-500">{t("arbMonitor")}</span>
-                  </div>
+              {/* AI Operations Status Bar */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-4 p-3 bg-slate-900/60 rounded-xl border border-slate-900/60 text-[10px] font-mono text-slate-350">
+                <div>
+                  <span className="text-slate-500 block uppercase text-[8px] font-black tracking-wider">{t('arbAiLatency')}</span>
+                  <span className="text-[#00FF88] font-bold">{latency} ms</span>
                 </div>
+                <div>
+                  <span className="text-slate-500 block uppercase text-[8px] font-black tracking-wider">{t('arbRoutingSpeed')}</span>
+                  <span className="text-cyan-400 font-bold">{opsRate.toLocaleString()} pairs/s</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block uppercase text-[8px] font-black tracking-wider">{t('arbActiveThreads')}</span>
+                  <span className="text-amber-400 font-bold">16 HFT Bots</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block uppercase text-[8px] font-black tracking-wider">{t('arbModelVersion')}</span>
+                  <span className="text-violet-400 font-bold">Vexta-AI v3.5</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block uppercase text-[8px] font-black tracking-wider">{t('arbConfidence')}</span>
+                  <span className="text-emerald-400 font-bold">99.97%</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block uppercase text-[8px] font-black tracking-wider">{t('arbSecurity')}</span>
+                  <span className="text-[#00FF88] font-bold">AES-GCM-256</span>
+                </div>
+              </div>
 
-                {/* Console log window */}
-                <div 
-                  ref={consoleContainerRef}
-                  className="flex-1 overflow-y-auto font-mono text-[10px] space-y-2 pr-1 custom-scrollbar text-left scroll-smooth"
-                >
-                  {logs.map((log, index) => {
-                    let colorClass = 'text-green-400';
-                    if (log.includes('[SYSTEM]')) colorClass = 'text-slate-400';
-                    if (log.includes('[SUCCESS]')) colorClass = 'text-emerald-400 font-bold';
-                    if (log.includes('[ROUTER]')) colorClass = 'text-cyan-400';
-                    
-                    return (
-                      <div key={index} className={`${colorClass} leading-relaxed break-all`}>
-                        {log}
-                      </div>
-                    );
-                  })}
-                </div>
+              {/* Console log window */}
+              <div 
+                ref={consoleContainerRef}
+                className="flex-1 overflow-y-auto font-mono text-[10px] space-y-2 pr-1 custom-scrollbar text-left scroll-smooth"
+              >
+                {logs.map((log, index) => {
+                  let colorClass = 'text-green-400';
+                  if (log.includes('[SYSTEM]')) colorClass = 'text-slate-400';
+                  if (log.includes('[SUCCESS]')) colorClass = 'text-emerald-400 font-bold';
+                  if (log.includes('[ROUTER]')) colorClass = 'text-cyan-405';
+                  if (log.includes('[TRADE]')) colorClass = 'text-cyan-400';
+                  
+                  return (
+                    <div key={index} className={`${colorClass} leading-relaxed break-all`}>
+                      {log}
+                    </div>
+                  );
+                })}
+              </div>
 
-                {/* Console footer */}
-                <div className="mt-4 pt-3 border-t border-slate-900 flex items-center justify-between text-xs font-bold text-slate-550 dark:text-zinc-400 font-mono">
-                  <span className="flex items-center gap-1">
-                    <Shield className="w-3 h-3 text-green-500" /> {t('arbitrageConsoleSecureChannel') || 'Encrypted connection'}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Cpu className="w-3 h-3 text-cyan-400" /> Vexta OS v1.2
-                  </span>
-                </div>
+              {/* Console footer */}
+              <div className="mt-4 pt-3 border-t border-slate-900 flex items-center justify-between text-xs font-bold text-slate-550 dark:text-zinc-400 font-mono">
+                <span className="flex items-center gap-1">
+                  <Shield className="w-3 h-3 text-green-500" /> {t('arbitrageConsoleSecureChannel') || 'Encrypted connection'}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Cpu className="w-3 h-3 text-cyan-400" /> Vexta OS v1.2
+                </span>
               </div>
             </div>
-          </div>
           </div>
         </>
       )}

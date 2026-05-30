@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { AdminLayout } from '@/components/admin-layout';
 import { Search, Loader2, ShieldAlert, ToggleLeft, ToggleRight } from 'lucide-react';
 import { useTranslation } from '@/components/translation-provider';

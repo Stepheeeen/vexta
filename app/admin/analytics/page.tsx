@@ -25,9 +25,25 @@ const localeMap = {
   fr: 'fr-FR'
 };
 
+interface CountryStat {
+  country: string;
+  count?: number;
+  amount?: number;
+  percentage: number;
+}
+
+interface SegmentStat {
+  label: string;
+  count: number;
+  percentage: number;
+}
+
 export default function AdminAnalytics() {
   const { t, language } = useTranslation();
   const [stats, setStats] = useState<Stats | null>(null);
+  const [usersByCountry, setUsersByCountry] = useState<CountryStat[]>([]);
+  const [depositsByCountry, setDepositsByCountry] = useState<CountryStat[]>([]);
+  const [userSegments, setUserSegments] = useState<SegmentStat[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,6 +53,9 @@ export default function AdminAnalytics() {
         if (res.ok) {
           const data = await res.json();
           setStats(data.stats);
+          setUsersByCountry(data.usersByCountry || []);
+          setDepositsByCountry(data.depositsByCountry || []);
+          setUserSegments(data.userSegments || []);
         }
       } catch (err) {
         console.error(err);
@@ -223,89 +242,54 @@ export default function AdminAnalytics() {
 
       {/* Detailed Stats */}
       <div className="grid md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">{t('adminAnalyticsGeo') || 'Geographic Distribution'}</h3>
-          <div className="space-y-3">
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-slate-500 dark:text-gray-400 text-sm">{t('adminAnalyticsNorthAmerica') || 'North America'}</span>
-                <span className="text-slate-900 dark:text-white font-bold text-sm">0%</span>
-              </div>
-              <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
-                <div className="bg-violet-500 h-2 rounded-full" style={{ width: '0%' }} />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-slate-500 dark:text-gray-400 text-sm">{t('adminAnalyticsEurope') || 'Europe'}</span>
-                <span className="text-slate-900 dark:text-white font-bold text-sm">0%</span>
-              </div>
-              <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
-                <div className="bg-violet-500 h-2 rounded-full" style={{ width: '0%' }} />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-slate-500 dark:text-gray-400 text-sm">{t('adminAnalyticsAsiaPacific') || 'Asia Pacific'}</span>
-                <span className="text-slate-900 dark:text-white font-bold text-sm">0%</span>
-              </div>
-              <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
-                <div className="bg-violet-500 h-2 rounded-full" style={{ width: '0%' }} />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-slate-500 dark:text-gray-400 text-sm">{t('adminAnalyticsOther') || 'Other'}</span>
-                <span className="text-slate-900 dark:text-white font-bold text-sm">0%</span>
-              </div>
-              <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
-                <div className="bg-violet-500 h-2 rounded-full" style={{ width: '0%' }} />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">{t('adminAnalyticsAssets') || 'Top Assets'}</h3>
-          <div className="space-y-3">
-            {[
-              { asset: 'Bitcoin (BTC)', volume: '0%', pct: 0 },
-              { asset: 'Ethereum (ETH)', volume: '0%', pct: 0 },
-              { asset: 'USDT', volume: '0%', pct: 0 },
-              { asset: t('adminAnalyticsOthers') || 'Others', volume: '0%', pct: 0 },
-            ].map((item) => (
-              <div key={item.asset}>
+        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm overflow-hidden flex flex-col">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Users by Country</h3>
+          <div className="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+            {usersByCountry.length > 0 ? usersByCountry.map((item, idx) => (
+              <div key={idx}>
                 <div className="flex justify-between mb-1">
-                  <span className="text-slate-500 dark:text-gray-400 text-sm">{item.asset}</span>
-                  <span className="text-slate-900 dark:text-white font-bold text-sm">{item.volume}</span>
+                  <span className="text-slate-500 dark:text-gray-400 text-sm truncate max-w-[60%]">{item.country}</span>
+                  <span className="text-slate-900 dark:text-white font-bold text-sm">{item.count} ({item.percentage.toFixed(1)}%)</span>
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
-                  <div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${item.pct}%` }} />
+                  <div className="bg-violet-500 h-2 rounded-full" style={{ width: `${item.percentage}%` }} />
                 </div>
               </div>
-            ))}
+            )) : <p className="text-slate-500 text-sm text-center py-4">No data available</p>}
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
+        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm overflow-hidden flex flex-col">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">Deposits by Country</h3>
+          <div className="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+            {depositsByCountry.length > 0 ? depositsByCountry.map((item, idx) => (
+              <div key={idx}>
+                <div className="flex justify-between mb-1">
+                  <span className="text-slate-500 dark:text-gray-400 text-sm truncate max-w-[60%]">{item.country}</span>
+                  <span className="text-slate-900 dark:text-white font-bold text-sm">${item.amount?.toLocaleString()} ({item.percentage.toFixed(1)}%)</span>
+                </div>
+                <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
+                  <div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${item.percentage}%` }} />
+                </div>
+              </div>
+            )) : <p className="text-slate-500 text-sm text-center py-4">No data available</p>}
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm overflow-hidden flex flex-col">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">{t('adminAnalyticsSegments') || 'User Segments'}</h3>
-          <div className="space-y-3">
-            {[
-              { segment: t('adminAnalyticsWhales') || 'Whales (>$1k)', count: 0, pct: 0 },
-              { segment: t('adminAnalyticsHighValue') || 'High Value ($600-$1k)', count: 0, pct: 0 },
-              { segment: t('adminAnalyticsRegular') || 'Regular ($100-$600)', count: 0, pct: 0 },
-              { segment: t('adminAnalyticsStarter') || 'Starter ($10-$100)', count: 0, pct: 0 },
-            ].map((item) => (
-              <div key={item.segment}>
+          <div className="space-y-3 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+            {userSegments.length > 0 ? userSegments.map((item, idx) => (
+              <div key={idx}>
                 <div className="flex justify-between mb-1">
-                  <span className="text-slate-500 dark:text-gray-400 text-sm">{item.segment}</span>
-                  <span className="text-slate-900 dark:text-white font-bold text-sm">{item.count}</span>
+                  <span className="text-slate-500 dark:text-gray-400 text-sm truncate max-w-[60%]">{item.label}</span>
+                  <span className="text-slate-900 dark:text-white font-bold text-sm">{item.count} ({item.percentage.toFixed(1)}%)</span>
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-white/5 rounded-full h-2">
-                  <div className="bg-violet-500 h-2 rounded-full" style={{ width: `${item.pct}%` }} />
+                  <div className="bg-violet-500 h-2 rounded-full" style={{ width: `${item.percentage}%` }} />
                 </div>
               </div>
-            ))}
+            )) : <p className="text-slate-500 text-sm text-center py-4">No data available</p>}
           </div>
         </div>
       </div>

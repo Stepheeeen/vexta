@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
   try {
     let plans = await prisma.plan.findMany({
       where: { isActive: true },
+      orderBy: { minDeposit: 'asc' },
     });
 
     // If database has no plans seeded yet, return a seed fallback template or force seeding
@@ -17,6 +18,7 @@ export async function GET(req: NextRequest) {
       await upsertPlans();
       plans = await prisma.plan.findMany({
         where: { isActive: true },
+        orderBy: { minDeposit: 'asc' },
       });
     }
 
