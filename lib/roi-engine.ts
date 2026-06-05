@@ -52,12 +52,12 @@ export function calculateDailyROI(activeCapital: number): number {
 
 /** Legacy — kept for backwards compatibility with existing callers. */
 export function calculateTotalReturn(principal: number, _dailyRate: number, _days: number): number {
-  return +(principal * 3.0).toFixed(2);
+  return +(principal * 0.3).toFixed(2);
 }
 
 /** Legacy — kept for backwards compatibility. */
 export function calculateTotalROIPercent(_dailyRate: number, _days: number): number {
-  return 300.0;
+  return 30.0;
 }
 
 // ─── Generate Today's Returns ───────────────────────────────────────
