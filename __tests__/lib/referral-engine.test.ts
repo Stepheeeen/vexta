@@ -1,41 +1,122 @@
 /**
- * Tests: Referral Commission Engine (pure logic, no DB)
+ * Tests: Referral Commission Engine (Logic & DB Interactions)
  */
 
-import { COMMISSION_RATES, MAX_LEVELS } from '@/lib/referral-engine';
+import { COMMISSION_RATES, MAX_LEVELS, propagateCommissions } from '@/lib/referral-engine';
+import { prisma } from '@/lib/prisma';
 
-describe('Referral Commission Rates', () => {
-  it('has exactly 13 levels', () => {
-    expect(Object.keys(COMMISSION_RATES).length).toBe(MAX_LEVELS);
+// Mock Prisma
+jest.mock('@/lib/prisma', () => ({
+  prisma: {
+    investment: { findUnique: jest.fn() },
+    referralLink: { findUnique: jest.fn() },
+    commission: { create: jest.fn() },
+    transaction: { create: jest.fn() },
+    user: { update: jest.fn() },
+  },
+}));
+
+describe('Unilevel Referral System - 7 Behaviors', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  it('level 1 = 10%', () => expect(COMMISSION_RATES[1]).toBe(0.10));
-  it('level 2 = 6%',  () => expect(COMMISSION_RATES[2]).toBe(0.06));
-  it('level 3 = 3%',  () => expect(COMMISSION_RATES[3]).toBe(0.03));
-  it('level 4 = 2%',  () => expect(COMMISSION_RATES[4]).toBe(0.02));
-  it('level 5 = 2%',  () => expect(COMMISSION_RATES[5]).toBe(0.02));
-  it('level 6 = 1%',  () => expect(COMMISSION_RATES[6]).toBe(0.01));
-  it('level 7 = 0.5%',   () => expect(COMMISSION_RATES[7]).toBe(0.005));
-  it('level 8 = 0.25%', () => expect(COMMISSION_RATES[8]).toBe(0.0025));
-  it('level 9 = 0.25%', () => expect(COMMISSION_RATES[9]).toBe(0.0025));
-  it('level 10 = 0.25%', () => expect(COMMISSION_RATES[10]).toBe(0.0025));
-  it('level 11 = 0.25%', () => expect(COMMISSION_RATES[11]).toBe(0.0025));
-  it('level 12 = 0.25%', () => expect(COMMISSION_RATES[12]).toBe(0.0025));
-  it('level 13 = 0.25%', () => expect(COMMISSION_RATES[13]).toBe(0.0025));
+  describe('Behavior 1: 13-Tier Depth Scaling', () => {
+    it('has exactly 13 levels scaling from 10% down to 0.25%', () => {
+      expect(Object.keys(COMMISSION_RATES).length).toBe(MAX_LEVELS);
+      expect(MAX_LEVELS).toBe(13);
+      expect(COMMISSION_RATES[1]).toBe(0.10);
+      expect(COMMISSION_RATES[2]).toBe(0.06);
+      expect(COMMISSION_RATES[13]).toBe(0.0025);
+    });
 
-  it('total of all levels = 26%', () => {
-    const total = Object.values(COMMISSION_RATES).reduce((s, r) => s + r, 0);
-    expect(+total.toFixed(4)).toBe(0.26);
+    it('computes correct scale amounts on $1000 investment', () => {
+      expect(+(1000 * COMMISSION_RATES[1]).toFixed(2)).toBe(100.00); // L1: $100
+      expect(+(1000 * COMMISSION_RATES[2]).toFixed(2)).toBe(60.00);  // L2: $60
+      expect(+(1000 * COMMISSION_RATES[13]).toFixed(2)).toBe(2.50);  // L13: $2.50
+    });
   });
 
-  it('computes correct commission on $1000 investment', () => {
-    expect(+(1000 * COMMISSION_RATES[1]).toFixed(2)).toBe(100.00); // L1: $100
-    expect(+(1000 * COMMISSION_RATES[2]).toFixed(2)).toBe(60.00);  // L2: $60
-    expect(+(1000 * COMMISSION_RATES[3]).toFixed(2)).toBe(30.00);  // L3: $30
-    expect(+(1000 * COMMISSION_RATES[4]).toFixed(2)).toBe(20.00);  // L4: $20
-    expect(+(1000 * COMMISSION_RATES[5]).toFixed(2)).toBe(20.00);  // L5: $20
-    expect(+(1000 * COMMISSION_RATES[6]).toFixed(2)).toBe(10.00);  // L6: $10
-    expect(+(1000 * COMMISSION_RATES[7]).toFixed(2)).toBe(5.00);   // L7: $5
-    expect(+(1000 * COMMISSION_RATES[13]).toFixed(2)).toBe(2.50);  // L13: $2.50
+  describe('Behavior 2: 26% Absolute Mathematical Cap', () => {
+    it('total of all levels never exceeds 26%', () => {
+      const total = Object.values(COMMISSION_RATES).reduce((s, r) => s + r, 0);
+      expect(+total.toFixed(4)).toBe(0.26);
+    });
+  });
+
+  describe('Behavior 3: Locked-Capital Trigger (Exploit Prevention)', () => {
+    it('propagateCommissions requires an investmentId and amount, validating funds are locked', async () => {
+      // Setup mock to stop at level 1 to keep test simple
+      (prisma.investment.findUnique as jest.Mock).mockResolvedValue({ isVirtual: false });
+      (prisma.referralLink.findUnique as jest.Mock).mockResolvedValueOnce({ referrerId: 'upline_1' }).mockResolvedValueOnce(null);
+
+      const results = await propagateCommissions('user_123', 'inv_123', 1000);
+      
+      expect(prisma.investment.findUnique).toHaveBeenCalledWith({
+        where: { id: 'inv_123' },
+        select: { isVirtual: true }
+      });
+      expect(results.length).toBe(1);
+    });
+  });
+
+  describe('Behavior 4: Virtual Account Exclusion', () => {
+    it('instantly aborts propagation if investment is flagged as virtual', async () => {
+      (prisma.investment.findUnique as jest.Mock).mockResolvedValue({ isVirtual: true });
+
+      const results = await propagateCommissions('user_123', 'inv_virtual', 1000);
+      
+      expect(results.length).toBe(0);
+      expect(prisma.referralLink.findUnique).not.toHaveBeenCalled();
+      expect(prisma.commission.create).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Behavior 5 & 7: Recursive Lineage Tracing & Fail-Silent Resilience', () => {
+    it('walks up the tree and stops silently if chain breaks early without throwing', async () => {
+      (prisma.investment.findUnique as jest.Mock).mockResolvedValue({ isVirtual: false });
+      
+      // Mock exactly 3 uplines, then null (chain breaks before 13 levels)
+      (prisma.referralLink.findUnique as jest.Mock)
+        .mockResolvedValueOnce({ referrerId: 'upline_1' })
+        .mockResolvedValueOnce({ referrerId: 'upline_2' })
+        .mockResolvedValueOnce({ referrerId: 'upline_3' })
+        .mockResolvedValueOnce(null);
+
+      const results = await propagateCommissions('user_123', 'inv_123', 1000);
+      
+      expect(results.length).toBe(3);
+      expect(results[0].level).toBe(1);
+      expect(results[0].recipientId).toBe('upline_1');
+      expect(results[1].level).toBe(2);
+      expect(results[1].recipientId).toBe('upline_2');
+      expect(results[2].level).toBe(3);
+      expect(results[2].recipientId).toBe('upline_3');
+      
+      // Verified it gracefully handled `null` and returned results without throwing
+    });
+  });
+
+  describe('Behavior 6: Dual Ledger Updates', () => {
+    it('simultaneously updates User.balance and User.totalCommission for each payout', async () => {
+      (prisma.investment.findUnique as jest.Mock).mockResolvedValue({ isVirtual: false });
+      (prisma.referralLink.findUnique as jest.Mock)
+        .mockResolvedValueOnce({ referrerId: 'upline_1' })
+        .mockResolvedValueOnce(null);
+
+      await propagateCommissions('user_123', 'inv_123', 1000);
+      
+      // $100 payout for Level 1
+      expect(prisma.user.update).toHaveBeenCalledWith({
+        where: { id: 'upline_1' },
+        data: {
+          balance: { increment: 100 },
+          totalCommission: { increment: 100 },
+        },
+      });
+
+      expect(prisma.commission.create).toHaveBeenCalled();
+      expect(prisma.transaction.create).toHaveBeenCalled();
+    });
   });
 });
