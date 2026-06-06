@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { distributeUnilevelCommission } from '@/server/services/commission.service';
 
 const schema = z.object({
   amount: z.number().positive().min(10, 'Minimum deposit is $10'),

@@ -114,7 +114,7 @@ export function ReferralSystem() {
             {/* Total */}
             <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
               <span className="text-sm text-slate-500">{t('referralTotalComm')}</span>
-              <span className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600">20%</span>
+              <span className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-blue-600">26%</span>
             </div>
           </div>
         </div>

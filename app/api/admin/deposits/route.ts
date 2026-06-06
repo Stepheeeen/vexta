@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getUserFromRequest } from '@/lib/auth';
-import { distributeUnilevelCommission } from '@/server/services/commission.service';
 
 export async function GET(req: NextRequest) {
   try {
@@ -126,9 +125,6 @@ export async function POST(req: NextRequest) {
             activeDeposit: { increment: currentTxn.amount },
           }
         });
-
-        // 5. Distribute unilevel commission
-        await distributeUnilevelCommission(currentTxn.userId, currentTxn.amount, tx);
       });
 
       return NextResponse.json({ message: 'Deposit approved successfully' });

@@ -75,7 +75,7 @@ function PlanCard({ plan, onSelect }: { plan: Plan; onSelect: (amount: number) =
         </div>
         <div className="flex justify-between">
           <span className="text-slate-500 dark:text-gray-400">{t('depTotalROI')}</span>
-          <span className="font-bold text-emerald-400">300%</span>
+          <span className="font-bold text-emerald-400">30%</span>
         </div>
         <div className="flex justify-between border-t border-white/5 pt-2.5">
           <span className="text-slate-500 dark:text-gray-400">{t('depMinDeposit')}</span>

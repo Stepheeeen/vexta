@@ -32,22 +32,22 @@ describe('ROI Engine', () => {
   });
 
   describe('calculateTotalReturn', () => {
-    it('Starter Plan Return: $100 at 1.0% ROI returns 300% = $300.00', () => {
-      expect(calculateTotalReturn(100, 0.01, 9999)).toBe(300.00);
+    it('Starter Plan Return: $100 at 1.0% ROI returns 30% = $30.00', () => {
+      expect(calculateTotalReturn(100, 0.01, 9999)).toBe(30.00);
     });
 
-    it('Historical Prime Plan Return: $500 returns 300% = $1500.00', () => {
-      expect(calculateTotalReturn(500, 0.01, 9999)).toBe(1500.00);
+    it('Historical Prime Plan Return: $500 returns 30% = $150.00', () => {
+      expect(calculateTotalReturn(500, 0.01, 9999)).toBe(150.00);
     });
 
-    it('Historical Ultra Plan Return: $2000 returns 300% = $6000.00', () => {
-      expect(calculateTotalReturn(2000, 0.01, 9999)).toBe(6000.00);
+    it('Historical Ultra Plan Return: $2000 returns 30% = $600.00', () => {
+      expect(calculateTotalReturn(2000, 0.01, 9999)).toBe(600.00);
     });
   });
 
   describe('calculateTotalROIPercent', () => {
-    it('Starter Plan ROI percent returns 300.0%', () => {
-      expect(calculateTotalROIPercent(0.01, 9999)).toBe(300.0);
+    it('Starter Plan ROI percent returns 30.0%', () => {
+      expect(calculateTotalROIPercent(0.01, 9999)).toBe(30.0);
     });
   });
 
