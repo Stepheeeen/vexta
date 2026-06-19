@@ -22,18 +22,18 @@ describe('Unilevel Referral System - 7 Behaviors', () => {
   });
 
   describe('Behavior 1: 13-Tier Depth Scaling', () => {
-    it('has exactly 13 levels scaling from 10% down to 0.25%', () => {
+    it('has exactly 13 levels scaling from 8% down to 0.5%', () => {
       expect(Object.keys(COMMISSION_RATES).length).toBe(MAX_LEVELS);
       expect(MAX_LEVELS).toBe(13);
-      expect(COMMISSION_RATES[1]).toBe(0.10);
-      expect(COMMISSION_RATES[2]).toBe(0.06);
-      expect(COMMISSION_RATES[13]).toBe(0.0025);
+      expect(COMMISSION_RATES[1]).toBe(0.08);
+      expect(COMMISSION_RATES[2]).toBe(0.05);
+      expect(COMMISSION_RATES[13]).toBe(0.005);
     });
 
     it('computes correct scale amounts on $1000 investment', () => {
-      expect(+(1000 * COMMISSION_RATES[1]).toFixed(2)).toBe(100.00); // L1: $100
-      expect(+(1000 * COMMISSION_RATES[2]).toFixed(2)).toBe(60.00);  // L2: $60
-      expect(+(1000 * COMMISSION_RATES[13]).toFixed(2)).toBe(2.50);  // L13: $2.50
+      expect(+(1000 * COMMISSION_RATES[1]).toFixed(2)).toBe(80.00);  // L1: $80
+      expect(+(1000 * COMMISSION_RATES[2]).toFixed(2)).toBe(50.00);  // L2: $50
+      expect(+(1000 * COMMISSION_RATES[13]).toFixed(2)).toBe(5.00);  // L13: $5
     });
   });
 
@@ -106,12 +106,12 @@ describe('Unilevel Referral System - 7 Behaviors', () => {
 
       await propagateCommissions('user_123', 'inv_123', 1000);
       
-      // $100 payout for Level 1
+      // $80 payout for Level 1 (8% of $1000)
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: 'upline_1' },
         data: {
-          balance: { increment: 100 },
-          totalCommission: { increment: 100 },
+          balance: { increment: 80 },
+          totalCommission: { increment: 80 },
         },
       });
 

@@ -18,19 +18,19 @@ export const SYSTEM_CONFIG = {
   // ─── Unilevel Commission Rates (13 levels) ───────────────────────────────────
   unilevel: {
     rates: [
-      0.10,   // Level 1:  10%
-      0.06,   // Level 2:   6%
+      0.08,   // Level 1:   8%
+      0.05,   // Level 2:   5%
       0.03,   // Level 3:   3%
-      0.02,   // Level 4:   2%
+      0.03,   // Level 4:   3%
       0.02,   // Level 5:   2%
-      0.01,   // Level 6:   1%
-      0.005,  // Level 7: 0.5%
-      0.0025, // Level 8: 0.25%
-      0.0025, // Level 9: 0.25%
-      0.0025, // Level 10: 0.25%
-      0.0025, // Level 11: 0.25%
-      0.0025, // Level 12: 0.25%
-      0.0025, // Level 13: 0.25%
+      0.02,   // Level 6:   2%
+      0.01,   // Level 7:   1%
+      0.005,  // Level 8:  0.5%
+      0.005,  // Level 9:  0.5%
+      0.005,  // Level 10: 0.5%
+      0.005,  // Level 11: 0.5%
+      0.005,  // Level 12: 0.5%
+      0.005,  // Level 13: 0.5%
     ],
   },
 
@@ -59,7 +59,7 @@ export const SYSTEM_CONFIG = {
       minDeposit: 3000,
       dailyROI:   0.010, // 1% per business day
       duration:   200,
-      bonus:      0.30,  // +30% instant bonus on activeCapital (e.g. $3,000 → $3,900)
+      bonus:      0.20,  // +20% instant bonus on activeCapital (e.g. $3,000 → $3,600)
       name: 'ULTRA PLAN',
       tag:  'ULTRA PLAN',
     },

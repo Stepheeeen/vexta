@@ -80,6 +80,10 @@ export async function POST(req: NextRequest) {
       // activeCapital = principal + instant tier bonus (generates returns from Day 1)
       const activeCapital = +(amount + tierBonus).toFixed(2);
 
+      // maxPayout = original deposited amount × 2 (hard lifetime earnings cap)
+      // All earnings (daily ROI + commissions + bonuses) count toward this limit.
+      const maxPayout = +(amount * 2).toFixed(2);
+
       // 4. Contract end date: startDate + plan.duration calendar days (approximate)
       //    Actual enforcement is via businessDaysElapsed counter in the ROI engine.
       const startDate = new Date();
@@ -94,6 +98,7 @@ export async function POST(req: NextRequest) {
           bonusAmount: tierBonus, // kept for backwards compat
           tierBonus,
           activeCapital,
+          maxPayout,
           startDate,
           endDate,
           status: 'active',

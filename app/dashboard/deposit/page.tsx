@@ -19,6 +19,7 @@ interface Plan {
   minDeposit: number;
   dailyROI: number;
   duration: number;
+  bonus: number; // 0.00, 0.10, 0.20 — instant deposit bonus
 }
 
 interface DepositTx {
@@ -74,8 +75,14 @@ function PlanCard({ plan, onSelect }: { plan: Plan; onSelect: (amount: number) =
           <span className="font-bold text-emerald-500">{(plan.dailyROI * 100).toFixed(1)}% / day</span>
         </div>
         <div className="flex justify-between">
-          <span className="text-slate-500 dark:text-gray-400">{t('depTotalROI')}</span>
-          <span className="font-bold text-emerald-400">30%</span>
+          <span className="text-slate-500 dark:text-gray-400">{t('depBonus')}</span>
+          {plan.bonus > 0 ? (
+            <span className={`font-bold ${
+              plan.tag === 'ULTRA PLAN' ? 'text-violet-400' : 'text-amber-400'
+            }`}>+{(plan.bonus * 100).toFixed(0)}%</span>
+          ) : (
+            <span className="text-slate-400 dark:text-slate-500 font-mono">—</span>
+          )}
         </div>
         <div className="flex justify-between border-t border-white/5 pt-2.5">
           <span className="text-slate-500 dark:text-gray-400">{t('depMinDeposit')}</span>

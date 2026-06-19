@@ -14,6 +14,7 @@ async function getOrCreateSettings() {
         referralRate: 15.0,
         tradingFee: 2.0,
         withdrawalFee: 6.0,
+        liquidityBonus: 0,
       },
     });
   }
@@ -49,11 +50,14 @@ export async function POST(req: NextRequest) {
     if (typeof body.maintenanceMode === 'boolean') dataToUpdate.maintenanceMode = body.maintenanceMode;
     if (typeof body.newRegistrations === 'boolean') dataToUpdate.newRegistrations = body.newRegistrations;
     if (typeof body.twoFactorRequired === 'boolean') dataToUpdate.twoFactorRequired = body.twoFactorRequired;
-    
+
     // Parse fee rates/commissions as numbers
     if (body.referralRate !== undefined) dataToUpdate.referralRate = Number(body.referralRate);
     if (body.tradingFee !== undefined) dataToUpdate.tradingFee = Number(body.tradingFee);
     if (body.withdrawalFee !== undefined) dataToUpdate.withdrawalFee = Number(body.withdrawalFee);
+
+    // Liquidity volume bonus
+    if (body.liquidityBonus !== undefined) dataToUpdate.liquidityBonus = Number(body.liquidityBonus);
 
     const updated = await prisma.settings.update({
       where: { id: settings.id },

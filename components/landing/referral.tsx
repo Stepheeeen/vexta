@@ -10,19 +10,19 @@ export function ReferralSystem() {
   const { t } = useTranslation();
 
   const levels = [
-    { level: 1, commission: '10%', labelKey: 'referralLvl1Label', descKey: 'referralLvl1Desc', width: 'w-full', color: 'bg-violet-500', textColor: 'text-violet-600' },
-    { level: 2, commission: '5%', labelKey: 'referralLvl2Label', descKey: 'referralLvl2Desc', width: 'w-[90%]', color: 'bg-violet-400', textColor: 'text-violet-500' },
-    { level: 3, commission: '3%', labelKey: 'referralLvl3Label', descKey: 'referralLvl3Desc', width: 'w-[80%]', color: 'bg-blue-500', textColor: 'text-blue-600' },
-    { level: 4, commission: '2%', labelKey: 'referralLvl4Label', descKey: 'referralLvl4Desc', width: 'w-[70%]', color: 'bg-blue-400', textColor: 'text-blue-500' },
-    { level: 5, commission: '1.5%', labelKey: 'referralLvl5Label', descKey: 'referralLvl5Desc', width: 'w-[60%]', color: 'bg-indigo-400', textColor: 'text-indigo-600' },
-    { level: 6, commission: '1.5%', labelKey: 'referralLvl6Label', descKey: 'referralLvl6Desc', width: 'w-[55%]', color: 'bg-indigo-400', textColor: 'text-indigo-600' },
-    { level: 7, commission: '1%', labelKey: 'referralLvl7Label', descKey: 'referralLvl7Desc', width: 'w-[50%]', color: 'bg-indigo-400', textColor: 'text-indigo-600' },
-    { level: 8, commission: '1%', labelKey: 'referralLvl8Label', descKey: 'referralLvl8Desc', width: 'w-[45%]', color: 'bg-indigo-400', textColor: 'text-indigo-600' },
-    { level: 9, commission: '1%', labelKey: 'referralLvl9Label', descKey: 'referralLvl9Desc', width: 'w-[40%]', color: 'bg-indigo-400', textColor: 'text-indigo-600' },
-    { level: 10, commission: '1%', labelKey: 'referralLvl10Label', descKey: 'referralLvl10Desc', width: 'w-[35%]', color: 'bg-indigo-400', textColor: 'text-indigo-600' },
-    { level: 11, commission: '1%', labelKey: 'referralLvl11Label', descKey: 'referralLvl11Desc', width: 'w-[30%]', color: 'bg-indigo-400', textColor: 'text-indigo-600' },
-    { level: 12, commission: '1%', labelKey: 'referralLvl12Label', descKey: 'referralLvl12Desc', width: 'w-[25%]', color: 'bg-indigo-400', textColor: 'text-indigo-600' },
-    { level: 13, commission: '1%', labelKey: 'referralLvl13Label', descKey: 'referralLvl13Desc', width: 'w-[20%]', color: 'bg-indigo-400', textColor: 'text-indigo-600' },
+    { level: 1,  commission: '8%',    labelKey: 'referralLvl1Label',  descKey: 'referralLvl1Desc',  width: 'w-full',   color: 'bg-violet-500', textColor: 'text-violet-600' },
+    { level: 2,  commission: '5%',    labelKey: 'referralLvl2Label',  descKey: 'referralLvl2Desc',  width: 'w-[90%]',  color: 'bg-violet-400', textColor: 'text-violet-500' },
+    { level: 3,  commission: '3%',    labelKey: 'referralLvl3Label',  descKey: 'referralLvl3Desc',  width: 'w-[80%]',  color: 'bg-blue-500',   textColor: 'text-blue-600' },
+    { level: 4,  commission: '3%',    labelKey: 'referralLvl4Label',  descKey: 'referralLvl4Desc',  width: 'w-[70%]',  color: 'bg-blue-400',   textColor: 'text-blue-500' },
+    { level: 5,  commission: '2%',    labelKey: 'referralLvl5Label',  descKey: 'referralLvl5Desc',  width: 'w-[60%]',  color: 'bg-indigo-500', textColor: 'text-indigo-600' },
+    { level: 6,  commission: '2%',    labelKey: 'referralLvl6Label',  descKey: 'referralLvl6Desc',  width: 'w-[55%]',  color: 'bg-indigo-400', textColor: 'text-indigo-600' },
+    { level: 7,  commission: '1%',    labelKey: 'referralLvl7Label',  descKey: 'referralLvl7Desc',  width: 'w-[45%]',  color: 'bg-indigo-400', textColor: 'text-indigo-600' },
+    { level: 8,  commission: '0.5%',  labelKey: 'referralLvl8Label',  descKey: 'referralLvl8Desc',  width: 'w-[35%]',  color: 'bg-slate-400',  textColor: 'text-slate-500' },
+    { level: 9,  commission: '0.5%',  labelKey: 'referralLvl9Label',  descKey: 'referralLvl9Desc',  width: 'w-[32%]',  color: 'bg-slate-400',  textColor: 'text-slate-500' },
+    { level: 10, commission: '0.5%',  labelKey: 'referralLvl10Label', descKey: 'referralLvl10Desc', width: 'w-[29%]',  color: 'bg-slate-400',  textColor: 'text-slate-500' },
+    { level: 11, commission: '0.5%',  labelKey: 'referralLvl11Label', descKey: 'referralLvl11Desc', width: 'w-[26%]',  color: 'bg-slate-400',  textColor: 'text-slate-500' },
+    { level: 12, commission: '0.5%',  labelKey: 'referralLvl12Label', descKey: 'referralLvl12Desc', width: 'w-[23%]',  color: 'bg-slate-400',  textColor: 'text-slate-500' },
+    { level: 13, commission: '0.5%',  labelKey: 'referralLvl13Label', descKey: 'referralLvl13Desc', width: 'w-[20%]',  color: 'bg-slate-400',  textColor: 'text-slate-500' },
   ];
   return (
     <section id="referral" className="py-24 bg-slate-50 relative">

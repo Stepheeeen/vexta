@@ -115,31 +115,68 @@ export async function generateDailyReturns(
       const user = await prisma.user.findUnique({ where: { id: inv.userId } });
       if (!user || !user.isActive || user.fundsFrozen || user.roiBlocked) continue;
 
-      const dailyProfit = calculateDailyROI(inv.activeCapital);
+      // ── 200% Cap enforcement ───────────────────────────────────────────────
+      // maxPayout defaults to amount × 2 for legacy rows that predate the field.
+      const maxPayout = (inv as any).maxPayout > 0
+        ? (inv as any).maxPayout
+        : +(inv.amount * 2).toFixed(2);
+
+      const remainingCapacity = +(maxPayout - inv.totalEarned).toFixed(2);
+
+      if (remainingCapacity <= 0) {
+        // Package is fully paid out — mark it completed (should have been caught already)
+        await prisma.investment.update({
+          where: { id: inv.id },
+          data: { status: 'completed', activeCapital: 0 },
+        });
+        await prisma.user.update({
+          where: { id: inv.userId },
+          data: { operationalCapital: { decrement: inv.activeCapital } },
+        });
+        console.log(`[ROI] Investment ${inv.id} already at 200% cap — marking completed.`);
+        continue;
+      }
+
+      // Cap the daily profit at whatever capacity remains
+      const rawDailyProfit = calculateDailyROI(inv.activeCapital);
+      const dailyProfit = +Math.min(rawDailyProfit, remainingCapacity).toFixed(2);
       if (dailyProfit <= 0) continue;
 
       const newDaysElapsed = inv.businessDaysElapsed + 1;
-      const willComplete = newDaysElapsed >= maxContractDays;
+      const newTotalEarned = +(inv.totalEarned + dailyProfit).toFixed(2);
+
+      // Hit cap OR hit max business days → complete the investment
+      const hitCap = newTotalEarned >= maxPayout - 0.001; // float tolerance
+      const willComplete = hitCap || newDaysElapsed >= maxContractDays;
 
       await prisma.$transaction(async (tx) => {
         // 1. Credit user balance immediately (withdrawable)
         await tx.user.update({
           where: { id: inv.userId },
           data: {
-            balance:           { increment: dailyProfit },
-            totalEarned:       { increment: dailyProfit },
+            balance:     { increment: dailyProfit },
+            totalEarned: { increment: dailyProfit },
           },
         });
 
-        // 2. Update investment counters
+        // 2. Update investment counters + maxPayout field (ensure it's set)
         await tx.investment.update({
           where: { id: inv.id },
           data: {
-            totalEarned:         { increment: dailyProfit },
+            totalEarned:         newTotalEarned,
             businessDaysElapsed: newDaysElapsed,
-            ...(willComplete ? { status: 'completed' } : {}),
+            maxPayout:           maxPayout, // persist the cap for legacy rows
+            ...(willComplete ? { status: 'completed', activeCapital: 0 } : {}),
           },
         });
+
+        if (willComplete) {
+          // Remove from operational capital since it's now completed
+          await tx.user.update({
+            where: { id: inv.userId },
+            data: { operationalCapital: { decrement: inv.activeCapital } },
+          });
+        }
 
         // 3. DailyROIEntry audit log
         await tx.dailyROIEntry.create({
@@ -151,28 +188,28 @@ export async function generateDailyReturns(
         });
 
         // 4. Transaction ledger record
+        const reason = hitCap ? ' (200% cap reached — contract completed)' : willComplete ? ' (Contract completed)' : '';
         await tx.transaction.create({
           data: {
             userId:      inv.userId,
             type:        'daily_roi',
             amount:      dailyProfit,
             status:      'completed',
-            description: `Daily arbitrage profit${willComplete ? ' (Contract completed)' : ''}`,
+            description: `Daily arbitrage profit${reason}`,
             reference:   inv.id,
             isVirtual:   inv.isVirtual,
           },
         });
 
-        // 5. Support Account 2X Rule
+        // 5. Support Account 2X Rule (unchanged)
         if ((user as any).isSponsored && (user as any).sponsoredGiftedAmount > 0) {
           const maxSupportReturn = (user as any).sponsoredGiftedAmount * 2;
           const newInvTotalEarned = inv.totalEarned + dailyProfit;
-          
+
           if (newInvTotalEarned >= maxSupportReturn) {
-            // Ensure we don't drop balance below 0 if they've somehow withdrawn
             const currentBalance = (user as any).balance + dailyProfit;
             const wipeAmountBalance = Math.min(maxSupportReturn, currentBalance);
-            
+
             await tx.user.update({
               where: { id: inv.userId },
               data: {
@@ -183,15 +220,12 @@ export async function generateDailyReturns(
                 sponsoredGiftedAmount: 0,
               }
             });
-            
+
             await tx.investment.update({
               where: { id: inv.id },
-              data: {
-                status: 'completed',
-                activeCapital: 0
-              }
+              data: { status: 'completed', activeCapital: 0 }
             });
-            
+
             await tx.transaction.create({
               data: {
                 userId: inv.userId,
@@ -202,15 +236,16 @@ export async function generateDailyReturns(
                 reference: inv.id,
               }
             });
-            
+
             console.log(`[ROI] User ${inv.userId} hit 2X support account limit. Reset applied.`);
           }
         }
       });
 
+      const capMsg = hitCap ? ' [200% CAP REACHED]' : '';
       console.log(
         `[ROI] Day ${newDaysElapsed}/${maxContractDays} | ` +
-        `$${dailyProfit.toFixed(2)} → user:${inv.userId} | inv:${inv.id}${willComplete ? ' [COMPLETED]' : ''}`
+        `$${dailyProfit.toFixed(2)} → user:${inv.userId} | inv:${inv.id}${willComplete ? ' [COMPLETED]' : ''}${capMsg}`
       );
       processed++;
       totalPaid = +(totalPaid + dailyProfit).toFixed(2);

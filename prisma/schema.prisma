@@ -101,6 +101,9 @@ model Investment {
   endDate     DateTime
   status      String   @default("active") // active | completed | cancelled
   totalEarned Float    @default(0)
+  /// Hard cap: amount × 2. Investment is completed when totalEarned >= maxPayout.
+  /// All earnings (daily ROI + commissions + bonuses) count toward this limit.
+  maxPayout   Float    @default(0)
   createdAt   DateTime @default(now())
   isVirtual   Boolean  @default(false)
 
@@ -235,6 +238,8 @@ model Settings {
   tradingFee        Float     @default(2.0)
   withdrawalFee     Float     @default(6.0)
   isRoiRunning      Boolean   @default(false)
+  /// Admin-controlled extra USDT volume bonus added on top of the auto-computed base
+  liquidityBonus    Float     @default(0)
 }
 
 model Resource {

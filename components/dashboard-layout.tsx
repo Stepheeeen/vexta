@@ -213,12 +213,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       <BackgroundPattern />
 
       {/* ── Desktop Top Navbar ─────────────────────────────── */}
-      <header className="hidden md:flex fixed top-0 left-0 right-0 z-50 h-14 items-center justify-between px-6 bg-white/80 dark:bg-[#09090f]/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-white/5">
-        <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0">
-          <VextaLogo className="w-9 h-9" variant="transparent" />
-          <span className="text-sm font-bold text-slate-900 dark:text-white tracking-widest font-sans uppercase">
-            {SYSTEM_CONFIG.brand.name}
-          </span>
+      <header className="hidden md:flex fixed top-0 left-0 right-0 z-50 h-20 items-center justify-between px-6 bg-white/80 dark:bg-[#09090f]/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-white/5">
+        <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0 py-1">
+          <VextaLogo className="h-[64px] w-auto" />
         </Link>
 
         <div className="flex items-center gap-5 relative">
@@ -393,7 +390,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       </header>
 
       {/* ── Desktop Left Slim Sidebar (links only) ───────────── */}
-      <aside className="hidden md:flex fixed top-14 bottom-0 left-0 z-40 w-20 flex-col items-center py-6 bg-white/80 dark:bg-[#09090f]/80 backdrop-blur-xl border-r border-slate-200/50 dark:border-white/5">
+      <aside className="hidden md:flex fixed top-20 bottom-0 left-0 z-40 w-20 flex-col items-center py-6 bg-white/80 dark:bg-[#09090f]/80 backdrop-blur-xl border-r border-slate-200/50 dark:border-white/5">
         <nav className="flex flex-col items-center gap-3.5 w-full px-2">
           {navItems.map(({ href, icon: Icon, labelKey, exact }) => {
             const active = isActive(pathname, href, exact);
@@ -420,12 +417,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* ── Mobile Top Bar ────────────────────────────────── */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-50 h-14 flex items-center justify-between px-4 bg-white/85 dark:bg-[#09090f]/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/5" ref={notifRef}>
+      <header className="md:hidden fixed top-0 left-0 right-0 z-50 h-20 flex items-center justify-between px-4 bg-white/85 dark:bg-[#09090f]/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/5" ref={notifRef}>
         <Link href="/dashboard" className="flex items-center gap-2">
-          <VextaLogo className="w-9 h-9" variant="transparent" />
-          <span className="text-sm font-bold text-slate-900 dark:text-white tracking-widest font-sans uppercase">
-            {SYSTEM_CONFIG.brand.name}
-          </span>
+          <VextaLogo className="h-[56px] w-auto" />
         </Link>
         <div className="flex items-center gap-3">
           {/* Mobile Bell */}
@@ -596,7 +590,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       {/* ── Page Content ───────────────────────────────────── */}
-      <main className="relative z-10 pt-14 pb-20 md:pb-4 min-h-screen md:pl-20">
+      <main className="relative z-10 pt-20 pb-20 md:pb-4 min-h-screen md:pl-20">
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {children}

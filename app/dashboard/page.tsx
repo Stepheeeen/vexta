@@ -40,9 +40,11 @@ function generateTrade() {
   let sell = buy;
   while (sell === buy) sell = EXCHANGES[Math.floor(Math.random() * EXCHANGES.length)];
   const pair = PAIRS[Math.floor(Math.random() * PAIRS.length)];
-  const spread = randomBetween(0.012, 0.38);
-  const profit = randomBetween(0.8, 47.2);
-  const size = randomBetween(1200, 98000);
+  // Institutional HFT spreads: 0.5 – 9 bps (0.005 – 0.090%)
+  const spread = randomBetween(0.005, 0.090);
+  // Each trade moves a $50k–$250k USDT slice of the $1M pool → realistic profit
+  const size = randomBetween(50000, 250000);
+  const profit = +(size * spread / 100).toFixed(2);
   return { buy, sell, pair, spread, profit, size, id: Date.now() + Math.random() };
 }
 
@@ -60,7 +62,7 @@ function ArbitrageEngine() {
       const trade = generateTrade();
       setTrades(prev => [trade, ...prev.slice(0, 7)]);
       setActivePath({ buy: trade.buy, sell: trade.sell });
-      setSpread(`${randomBetween(0.01, 0.49).toFixed(3)}%`);
+      setSpread(`${randomBetween(0.005, 0.090).toFixed(3)}%`);
       setTotalPnL(prev => prev + trade.profit);
       setExecCount(prev => prev + 1);
     }, 1100);
@@ -164,7 +166,7 @@ function ArbitrageEngine() {
         {[
           { label: t('dashExecSpeed'), value: `${Math.floor(Math.random() * 40 + 8)}ms` },
           { label: t('dashActivePairs'), value: `${Math.floor(Math.random() * 12 + 18)}` },
-          { label: t('dashTodaysRoi'), value: `+${randomBetween(1.1, 2.8).toFixed(2)}%` },
+          { label: t('dashTodaysRoi'), value: `+${randomBetween(1.3, 1.9).toFixed(2)}%` },
         ].map(({ label, value }) => (
           <div key={label} className="py-3 border-r last:border-r-0 border-white/5">
             <div className="text-[9px] text-slate-600 uppercase font-mono mb-0.5">{label}</div>
@@ -443,6 +445,7 @@ export default function Dashboard() {
   const [referralCode, setReferralCode] = useState('VEXTA_CODE');
   const [copiedReferral, setCopiedReferral] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [origin, setOrigin] = useState('https://www.vexta.network');
 
   // P2P states
   const [recipient, setRecipient] = useState('');
@@ -471,7 +474,12 @@ export default function Dashboard() {
     }
   };
 
-  useEffect(() => { fetchDashboardData(); }, []);
+  useEffect(() => {
+    fetchDashboardData();
+    if (typeof window !== 'undefined') {
+      setOrigin(window.location.origin);
+    }
+  }, []);
 
   const handleP2pTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -647,11 +655,11 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center justify-between gap-2 p-3 sm:p-4 bg-slate-50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl mb-5 min-w-0">
                 <p className="text-[10px] sm:text-xs font-bold text-slate-800 dark:text-zinc-300 font-mono break-all select-all min-w-0">
-                  {`https://www.vexta.network/?ref=${referralCode}`}
+                  {`${origin}/signup?ref=${referralCode}`}
                 </p>
                 <button
                   onClick={() => {
-                    navigator.clipboard.writeText(`https://www.vexta.network/?ref=${referralCode}`);
+                    navigator.clipboard.writeText(`${origin}/signup?ref=${referralCode}`);
                     setCopiedReferral(true);
                     setTimeout(() => setCopiedReferral(false), 2000);
                     toast({ title: 'Copied', description: 'Referral link copied to clipboard!' });
@@ -664,7 +672,7 @@ export default function Dashboard() {
               <div className="space-y-3">
                 {[
                   { label: t('referralsStat1'), value: `${data?.stats.directReferrals ?? 0}`, color: 'text-green-600 dark:text-green-400' },
-                  { label: t('overviewCommRate'), value: 'Level 1-13 (10% → 0.25%)', color: 'text-violet-600 dark:text-violet-400' },
+                  { label: t('overviewCommRate'), value: 'Level 1-13 (8% → 0.5%)', color: 'text-violet-600 dark:text-violet-400' },
                   { label: t('overviewTotalComm'), value: `$${(data?.stats.totalCommissions ?? 0).toFixed(2)}`, color: 'text-green-600 dark:text-green-400' },
                 ].map(({ label, value, color }) => (
                   <div key={label} className="flex flex-wrap justify-between items-center gap-x-2 gap-y-0.5 text-xs">

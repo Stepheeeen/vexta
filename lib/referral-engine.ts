@@ -1,5 +1,6 @@
 import { prisma } from './prisma';
 import { SYSTEM_CONFIG } from './config/system';
+import { applyEarningToInvestments } from './earning-engine';
 
 export const COMMISSION_RATES: Record<number, number> = SYSTEM_CONFIG.unilevel.rates.reduce(
   (acc, rate, index) => {
@@ -14,6 +15,11 @@ export const MAX_LEVELS = SYSTEM_CONFIG.unilevel.rates.length;
 /**
  * Walk up the referral chain from a given userId and distribute commissions
  * based on the investment amount that triggered the event.
+ *
+ * All commissions are routed through `applyEarningToInvestments()` which
+ * enforces the 200% maximum payout rule per package. Only the portion that
+ * fits within the referrer's active package capacity is credited; any excess
+ * is permanently forfeited.
  *
  * Called whenever a new investment is activated.
  */
@@ -47,43 +53,75 @@ export async function propagateCommissions(
     if (!link) break; // No more referrers in chain
 
     const rate = COMMISSION_RATES[level];
-    const amount = +(investmentAmount * rate).toFixed(2);
+    const grossAmount = +(investmentAmount * rate).toFixed(2);
+    if (grossAmount <= 0) { currentUserId = link.referrerId; continue; }
 
-    // Record commission
+    // ── Route through 200% cap engine ────────────────────────────────────────
+    // applyEarningToInvestments handles capacity routing + investment completion.
+    // It returns how much was actually credited (fits in packages) vs forfeited.
+    const { credited, forfeited } = await applyEarningToInvestments(
+      link.referrerId,
+      grossAmount,
+      client
+    );
+
+    // Record commission audit row (tracks gross intent, not credited amount)
     await client.commission.create({
       data: {
-        userId: link.referrerId,
+        userId:       link.referrerId,
         sourceUserId: investorId,
         investmentId,
         level,
         rate,
-        amount,
+        amount:       grossAmount,
       },
     });
 
-    // Record transaction for recipient
-    await client.transaction.create({
-      data: {
-        userId: link.referrerId,
-        type: 'commission',
-        amount,
-        status: 'completed',
-        description: `Level ${level} referral commission`,
-        reference: investmentId,
-        metadata: JSON.stringify({ level, sourceUserId: investorId, rate }),
-      },
-    });
+    if (credited > 0) {
+      // Credit user balance with the portion that fits within package capacity
+      await client.user.update({
+        where: { id: link.referrerId },
+        data: {
+          balance:         { increment: credited },
+          totalCommission: { increment: credited },
+        },
+      });
 
-    // Update referrer's User.balance and User.totalCommission fields
-    await client.user.update({
-      where: { id: link.referrerId },
-      data: {
-        balance: { increment: amount },
-        totalCommission: { increment: amount },
-      },
-    });
+      // Ledger transaction for the credited amount
+      await client.transaction.create({
+        data: {
+          userId:      link.referrerId,
+          type:        'commission',
+          amount:      credited,
+          status:      'completed',
+          description: `Level ${level} referral commission${forfeited > 0 ? ` ($${forfeited.toFixed(2)} forfeited — package capacity exceeded)` : ''}`,
+          reference:   investmentId,
+          metadata:    JSON.stringify({ level, sourceUserId: investorId, rate, grossAmount, credited, forfeited }),
+        },
+      });
+    } else if (forfeited > 0) {
+      // Fully forfeited — log a zero-amount transaction for audit trail
+      await client.transaction.create({
+        data: {
+          userId:      link.referrerId,
+          type:        'commission',
+          amount:      0,
+          status:      'completed',
+          description: `Level ${level} commission forfeited — $${grossAmount.toFixed(2)} exceeded all package capacity`,
+          reference:   investmentId,
+          metadata:    JSON.stringify({ level, sourceUserId: investorId, rate, grossAmount, credited: 0, forfeited: grossAmount }),
+        },
+      });
+    }
 
-    results.push({ level, recipientId: link.referrerId, amount });
+    if (credited > 0 || forfeited > 0) {
+      console.log(
+        `[REFERRAL] L${level} commission: $${grossAmount.toFixed(2)} gross → ` +
+        `$${credited.toFixed(2)} credited, $${forfeited.toFixed(2)} forfeited | referrer:${link.referrerId}`
+      );
+    }
+
+    results.push({ level, recipientId: link.referrerId, amount: credited });
 
     // Walk up one level
     currentUserId = link.referrerId;

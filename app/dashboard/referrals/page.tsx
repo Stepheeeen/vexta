@@ -34,6 +34,8 @@ export default function ReferralsPage() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  const [origin, setOrigin] = useState('https://www.vexta.network');
+
   const fetchData = async () => {
     try {
       setError(null);
@@ -58,10 +60,13 @@ export default function ReferralsPage() {
 
   useEffect(() => {
     fetchData();
+    if (typeof window !== 'undefined') {
+      setOrigin(window.location.origin);
+    }
   }, []);
 
   const referralCode = data?.referralCode || 'VEXTA_CODE';
-  const referralLink = `https://www.vexta.network/?ref=${referralCode}`;
+  const referralLink = `${origin}/signup?ref=${referralCode}`;
 
   const stats = [
     { label: t('referralsStat1'), value: `${data?.totals.level1Count ?? 0}`, sub: t('referralsStat1Sub') },
@@ -87,19 +92,19 @@ export default function ReferralsPage() {
   };
 
   const levelRates: Record<number, string> = {
-    1: '10%',
-    2: '6%',
-    3: '3%',
-    4: '2%',
-    5: '2%',
-    6: '1%',
-    7: '1%',
-    8: '0.25%',
-    9: '0.25%',
-    10: '0.25%',
-    11: '0.25%',
-    12: '0.25%',
-    13: '0.25%',
+    1:  '8%',
+    2:  '5%',
+    3:  '3%',
+    4:  '3%',
+    5:  '2%',
+    6:  '2%',
+    7:  '1%',
+    8:  '0.5%',
+    9:  '0.5%',
+    10: '0.5%',
+    11: '0.5%',
+    12: '0.5%',
+    13: '0.5%',
   };
 
   return (

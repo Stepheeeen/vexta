@@ -1,10 +1,24 @@
 'use client';
 
 import { AdminLayout } from '@/components/admin-layout';
-import { Settings, Bell, Shield, DollarSign, Check, Loader2 } from 'lucide-react';
+import { Settings, Bell, Shield, DollarSign, Check, Loader2, TrendingUp } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
+
+// Volume constants (mirrored from /api/liquidity-volume/route.ts)
+const LAUNCH_DATE = new Date('2025-01-06T00:00:00Z');
+const BASE_VOLUME = 1_000_000;
+const INCREMENT_PER_PERIOD = 25_000;
+const INCREMENT_DAYS = 15;
+
+function computeCurrentVolume(liquidityBonus: number): number {
+  const daysSinceLaunch = Math.max(0,
+    Math.floor((Date.now() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24))
+  );
+  const periods = Math.floor(daysSinceLaunch / INCREMENT_DAYS);
+  return BASE_VOLUME + periods * INCREMENT_PER_PERIOD + liquidityBonus;
+}
 
 export default function AdminSettings() {
   const { t } = useTranslation();
@@ -17,6 +31,7 @@ export default function AdminSettings() {
     referralRate: 15,
     tradingFee: 2,
     withdrawalFee: 1,
+    liquidityBonus: 0,
   });
 
   const [loading, setLoading] = useState(true);
@@ -26,6 +41,8 @@ export default function AdminSettings() {
   const [savedNotifications, setSavedNotifications] = useState(false);
   const [savingSecurity, setSavingSecurity] = useState(false);
   const [savedSecurity, setSavedSecurity] = useState(false);
+  const [savingVolume, setSavingVolume] = useState(false);
+  const [savedVolume, setSavedVolume] = useState(false);
 
   useEffect(() => {
     const fetchSettings = async () => {
@@ -42,6 +59,7 @@ export default function AdminSettings() {
             referralRate: data.settings.referralRate ?? 15,
             tradingFee: data.settings.tradingFee ?? 2,
             withdrawalFee: data.settings.withdrawalFee ?? 1,
+            liquidityBonus: data.settings.liquidityBonus ?? 0,
           });
         }
       } catch (err: any) {
@@ -146,6 +164,34 @@ export default function AdminSettings() {
       });
       setTimeout(() => setSavedSecurity(false), 2000);
     }, 800);
+  };
+
+  const handleSaveVolume = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingVolume(true);
+    setSavedVolume(false);
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ liquidityBonus: Number(settings.liquidityBonus) }),
+      });
+      if (!res.ok) throw new Error('Failed to save volume bonus');
+      setSavedVolume(true);
+      toast({
+        title: t('adminAlertSuccess'),
+        description: 'Liquidity volume bonus updated successfully.',
+      });
+      setTimeout(() => setSavedVolume(false), 2000);
+    } catch (err: any) {
+      toast({
+        title: t('adminAlertError'),
+        description: err.message || 'An error occurred',
+        variant: 'destructive',
+      });
+    } finally {
+      setSavingVolume(false);
+    }
   };
 
   if (loading) {
@@ -338,6 +384,69 @@ export default function AdminSettings() {
             {savingNotifications ? t('adminSettingsSaving') : savedNotifications ? <><Check className="w-5 h-5" /> {t('adminSettingsSaved')}</> : t('adminSettingsSaveNotificationsBtn')}
           </button>
         </div>
+      </form>
+
+      {/* Liquidity Volume Control */}
+      <form onSubmit={handleSaveVolume} className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 mb-6 shadow-sm">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+          Liquidity Volume Control
+        </h3>
+        <p className="text-xs text-slate-500 dark:text-gray-400 mb-6">
+          Manage the displayed operating volume on the arbitrage page. The base volume auto-increments by
+          ${INCREMENT_PER_PERIOD.toLocaleString()} every {INCREMENT_DAYS} days since launch (Jan 6, 2025).
+          Use the bonus field to add extra volume on top.
+        </p>
+
+        {/* Read-only computed stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200 dark:border-white/5">
+          <div>
+            <p className="text-xs text-slate-500 dark:text-gray-400 font-mono uppercase tracking-wide mb-1">Base Volume</p>
+            <p className="text-lg font-extrabold font-mono text-slate-900 dark:text-white">${BASE_VOLUME.toLocaleString()}</p>
+            <p className="text-[10px] text-slate-400 font-mono">Fixed starting capital</p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 dark:text-gray-400 font-mono uppercase tracking-wide mb-1">Auto-increment</p>
+            <p className="text-lg font-extrabold font-mono text-slate-900 dark:text-white">
+              +${(Math.floor(Math.max(0, (Date.now() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24)) / INCREMENT_DAYS) * INCREMENT_PER_PERIOD).toLocaleString()}
+            </p>
+            <p className="text-[10px] text-slate-400 font-mono">+$25k per 15 days since launch</p>
+          </div>
+          <div>
+            <p className="text-xs text-slate-500 dark:text-gray-400 font-mono uppercase tracking-wide mb-1">Total Shown to Users</p>
+            <p className="text-lg font-extrabold font-mono text-violet-600 dark:text-violet-400">
+              ${computeCurrentVolume(settings.liquidityBonus).toLocaleString()}
+            </p>
+            <p className="text-[10px] text-slate-400 font-mono">Base + Auto + Bonus</p>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 dark:text-gray-300 mb-2">
+            Manual Bonus Volume (USDT)
+          </label>
+          <input
+            type="number"
+            min="0"
+            step="1000"
+            value={settings.liquidityBonus}
+            onChange={(e) => setSettings({ ...settings, liquidityBonus: Number(e.target.value) })}
+            required
+            className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3 text-slate-900 dark:text-white focus:outline-none focus:border-violet-500 text-sm font-mono"
+          />
+          <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">
+            This amount is added to the auto-computed base volume and shown immediately to all users on the arbitrage page.
+            Set to 0 to show only the auto-computed volume.
+          </p>
+        </div>
+
+        <button
+          type="submit"
+          disabled={savingVolume}
+          className="w-full mt-4 py-3 bg-violet-600 hover:bg-violet-750 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+        >
+          {savingVolume ? t('adminSettingsSaving') : savedVolume ? <><Check className="w-5 h-5" /> Saved!</> : 'Save Volume Bonus'}
+        </button>
       </form>
 
       {/* Security Settings */}

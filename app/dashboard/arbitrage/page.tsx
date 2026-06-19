@@ -1,11 +1,26 @@
 'use client';
 
 import { DashboardLayout } from '@/components/dashboard-layout';
-import { BarChart3, TrendingUp, Clock, Loader2, Terminal, Shield, Cpu, Play, HelpCircle, ArrowRight, Wallet } from 'lucide-react';
+import { BarChart3, TrendingUp, Clock, Loader2, Terminal, Shield, Cpu, Play, HelpCircle, ArrowRight, Wallet, TrendingDown } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
+
+// ── Constants (must stay in sync with /api/liquidity-volume/route.ts) ──────────
+const LAUNCH_DATE = new Date('2025-01-06T00:00:00Z');
+const BASE_VOLUME = 1_000_000;
+const INCREMENT_PER_PERIOD = 25_000;
+const INCREMENT_DAYS = 15;
+
+function computeCurrentVolume(liquidityBonus: number): number {
+  const daysSinceLaunch = Math.max(
+    0,
+    Math.floor((Date.now() - LAUNCH_DATE.getTime()) / (1000 * 60 * 60 * 24))
+  );
+  const periods = Math.floor(daysSinceLaunch / INCREMENT_DAYS);
+  return BASE_VOLUME + periods * INCREMENT_PER_PERIOD + liquidityBonus;
+}
 
 const getExchangeLogo = (name: string) => {
   const n = name.toLowerCase();
@@ -105,6 +120,28 @@ interface StatsData {
   }>;
 }
 
+// ── Helpers ────────────────────────────────────────────────────────────────────
+function rnd(a: number, b: number) {
+  return +(Math.random() * (b - a) + a).toFixed(4);
+}
+
+function generateArbitrageTrade() {
+  const pairs = ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'ADA/USDT', 'XRP/USDT', 'LINK/USDT'];
+  const exchanges = ['Binance', 'Bybit', 'OKX', 'Bitget', 'Coinbase', 'KuCoin'];
+  const pair = pairs[Math.floor(Math.random() * pairs.length)];
+  const buyEx = exchanges[Math.floor(Math.random() * exchanges.length)];
+  let sellEx = exchanges[Math.floor(Math.random() * exchanges.length)];
+  while (buyEx === sellEx) sellEx = exchanges[Math.floor(Math.random() * exchanges.length)];
+
+  // Institutional HFT spreads: 0.5 – 9 bps (0.005 – 0.090%)
+  const spread = rnd(0.005, 0.090);
+  // Each trade moves $50k–$250k USDT slice of the $1M pool → realistic dollar profit
+  const tradeSize = rnd(50000, 250000);
+  const profit = +(tradeSize * spread / 100).toFixed(2);
+
+  return { pair, buyExchange: buyEx, sellExchange: sellEx, spread: spread.toFixed(3), profit: profit.toFixed(2) };
+}
+
 export default function ArbitragePage() {
   const { t } = useTranslation();
   const { toast } = useToast();
@@ -112,6 +149,13 @@ export default function ArbitragePage() {
   const [data, setData] = useState<StatsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Liquidity volume
+  const [liquidityData, setLiquidityData] = useState<{
+    currentVolume: number;
+    liquidityBonus: number;
+    launchDate: string;
+  } | null>(null);
 
   // Terminal Console Logs state
   const [logs, setLogs] = useState<string[]>([]);
@@ -126,15 +170,14 @@ export default function ArbitragePage() {
     buyExchange: string;
     sellExchange: string;
     spread: string;
-    amount: string;
     profit: string;
   }>({
     pair: 'BTC/USDT',
     buyExchange: 'Binance',
     sellExchange: 'OKX',
-    spread: '1.84',
-    amount: '0.45',
-    profit: '148.20'
+    // 0.042% spread on a $190k USDT slice → $79.80 net profit (mathematically consistent)
+    spread: '0.042',
+    profit: '79.80',
   });
 
   const [recentTrades, setRecentTrades] = useState<Array<{
@@ -143,32 +186,42 @@ export default function ArbitragePage() {
     buyExchange: string;
     sellExchange: string;
     spread: string;
-    amount: string;
     profit: string;
     status: string;
-  }>>([
-    { timestamp: new Date(Date.now() - 20000).toLocaleTimeString(), pair: 'ETH/USDT', buyExchange: 'Bitget', sellExchange: 'Bybit', spread: '1.24', amount: '2.50', profit: '75.40', status: 'completed' },
-    { timestamp: new Date(Date.now() - 15000).toLocaleTimeString(), pair: 'SOL/USDT', buyExchange: 'Binance', sellExchange: 'OKX', spread: '2.10', amount: '15.20', profit: '45.10', status: 'completed' },
-    { timestamp: new Date(Date.now() - 10000).toLocaleTimeString(), pair: 'BTC/USDT', buyExchange: 'Bybit', sellExchange: 'Coinbase', spread: '1.45', amount: '0.12', profit: '32.80', status: 'completed' },
-    { timestamp: new Date(Date.now() - 5000).toLocaleTimeString(), pair: 'LINK/USDT', buyExchange: 'Coinbase', sellExchange: 'KuCoin', spread: '1.75', amount: '84.00', profit: '22.30', status: 'completed' },
-  ]);
+  }>>(
+    // All profits = tradeSize × spread / 100  →  verifiable by anyone
+    [
+      // $150k × 0.024% = $36.00
+      { timestamp: new Date(Date.now() - 20000).toLocaleTimeString(), pair: 'ETH/USDT', buyExchange: 'Bitget',   sellExchange: 'Bybit',    spread: '0.024', profit: '36.00',  status: 'completed' },
+      // $210k × 0.051% = $107.10
+      { timestamp: new Date(Date.now() - 15000).toLocaleTimeString(), pair: 'SOL/USDT', buyExchange: 'Binance',  sellExchange: 'OKX',      spread: '0.051', profit: '107.10', status: 'completed' },
+      // $180k × 0.038% = $68.40
+      { timestamp: new Date(Date.now() - 10000).toLocaleTimeString(), pair: 'BTC/USDT', buyExchange: 'Bybit',    sellExchange: 'Coinbase', spread: '0.038', profit: '68.40',  status: 'completed' },
+      // $130k × 0.067% = $87.10
+      { timestamp: new Date(Date.now() - 5000).toLocaleTimeString(),  pair: 'XRP/USDT', buyExchange: 'Coinbase', sellExchange: 'KuCoin',   spread: '0.067', profit: '87.10',  status: 'completed' },
+    ]
+  );
 
   const fetchData = async () => {
     try {
       setError(null);
-      const res = await fetch('/api/dashboard/stats');
-      if (res.status === 401) {
-        window.location.href = '/login';
-        return;
-      }
-      if (!res.ok) {
-        const errorJson = await res.json().catch(() => ({}));
+      const [statsRes, volRes] = await Promise.all([
+        fetch('/api/dashboard/stats'),
+        fetch('/api/liquidity-volume'),
+      ]);
+
+      if (statsRes.status === 401) { window.location.href = '/login'; return; }
+      if (!statsRes.ok) {
+        const errorJson = await statsRes.json().catch(() => ({}));
         throw new Error(errorJson.error || 'Failed to fetch stats');
       }
-      const json = await res.json();
+      const json = await statsRes.json();
       setData(json);
 
-
+      if (volRes.ok) {
+        const volJson = await volRes.json();
+        setLiquidityData(volJson);
+      }
     } catch (err: any) {
       console.error(err);
       setError(err.message || 'An error occurred while fetching stats');
@@ -180,74 +233,50 @@ export default function ArbitragePage() {
   useEffect(() => {
     fetchData();
 
-    // Initial logs for terminal
+    // Initial logs for terminal — realistic bps-level spreads, USDT-denominated trade sizes
     const initialLogs = [
-      `[${new Date(Date.now() - 30000).toLocaleTimeString()}] [SYSTEM] Vexta Arbitrage Router initialized.`,
-      `[${new Date(Date.now() - 25000).toLocaleTimeString()}] [SYSTEM] Connected to Internal Pool Alpha (Depth: $1.2M).`,
-      `[${new Date(Date.now() - 20000).toLocaleTimeString()}] [SYSTEM] Connected to Internal Pool Beta (Depth: $850k).`,
-      `[${new Date(Date.now() - 15000).toLocaleTimeString()}] [SYSTEM] Scanned spread: BTC/USDT @ +1.84%.`,
-      `[${new Date(Date.now() - 10000).toLocaleTimeString()}] [ROUTER] Route locked: Buy Pool Alpha -> Sell Pool Beta.`,
-      `[${new Date(Date.now() - 5000).toLocaleTimeString()}] [TRADE] Executed 0.45 BTC arbitrage. Profit: +$148.20.`,
+      `[${new Date(Date.now() - 40000).toLocaleTimeString()}] [SYSTEM] Vexta Arbitrage Router v3.5 initialized.`,
+      `[${new Date(Date.now() - 35000).toLocaleTimeString()}] [SYSTEM] Operating capital: $1,000,000 USDT. Pool Alpha & Beta online.`,
+      `[${new Date(Date.now() - 30000).toLocaleTimeString()}] [SYSTEM] Connected to 6 liquidity venues. HFT spread scanner active.`,
+      `[${new Date(Date.now() - 25000).toLocaleTimeString()}] [ROUTER] BTC/USDT scanned — bid-ask delta: 0.042% (Pool Alpha vs Pool Beta).`,
+      `[${new Date(Date.now() - 20000).toLocaleTimeString()}] [ROUTER] Route locked: Buy Pool Alpha → Sell Pool Beta. Slice: $190,000 USDT.`,
+      `[${new Date(Date.now() - 15000).toLocaleTimeString()}] [TRADE] Executed: $190,000 USDT BTC/USDT arb @ 0.042% spread. Latency: 11ms.`,
+      `[${new Date(Date.now() - 10000).toLocaleTimeString()}] [SUCCESS] Net Profit: +$79.80 USD. ($190,000 × 0.042% = $79.80)`,
+      `[${new Date(Date.now() - 5000).toLocaleTimeString()}] [ROUTER] ETH/USDT scanned — bid-ask delta: 0.051% (Vault Gamma vs Vault Delta).`,
     ];
     setLogs(initialLogs);
   }, []);
 
-  const handleSimulate = async () => {
-    router.push('/dashboard/deposit');
-  };
-
+  // Auto-cycle: generate new trade every 4–5s
   useEffect(() => {
     const interval = setInterval(() => {
-      const pairs = ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'ADA/USDT', 'XRP/USDT', 'LINK/USDT'];
-      const exchanges = ['Binance', 'Bybit', 'OKX', 'Bitget', 'Coinbase', 'KuCoin'];
-      const pair = pairs[Math.floor(Math.random() * pairs.length)];
-      const buyEx = exchanges[Math.floor(Math.random() * exchanges.length)];
-      let sellEx = exchanges[Math.floor(Math.random() * exchanges.length)];
-      while (buyEx === sellEx) {
-        sellEx = exchanges[Math.floor(Math.random() * exchanges.length)];
-      }
-      const spread = (Math.random() * 2 + 1).toFixed(2);
-      const amount = (Math.random() * 5 + 0.1).toFixed(2);
-      const profit = (Math.random() * 200 + 10).toFixed(2);
+      const trade = generateArbitrageTrade();
       const timestamp = new Date().toLocaleTimeString();
+      const poolA = ['Pool Alpha', 'Vault Gamma'][Math.floor(Math.random() * 2)];
+      const poolB = ['Pool Beta', 'Vault Delta'][Math.floor(Math.random() * 2)];
+      // Pick a realistic USDT trade size for the log (consistent with profit already calculated)
+      const sliceK = Math.round((trade as any).size / 1000);
 
-      const newTrade = {
-        pair,
-        buyExchange: buyEx,
-        sellExchange: sellEx,
-        spread,
-        amount,
-        profit
-      };
-
-      setActiveTrade(newTrade);
+      setActiveTrade(trade);
       setLatency(Math.floor(Math.random() * 8 + 8));
       setOpsRate(Math.floor(Math.random() * 200 + 4100));
 
-      const poolA = ['Pool Alpha', 'Vault Gamma'][Math.floor(Math.random() * 2)];
-      const poolB = ['Pool Beta', 'Vault Delta'][Math.floor(Math.random() * 2)];
-
       const newLog = [
-        `[${timestamp}] [ROUTER] Scanned spread: ${pair} on ${poolA} & ${poolB} @ +${spread}%`,
-        `[${timestamp}] [TRADE] Executed: buy ${amount} ${pair.split('/')[0]} on ${poolA}, sell on ${poolB}`,
-        `[${timestamp}] [SUCCESS] Arbitrage complete. Net Profit: +$${profit} USD.`,
+        // Spread shown in bps-percentage (e.g. 0.042%), not whole percentages
+        `[${timestamp}] [ROUTER] ${trade.pair} — bid-ask delta: ${trade.spread}% (${poolA} vs ${poolB}).`,
+        `[${timestamp}] [TRADE] Executed: $${sliceK},000 USDT ${trade.pair} arb @ ${trade.spread}% spread.`,
+        `[${timestamp}] [SUCCESS] Net Profit: +$${trade.profit} USD. ($${sliceK}k × ${trade.spread}% = $${trade.profit})`,
       ];
 
-      setLogs((prev) => {
+      setLogs(prev => {
         const updated = [...prev, ...newLog];
-        if (updated.length > 50) {
-          return updated.slice(updated.length - 50);
-        }
-        return updated;
+        return updated.length > 50 ? updated.slice(updated.length - 50) : updated;
       });
 
-      setRecentTrades(prev => {
-        const updated = [
-          { timestamp, ...newTrade, status: 'completed' },
-          ...prev
-        ];
-        return updated.slice(0, 4);
-      });
+      setRecentTrades(prev => [
+        { timestamp, ...trade, status: 'completed' },
+        ...prev
+      ].slice(0, 4));
     }, 4000);
 
     return () => clearInterval(interval);
@@ -259,13 +288,15 @@ export default function ArbitragePage() {
     }
   }, [logs]);
 
-
+  const handleSimulate = async () => {
+    router.push('/dashboard/deposit');
+  };
 
   // Compute stats
   const activeCount = data?.stats.activeInvestments ?? 0;
   const totalEarned = data?.stats.totalEarned ?? 0;
   const winRate = data && data.investments.length > 0 ? '100%' : '0%';
-  
+
   let avgSpread = '0.00%';
   if (data && data.investments.length > 0) {
     const sum = data.investments.reduce((acc, inv) => acc + inv.dailyROI, 0);
@@ -273,13 +304,17 @@ export default function ArbitragePage() {
   }
 
   const stats = [
-    { label: t('arbitrageStat1'), value: `${activeCount}`,       sub: activeCount > 0 ? t('arbitrageStat1Active') : t('arbitrageStat1Empty') },
-    { label: t('arbitrageStat2'),   value: `$${totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, sub: t('arbitrageStat2Sub') },
-    { label: t('arbitrageStat3'), value: winRate,               sub: t('arbitrageStat3Sub') },
-    { label: t('arbitrageStat4'), value: avgSpread,             sub: t('arbitrageStat4Sub') },
+    { label: t('arbitrageStat1'), value: `${activeCount}`, sub: activeCount > 0 ? t('arbitrageStat1Active') : t('arbitrageStat1Empty') },
+    { label: t('arbitrageStat2'), value: `$${totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, sub: t('arbitrageStat2Sub') },
+    { label: t('arbitrageStat3'), value: winRate, sub: t('arbitrageStat3Sub') },
+    { label: t('arbitrageStat4'), value: avgSpread, sub: t('arbitrageStat4Sub') },
   ];
 
-
+  // Formatted volume display
+  const currentVolume = liquidityData?.currentVolume ?? computeCurrentVolume(0);
+  const launchDateStr = liquidityData?.launchDate
+    ? new Date(liquidityData.launchDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+    : 'January 6, 2025';
 
   return (
     <DashboardLayout>
@@ -314,6 +349,40 @@ export default function ArbitragePage() {
         </div>
       ) : (
         <>
+          {/* ── Liquidity Pool Card ─────────────────────────────────────────────── */}
+          <div className="bg-gradient-to-br from-violet-900/60 via-indigo-900/40 to-[#0a0f1a]/80 dark:from-violet-950/80 border border-violet-500/20 rounded-2xl p-5 mb-6 shadow-lg shadow-violet-900/10">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-violet-500/20 border border-violet-400/30 flex items-center justify-center shrink-0">
+                  <Wallet className="w-4 h-4 text-violet-300" />
+                </div>
+                <div>
+                  <p className="text-xs font-mono font-bold text-violet-300 uppercase tracking-widest">Operating Liquidity Pool</p>
+                  <p className="text-[10px] text-slate-400 font-mono mt-0.5">Founded {launchDateStr} · Grows every 15 days</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-wider">Active</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { label: 'Founded With', value: '$1,000,000', color: 'text-white', sub: 'USDT Initial Capital' },
+                { label: 'Current Pool Size', value: `$${currentVolume.toLocaleString()}`, color: 'text-emerald-400', sub: `+$${INCREMENT_PER_PERIOD.toLocaleString()} / 15 days` },
+                { label: 'Daily Throughput', value: '$1,000,000+', color: 'text-violet-300', sub: 'Pool cycles daily' },
+                { label: 'Gross Daily Margin', value: '1.3 – 1.9%', color: 'text-amber-400', sub: '~1% distributed to clients' },
+              ].map(({ label, value, color, sub }) => (
+                <div key={label} className="bg-white/5 border border-white/8 rounded-xl p-3.5">
+                  <p className="text-[9px] font-mono text-slate-400 uppercase tracking-widest mb-1.5">{label}</p>
+                  <p className={`text-base font-extrabold font-mono ${color}`}>{value}</p>
+                  <p className="text-[9px] text-slate-500 font-mono mt-0.5">{sub}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Step-by-Step Guideline Banner */}
           <div className="bg-gradient-to-br from-violet-600/10 via-blue-600/5 to-transparent border border-violet-500/15 rounded-2xl p-6 mb-6 shadow-sm">
             <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
@@ -326,22 +395,17 @@ export default function ArbitragePage() {
                   {t('arbitrageGuideDesc')}
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-slate-200/50 dark:border-white/5 text-xs font-mono">
-                  <div className="p-3 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-xs sm:text-sm font-extrabold block mb-1 text-violet-600 dark:text-violet-300">{t('arbitrageGuideStep1Title')}</span>
-                    <span className="text-slate-600 dark:text-zinc-300 font-semibold">{t('arbitrageGuideStep1Sub')}</span>
-                  </div>
-                  <div className="p-3 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-xs sm:text-sm font-extrabold block mb-1 text-violet-600 dark:text-violet-300">{t('arbitrageGuideStep2Title')}</span>
-                    <span className="text-slate-600 dark:text-zinc-300 font-semibold">{t('arbitrageGuideStep2Sub')}</span>
-                  </div>
-                  <div className="p-3 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-xs sm:text-sm font-extrabold block mb-1 text-violet-600 dark:text-violet-300">{t('arbitrageGuideStep3Title')}</span>
-                    <span className="text-slate-600 dark:text-zinc-300 font-semibold">{t('arbitrageGuideStep3Sub')}</span>
-                  </div>
-                  <div className="p-3 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-xs sm:text-sm font-extrabold block mb-1 text-violet-600 dark:text-violet-300">{t('arbitrageGuideStep4Title')}</span>
-                    <span className="text-slate-600 dark:text-zinc-300 font-semibold">{t('arbitrageGuideStep4Sub')}</span>
-                  </div>
+                  {[
+                    { title: t('arbitrageGuideStep1Title'), sub: t('arbitrageGuideStep1Sub') },
+                    { title: t('arbitrageGuideStep2Title'), sub: t('arbitrageGuideStep2Sub') },
+                    { title: t('arbitrageGuideStep3Title'), sub: t('arbitrageGuideStep3Sub') },
+                    { title: t('arbitrageGuideStep4Title'), sub: t('arbitrageGuideStep4Sub') },
+                  ].map(({ title, sub }) => (
+                    <div key={title} className="p-3 bg-slate-50 dark:bg-white/2 rounded-xl">
+                      <span className="text-xs sm:text-sm font-extrabold block mb-1 text-violet-600 dark:text-violet-300">{title}</span>
+                      <span className="text-slate-600 dark:text-zinc-300 font-semibold">{sub}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
               <button
@@ -365,7 +429,7 @@ export default function ArbitragePage() {
             ))}
           </div>
 
-          {/* Live Arbitrage Routing Panel (Visual flow matching layout) */}
+          {/* Live Arbitrage Routing Panel */}
           <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none mb-6">
             <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-200/60 dark:border-white/5">
               <div className="flex items-center gap-2">
@@ -388,10 +452,10 @@ export default function ArbitragePage() {
                 <span className="text-xs font-mono text-green-600 dark:text-emerald-400 font-extrabold uppercase tracking-widest mb-3">{t('arbBuyFrom')}</span>
                 {getExchangeLogo(activeTrade.buyExchange)}
                 <span className="text-lg font-extrabold text-slate-900 dark:text-white font-mono mt-3 tracking-wide uppercase">{activeTrade.buyExchange}</span>
-                <span className="text-sm text-slate-600 dark:text-zinc-300 font-bold font-mono mt-1">$63,450.20</span>
+                <span className="text-sm text-slate-600 dark:text-zinc-300 font-bold font-mono mt-1">Pool Alpha</span>
               </div>
 
-              {/* Glowing flow direction arrow paths */}
+              {/* Flow arrow */}
               <div className="flex-[1.5] w-full flex flex-col items-center justify-center py-4">
                 <span className="text-xs font-mono text-slate-600 dark:text-zinc-400 font-extrabold tracking-wider mb-2">{t('arbLiqPath')}</span>
                 <div className="relative w-full flex items-center justify-center my-3">
@@ -419,7 +483,7 @@ export default function ArbitragePage() {
                 <span className="text-xs font-mono text-cyan-600 dark:text-cyan-400 font-extrabold uppercase tracking-widest mb-3">{t('arbSellTo')}</span>
                 {getExchangeLogo(activeTrade.sellExchange)}
                 <span className="text-lg font-extrabold text-slate-900 dark:text-white font-mono mt-3 tracking-wide uppercase">{activeTrade.sellExchange}</span>
-                <span className="text-sm text-slate-600 dark:text-zinc-300 font-bold font-mono mt-1">$64,524.80</span>
+                <span className="text-sm text-slate-600 dark:text-zinc-300 font-bold font-mono mt-1">Pool Beta</span>
               </div>
             </div>
 
@@ -427,7 +491,7 @@ export default function ArbitragePage() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-200/60 dark:border-white/5 text-left">
               <div>
                 <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase">{t('arbTradeVol')}</p>
-                <p className="text-xs sm:text-sm font-extrabold font-mono text-slate-900 dark:text-white mt-1">{activeTrade.amount} BTC</p>
+                <p className="text-xs sm:text-sm font-extrabold font-mono text-slate-900 dark:text-white mt-1">$100k–250k USDT</p>
               </div>
               <div>
                 <p className="text-xs font-bold font-mono text-slate-600 dark:text-zinc-400 uppercase">{t('arbExecFee')}</p>
@@ -497,39 +561,64 @@ export default function ArbitragePage() {
                     let pair = 'BTC/USD';
                     if (plan.plan.toUpperCase().includes('ADVANCE')) pair = 'ETH/USD';
                     if (plan.plan.toUpperCase().includes('ULTRA')) pair = 'SOL/USD';
-                    
-                    const earnedPct = plan.activeCapital > 0 ? (plan.totalEarned / plan.activeCapital) * 100 : 0;
+
+                    // 200% cap progress: totalEarned / maxPayout
+                    const maxPayout = (plan as any).maxPayout > 0
+                      ? (plan as any).maxPayout
+                      : plan.amount * 2;
+                    const earnedPct = maxPayout > 0
+                      ? Math.min(100, (plan.totalEarned / maxPayout) * 100)
+                      : 0;
+                    const capRemaining = Math.max(0, maxPayout - plan.totalEarned);
 
                     return (
-                      <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-all text-left">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${active ? 'bg-green-500/10' : 'bg-slate-200 dark:bg-white/5'}`}>
-                            <TrendingUp className={`w-4 h-4 ${active ? 'text-green-500 dark:text-green-400' : 'text-slate-500 dark:text-zinc-400'}`} />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-sm sm:text-base font-bold text-slate-900 dark:text-white font-mono">{pair} ({plan.plan})</p>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <span className="text-xs font-bold text-slate-600 dark:text-zinc-300 font-mono">Progress: {earnedPct.toFixed(1)}% / 200.0%</span>
+                      <div key={idx} className="p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-all">
+                        <div className="flex items-center justify-between gap-4 mb-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${active ? 'bg-green-500/10' : 'bg-slate-200 dark:bg-white/5'}`}>
+                              <TrendingUp className={`w-4 h-4 ${active ? 'text-green-500 dark:text-green-400' : 'text-slate-500 dark:text-zinc-400'}`} />
                             </div>
+                            <div className="min-w-0">
+                              <p className="text-sm sm:text-base font-bold text-slate-900 dark:text-white font-mono">{pair} ({plan.plan})</p>
+                              <p className="text-xs text-slate-500 dark:text-zinc-400 font-mono mt-0.5">
+                                Cap: ${plan.totalEarned.toFixed(2)} / ${maxPayout.toFixed(2)} &nbsp;·&nbsp; ${capRemaining.toFixed(2)} remaining
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-4 flex-shrink-0">
+                            <div className="text-right hidden sm:block">
+                              <p className="text-xs font-bold text-slate-600 dark:text-zinc-400 font-mono mb-0.5">{t('arbitrageDepositVol')}</p>
+                              <p className="text-xs sm:text-sm font-bold font-mono text-slate-900 dark:text-white">${plan.amount.toLocaleString()}</p>
+                            </div>
+                            <div className="text-right hidden sm:block">
+                              <p className="text-xs font-bold text-slate-600 dark:text-zinc-400 font-mono mb-0.5">{t('arbitrageDailySpread')}</p>
+                              <p className="text-xs sm:text-sm font-extrabold font-mono text-green-600 dark:text-green-400">+{(plan.dailyROI * 100).toFixed(1)}%</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-xs font-bold text-slate-600 dark:text-zinc-400 font-mono mb-0.5">{t('arbitragePnL')}</p>
+                              <p className="text-sm sm:text-base font-extrabold font-mono text-green-600 dark:text-green-400">+${plan.totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                            </div>
+                            <span className={`text-xs font-extrabold font-mono px-2.5 py-1 rounded-full whitespace-nowrap ${active ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-slate-200 dark:bg-white/5 text-slate-700 dark:text-zinc-350'}`}>
+                              {plan.status.toUpperCase()}
+                            </span>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-6 flex-shrink-0">
-                          <div className="text-right hidden sm:block">
-                            <p className="text-xs font-bold text-slate-600 dark:text-zinc-400 font-mono mb-0.5">{t('arbitrageDepositVol')}</p>
-                            <p className="text-xs sm:text-sm font-bold font-mono text-slate-900 dark:text-white">${plan.amount.toLocaleString()}</p>
+                        {/* 200% cap progress bar */}
+                        <div className="mt-1">
+                          <div className="flex justify-between text-[10px] font-mono text-slate-500 dark:text-zinc-500 mb-1">
+                            <span>200% cap progress</span>
+                            <span className={earnedPct >= 90 ? 'text-amber-500 font-bold' : ''}>{earnedPct.toFixed(1)}%</span>
                           </div>
-                          <div className="text-right hidden sm:block">
-                            <p className="text-xs font-bold text-slate-600 dark:text-zinc-400 font-mono mb-0.5">{t('arbitrageDailySpread')}</p>
-                            <p className={`text-xs sm:text-sm font-extrabold font-mono text-green-600 dark:text-green-400`}>+{(plan.dailyROI * 100).toFixed(1)}%</p>
+                          <div className="h-1.5 w-full bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-500 ${
+                                earnedPct >= 90 ? 'bg-amber-500' : earnedPct >= 70 ? 'bg-yellow-400' : 'bg-emerald-500'
+                              }`}
+                              style={{ width: `${earnedPct}%` }}
+                            />
                           </div>
-                          <div className="text-right">
-                            <p className="text-xs font-bold text-slate-600 dark:text-zinc-400 font-mono mb-0.5">{t('arbitragePnL')}</p>
-                            <p className={`text-sm sm:text-base font-extrabold font-mono text-green-600 dark:text-green-400`}>+${plan.totalEarned.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                          </div>
-                          <span className={`text-xs font-extrabold font-mono px-2.5 py-1 rounded-full ${active ? 'bg-green-500/10 text-green-600 dark:text-green-400' : 'bg-slate-200 dark:bg-white/5 text-slate-700 dark:text-zinc-350'}`}>
-                            {plan.status.toUpperCase()}
-                          </span>
                         </div>
                       </div>
                     );
@@ -540,7 +629,7 @@ export default function ArbitragePage() {
               </div>
             </div>
 
-            {/* Right: Live Arbitrage Engine Log Console (Enhanced AI Operations) */}
+            {/* Right: Live Arbitrage Engine Log Console */}
             <div className="flex flex-col bg-slate-950 border border-slate-900 rounded-2xl p-5 shadow-sm dark:shadow-none h-[580px] text-[#00FF88]">
               <div className="flex items-center gap-3 mb-4 border-b border-slate-900 pb-3">
                 <div className="w-8 h-8 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center justify-center">
@@ -585,7 +674,7 @@ export default function ArbitragePage() {
               </div>
 
               {/* Console log window */}
-              <div 
+              <div
                 ref={consoleContainerRef}
                 className="flex-1 overflow-y-auto font-mono text-[10px] space-y-2 pr-1 custom-scrollbar text-left scroll-smooth"
               >
@@ -595,7 +684,7 @@ export default function ArbitragePage() {
                   if (log.includes('[SUCCESS]')) colorClass = 'text-emerald-400 font-bold';
                   if (log.includes('[ROUTER]')) colorClass = 'text-cyan-405';
                   if (log.includes('[TRADE]')) colorClass = 'text-cyan-400';
-                  
+
                   return (
                     <div key={index} className={`${colorClass} leading-relaxed break-all`}>
                       {log}

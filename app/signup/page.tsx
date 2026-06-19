@@ -307,7 +307,7 @@ export default function SignUp() {
                 <div className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl p-5 relative overflow-hidden">
                   <Hexagon className="absolute -right-4 -bottom-4 w-24 h-24 text-slate-900/5 dark:text-white/5" />
                   <p className="text-[10px] text-slate-400 dark:text-white/50 font-mono tracking-widest uppercase mb-2">{t('signupYourLink')}</p>
-                  <p className="text-lg font-light text-slate-900 dark:text-[#FFFFFF] font-mono tracking-wider">vexta.network/?ref=N8K2L9</p>
+                  <p className="text-lg font-light text-slate-900 dark:text-[#FFFFFF] font-mono tracking-wider">vexta.network/signup?ref=N8K2L9</p>
                   <p className="text-[10px] text-slate-500 dark:text-[#808A9D] mt-2 font-mono uppercase">{t('signupShareHint')}</p>
                 </div>
 

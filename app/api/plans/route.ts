@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getUserFromRequest } from '@/lib/auth';
+import { SYSTEM_CONFIG } from '@/lib/config/system';
 
 export async function GET(req: NextRequest) {
   const payload = getUserFromRequest(req);
@@ -12,8 +13,13 @@ export async function GET(req: NextRequest) {
       orderBy: { minDeposit: 'asc' },
     });
 
-    // If database has no plans seeded yet, return a seed fallback template or force seeding
-    if (plans.length === 0) {
+    // Sync plans if database has no plans seeded yet, or if they are out of sync with config
+    const needsSync = plans.length === 0 || plans.some(p => {
+      const configPlan = Object.values(SYSTEM_CONFIG.plans).find(cp => cp.name === p.name);
+      return configPlan && (configPlan.bonus !== p.bonus || configPlan.dailyROI !== p.dailyROI || configPlan.minDeposit !== p.minDeposit);
+    });
+
+    if (needsSync) {
       const { upsertPlans } = require('@/lib/roi-engine');
       await upsertPlans();
       plans = await prisma.plan.findMany({
