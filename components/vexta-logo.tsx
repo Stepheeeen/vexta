@@ -1,61 +1,67 @@
-'use client';
-
 import Image from 'next/image';
-import { SYSTEM_CONFIG } from '@/lib/config/system';
 
-/**
- * VextaLogo — renders the official Vexta brand mark (logo1.png).
- *
- * The image has a transparent background and works on both
- * dark and light surfaces without any additional wrapper.
- *
- * @param className  Tailwind sizing class, e.g. "h-8 w-8" or "h-10 w-auto"
- * @param variant    Legacy prop — kept for API compatibility, has no visual effect.
- *                   The transparent PNG works universally.
- */
-interface LogoProps {
+interface VextaLogoProps {
   className?: string;
+  /** Pass true when the navbar is over a light background (light mode + scrolled or non-home page).
+   *  On mobile only: switches between vexta-dark.png (for dark bg) and vexta-light.png (for light bg).
+   *  Desktop always uses logo1.png (the full bull/V mark). */
+  isLight?: boolean;
   variant?: 'transparent' | 'light' | 'dark' | 'icon-only';
 }
 
-export function VextaLogo({ className = 'w-auto h-12', variant }: LogoProps) {
-  // If a custom external logo URL is configured in env, honour it.
-  const src = SYSTEM_CONFIG.brand.logoUrl || '/logo1.png';
+export function VextaLogo({
+  className = 'h-[72px] w-auto',
+  isLight = false,
+  variant,
+}: VextaLogoProps) {
+  // If variant is icon-only or any of the legacy variants, always show the bull logo (logo1.png)
+  const isIconOnly = variant && ['icon-only', 'transparent', 'light', 'dark'].includes(variant);
+
+  if (isIconOnly) {
+    return (
+      <Image
+        src="/logo1.png"
+        alt="VEXTA"
+        width={1008}
+        height={871}
+        className={`object-contain ${className}`}
+        priority
+      />
+    );
+  }
+
+  const mobileSrc = isLight ? '/vexta-light.png' : '/vexta-dark.png';
 
   return (
-    <Image
-      src={src}
-      alt={`${SYSTEM_CONFIG.brand.name} logo`}
-      width={1008}
-      height={871}
-      className={`object-contain ${className}`}
-      priority={false}
-    />
+    <>
+      {/* Mobile: compact wordmark, adapts to navbar background */}
+      <Image
+        src={mobileSrc}
+        alt="VEXTA"
+        width={200}
+        height={48}
+        className={`${className} block lg:hidden`}
+        priority
+      />
+
+      {/* Desktop: full bull/V logo */}
+      <Image
+        src="/logo1.png"
+        alt="VEXTA"
+        width={200}
+        height={72}
+        className={`${className} hidden lg:block`}
+        priority
+      />
+    </>
   );
 }
 
-/** Convenience alias — renders the logo at favicon size. */
-export function VextaLogoFavicon({ className = 'h-16 w-16' }: { className?: string }) {
-  return <VextaLogo className={className} />;
-}
-
-/** Legacy named export — light surface (transparent PNG adapts automatically). */
-export function VextaLogoLight({ className = 'h-8 w-8' }: { className?: string }) {
-  return <VextaLogo className={className} />;
-}
-
-/** Legacy named export — dark surface (transparent PNG adapts automatically). */
-export function VextaLogoDark({ className = 'h-8 w-8' }: { className?: string }) {
-  return <VextaLogo className={className} />;
-}
-
-/**
- * Used for Login/Registration pages where a large logo is needed.
- */
 export function VextaLogoText() {
   return (
     <div className="flex items-center justify-center mb-4">
-      <VextaLogo className="w-[180px] h-auto drop-shadow-md" />
+      <VextaLogo className="w-[180px] h-auto drop-shadow-md" variant="icon-only" />
     </div>
   );
 }
+

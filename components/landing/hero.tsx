@@ -22,7 +22,7 @@ export function Hero() {
     { icon: BadgeCheck, label: t('heroVerification') },
   ];
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16 bg-white">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-10 lg:pt-16 bg-white">
       {/* Auth-style topological mesh background */}
       <BackgroundPattern />
 

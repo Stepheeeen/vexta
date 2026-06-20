@@ -47,7 +47,7 @@ export default function ResetPasswordPage() {
       {/* Header/Logo */}
       <div className="absolute top-8 left-8 z-10 flex flex-col items-center gap-4 w-full md:w-auto md:left-1/2 md:-translate-x-1/2">
         <Link href="/" className="flex items-center gap-2">
-          <VextaLogo className="h-8 w-8" />
+          <VextaLogo className="h-8 w-8" variant="icon-only" />
           <span className="text-xl font-bold tracking-widest text-slate-950 dark:text-white font-sans uppercase">
             {SYSTEM_CONFIG.brand.name}
           </span>

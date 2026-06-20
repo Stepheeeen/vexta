@@ -49,7 +49,6 @@ export function Navbar() {
     { label: t('navPlans'),      href: '/#plans' },
     { label: t('navWhyUs'),      href: '/#why-us' },
     { label: t('navFAQ'),        href: '/#faq' },
-    { label: t('handoverTitle'), href: '/handover', external: true },
   ];
 
   const flags: Record<string, string> = {
@@ -191,9 +190,9 @@ export function Navbar() {
         }`}
       >
         {/* Drawer header */}
-        <div className="flex items-center justify-between px-5 h-20 border-b border-slate-100 dark:border-white/6 shrink-0">
+        <div className="flex items-center justify-between px-5 h-12 lg:h-20 border-b border-slate-100 dark:border-white/6 shrink-0">
           <Link href="/" className="flex items-center gap-2" onClick={() => setIsOpen(false)}>
-            <VextaLogo className="h-[60px] w-auto" />
+            <VextaLogo className="h-[36px] lg:h-[60px] w-auto" isLight={mounted && resolvedTheme === 'light'} />
           </Link>
           <button
             type="button"
@@ -330,11 +329,11 @@ export function Navbar() {
       {/* ── Top bar — server-rendered, no hydration issues ──────────── */}
       <header className={`fixed top-0 left-0 right-0 z-[900] transition-all duration-300 ${navbarBg}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+          <div className="flex items-center justify-between h-10 lg:h-20">
 
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2 group shrink-0">
-              <VextaLogo className="h-[72px] w-auto transition-transform duration-300 group-hover:scale-105" />
+              <VextaLogo className="h-[36px] lg:h-[72px] w-auto transition-transform duration-300 group-hover:scale-105" isLight={isLightHeader} />
             </Link>
 
             {/* Desktop nav links */}

@@ -261,7 +261,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       {/* ── Desktop Top Navbar ─────────────────────────────── */}
       <header className="hidden md:flex fixed top-0 left-0 right-0 z-50 h-20 items-center justify-between px-6 bg-white/80 dark:bg-[#09090f]/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-white/5">
         <Link href="/admin" className="flex items-center gap-2 flex-shrink-0 py-1">
-          <VextaLogo className="h-[64px] w-auto" />
+          <VextaLogo className="h-[64px] w-auto" isLight={mounted && resolvedTheme === 'light'} />
           <span className="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">
             {t('adminBadge') || 'Admin'}
           </span>
@@ -454,7 +454,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       {/* ── Mobile Top Bar ────────────────────────────────── */}
       <header className="md:hidden fixed top-0 left-0 right-0 z-50 h-20 flex items-center justify-between px-4 bg-white/85 dark:bg-[#09090f]/80 backdrop-blur-xl border-b border-slate-200 dark:border-white/5" ref={notifRef}>
         <Link href="/admin" className="flex items-center gap-2">
-          <VextaLogo className="h-[56px] w-auto" />
+          <VextaLogo className="h-[56px] w-auto" isLight={mounted && resolvedTheme === 'light'} />
           <span className="px-1 py-0.5 rounded text-[7px] font-bold uppercase bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20">{t('adminBadge') || 'Admin'}</span>
         </Link>
         <div className="flex items-center gap-2">

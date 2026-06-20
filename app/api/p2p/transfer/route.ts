@@ -91,54 +91,56 @@ export async function POST(req: NextRequest) {
       }
 
       // 2. Verify sufficient transferable balance inside the transaction
+      //    P2P sends come from the INTERNAL WALLET only (not from P2P balance)
       const pools = await getWithdrawableBalances(senderId, tx);
-      const availableTransferable = pools.availableRoi + pools.availableCommission;
+      const availableTransferable = pools.availablePassive + pools.availableNetwork;
 
       if (amount > availableTransferable) {
         throw new Error('INSUFFICIENT_TRANSFERABLE_BALANCE');
       }
 
-      // 3. Sender transaction record
+      // 3. Sender transaction record — deducted from Internal Wallet
       await tx.transaction.create({
         data: {
           userId: senderId,
           type: 'p2p_sent',
           amount: amount, // Positive amount, will be subtracted by balance formula
           status: 'completed',
-          description: `Transfer to ${recipient.email}`,
+          description: `P2P transfer to ${recipient.email}`,
           reference: recipient.id,
         },
       });
 
-      // 4. Recipient transaction record
+      // 4. Recipient transaction record — credited to P2P Wallet
       await tx.transaction.create({
         data: {
           userId: recipient.id,
           type: 'p2p_received',
           amount: amount,
           status: 'completed',
-          description: `Transfer from ${sender.email}`,
+          description: `P2P transfer from ${sender.email}`,
           fromUserId: senderId,
           reference: senderId,
         },
       });
 
-      // 5. Update sender balance column
+      // 5. Deduct from sender's Internal Wallet balance
       await tx.user.update({
         where: { id: senderId },
         data: { balance: { decrement: amount } },
       });
 
-      // 6. Update recipient balance column
+      // 6. Credit to recipient's P2P WALLET (not Internal Wallet!)
+      //    P2P received funds are non-withdrawable, only usable for package activation (max 50%)
       await tx.user.update({
         where: { id: recipient.id },
-        data: { balance: { increment: amount } },
+        data: { p2pBalance: { increment: amount } },
       });
     });
 
     return NextResponse.json({
       success: true,
-      message: `Successfully transferred $${amount.toFixed(2)} to ${recipient.firstName} ${recipient.lastName}`
+      message: `Successfully transferred $${amount.toFixed(2)} to ${recipient.firstName} ${recipient.lastName}'s P2P Wallet`
     });
   } catch (err: any) {
     if (err.message === 'FUNDS_FROZEN') {
@@ -149,7 +151,7 @@ export async function POST(req: NextRequest) {
     }
     if (err.message === 'INSUFFICIENT_TRANSFERABLE_BALANCE') {
       return NextResponse.json(
-        { error: 'Insufficient transferable balance. Blocked sponsored ROI funds cannot be transferred.' },
+        { error: 'Insufficient transferable balance. Only Internal Wallet funds can be sent via P2P.' },
         { status: 400 }
       );
     }

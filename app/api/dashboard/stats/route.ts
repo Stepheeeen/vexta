@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { getAvailableBalance, getWithdrawableBalances } from '@/lib/balance';
+import { getAvailableBalance, getWithdrawableBalances, getP2pBalance } from '@/lib/balance';
 
 export async function GET(req: NextRequest) {
   const payload = getUserFromRequest(req);
@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
   const totalEarned = investments.reduce((s, i) => s + i.totalEarned, 0);
   const activeInvestments = investments.filter((i) => i.status === 'active').length;
 
-  // Daily ROI from transaction table (since production daily ROI is created as a transaction of type 'daily_roi')
+  // ── Passive Earnings (Daily ROI) ───────────────────────────────────────────
   const dailyRoiTxns = await prisma.transaction.aggregate({
     where: {
       userId,
@@ -35,9 +35,9 @@ export async function GET(req: NextRequest) {
     _sum: { amount: true }
   });
   const totalDailyRoi = dailyRoiTxns._sum.amount ?? 0;
-  const totalEarnedFinal = totalEarned + totalDailyRoi;
+  const passiveEarnings = +(totalEarned + totalDailyRoi).toFixed(2);
 
-  // Commissions (referral earnings) from transaction history to include all sources
+  // ── Network Earnings (Commissions) ─────────────────────────────────────────
   const commissionTxns = await prisma.transaction.aggregate({
     where: {
       userId,
@@ -46,7 +46,10 @@ export async function GET(req: NextRequest) {
     },
     _sum: { amount: true }
   });
-  const totalCommissions = commissionTxns._sum.amount ?? 0;
+  const networkEarnings = +(commissionTxns._sum.amount ?? 0).toFixed(2);
+
+  // ── Total Earnings ─────────────────────────────────────────────────────────
+  const totalEarnings = +(passiveEarnings + networkEarnings).toFixed(2);
 
   // Referrals count (direct)
   const directReferrals = await prisma.referralLink.count({ where: { referrerId: userId } });
@@ -58,9 +61,10 @@ export async function GET(req: NextRequest) {
     take: 10,
   });
 
-  // Dynamic available balance
+  // Dynamic available balance (Internal Wallet)
   const availableBalance = await getAvailableBalance(userId);
   const pools = await getWithdrawableBalances(userId);
+  const p2pBalance = await getP2pBalance(userId);
   
   const userRecord = await prisma.user.findUnique({
     where: { id: userId },
@@ -79,10 +83,18 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({
     stats: {
       totalInvested: +totalInvested.toFixed(2),
-      totalEarned: +totalEarnedFinal.toFixed(2),
-      totalCommissions: +totalCommissions.toFixed(2),
+      // ── Earnings Breakdown ────────────────────────────────────────────────
+      totalEarnings,       // Passive + Network combined
+      passiveEarnings,     // Daily ROI only
+      networkEarnings,     // Commissions only
+      // Legacy aliases (backwards compatibility)
+      totalEarned: passiveEarnings,
+      totalCommissions: networkEarnings,
+      // ── Wallet Balances ───────────────────────────────────────────────────
+      availableBalance,    // Internal Wallet
+      p2pBalance,          // P2P Wallet (non-withdrawable, for package activation only)
+      // ── Other Stats ───────────────────────────────────────────────────────
       operationalCapital: (userRecord as any)?.operationalCapital || 0,
-      availableBalance,
       activeInvestments,
       directReferrals,
     },
@@ -98,6 +110,7 @@ export async function GET(req: NextRequest) {
       startDate: i.startDate,
       endDate: i.endDate,
       totalEarned: i.totalEarned,
+      maxPayout: (i as any).maxPayout || i.amount * 2,
       status: i.status,
     })),
     recentTransactions: recentTxns,

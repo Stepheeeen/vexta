@@ -1,12 +1,16 @@
 import { prisma } from './prisma';
 
 /**
- * Calculates a user's available balance in real time using the formula:
- * balance = (deposits + roi + commission + p2pReceived) - (investments + withdrawals + p2pSent)
+ * Calculates a user's INTERNAL WALLET balance in real time.
+ *
+ * Internal Wallet = (deposits + roi + commission) - (investments + withdrawals + p2pSent)
+ *
+ * NOTE: p2p_received is EXCLUDED — those funds go to the separate P2P Wallet
+ * (user.p2pBalance) and can only be used for package activation (max 50%).
  *
  * @param userId - The ID of the user
  * @param tx - Optional Prisma transaction client
- * @returns The calculated available balance rounded to 2 decimal places, with a minimum of 0
+ * @returns The calculated available Internal Wallet balance (min 0)
  */
 export async function getAvailableBalance(userId: string, tx?: any): Promise<number> {
   const client = tx || prisma;
@@ -30,7 +34,7 @@ export async function getAvailableBalance(userId: string, tx?: any): Promise<num
   const totalInvested = investments.reduce((sum: number, inv: any) => sum + inv.amount, 0);
   const totalInvestmentEarned = investments.reduce((sum: number, inv: any) => sum + inv.totalEarned, 0);
 
-  // Daily ROI from transaction table (since production daily ROI is created as a transaction of type 'daily_roi')
+  // Daily ROI from transaction table
   const dailyRoiTxns = await client.transaction.aggregate({
     where: {
       userId,
@@ -42,7 +46,7 @@ export async function getAvailableBalance(userId: string, tx?: any): Promise<num
   const totalDailyRoi = dailyRoiTxns._sum.amount ?? 0;
   const totalEarned = totalInvestmentEarned + totalDailyRoi;
 
-  // 3. Commissions: from transactions table to include all deposit & investment commission types
+  // 3. Commissions
   const commissionTxns = await client.transaction.aggregate({
     where: {
       userId,
@@ -53,14 +57,14 @@ export async function getAvailableBalance(userId: string, tx?: any): Promise<num
   });
   const totalCommissions = commissionTxns._sum.amount ?? 0;
 
-  // 4. Withdrawals: approved & pending withdrawals from Withdrawal table
+  // 4. Withdrawals: approved & pending
   const withdrawnResult = await client.withdrawal.aggregate({
     where: { userId, status: { in: ['approved', 'pending'] } },
     _sum: { amount: true },
   });
   const totalWithdrawn = withdrawnResult._sum.amount ?? 0;
 
-  // 5. P2P Sent
+  // 5. P2P Sent (deducted from Internal Wallet)
   const p2pSentTxns = await client.transaction.aggregate({
     where: {
       userId,
@@ -71,31 +75,48 @@ export async function getAvailableBalance(userId: string, tx?: any): Promise<num
   });
   const totalP2pSent = p2pSentTxns._sum.amount ?? 0;
 
-  // 6. P2P Received
-  const p2pReceivedTxns = await client.transaction.aggregate({
-    where: {
-      userId,
-      type: 'p2p_received',
-      status: 'completed'
-    },
-    _sum: { amount: true }
-  });
-  const totalP2pReceived = p2pReceivedTxns._sum.amount ?? 0;
+  // 6. P2P used for package activation (deducted from P2P wallet, NOT Internal Wallet)
+  //    These are tracked as 'p2p_activation' transactions
+  //    NOT included here because they affect p2pBalance, not Internal Wallet
 
-  // Calculate available balance
-  const balance = (totalDeposits + totalEarned + totalCommissions + totalP2pReceived) - (totalInvested + totalWithdrawn + totalP2pSent);
+  // Internal Wallet = inflows - outflows (P2P received is EXCLUDED)
+  const balance = (totalDeposits + totalEarned + totalCommissions) - (totalInvested + totalWithdrawn + totalP2pSent);
   return Math.max(0, Number(balance.toFixed(2)));
 }
 
 /**
- * Calculates separate available pools for ROI and Commissions,
- * enforcing freeze and goal-locked block rules for sponsored users.
+ * Returns the user's P2P Wallet balance.
+ * P2P Wallet funds are non-withdrawable and can only be used for package activation (max 50%).
+ * Reads from the user.p2pBalance field which is updated atomically during P2P transfers and activations.
+ */
+export async function getP2pBalance(userId: string, tx?: any): Promise<number> {
+  const client = tx || prisma;
+  const user = await client.user.findUnique({
+    where: { id: userId },
+    select: { p2pBalance: true }
+  });
+  return Math.max(0, Number((user?.p2pBalance ?? 0).toFixed(2)));
+}
+
+/**
+ * Calculates separate withdrawable pools:
+ *  - Passive Earnings (daily ROI) → may be blocked for gifted leaders
+ *  - Network Earnings (commissions) → always withdrawable
+ *
+ * Also returns the P2P Wallet balance for display.
+ *
+ * Gifted Leader Logic (simplified):
+ *  - If user.isSponsored && user.roiBlocked → ALL passive earnings are blocked
+ *  - Network earnings are always available regardless of sponsored status
+ *  - Admin can toggle roiBlocked to approve/block passive withdrawals
+ *  - Goal-based auto-unlock still supported for goal_locked type
  */
 export async function getWithdrawableBalances(userId: string, tx?: any) {
   const client = tx || prisma;
   const user = await client.user.findUnique({
     where: { id: userId },
     select: {
+      p2pBalance: true,
       isSponsored: true,
       sponsoredType: true,
       sponsoredGoalAmount: true,
@@ -106,10 +127,12 @@ export async function getWithdrawableBalances(userId: string, tx?: any) {
   });
   
   const totalBalance = await getAvailableBalance(userId, client);
-  if (!user) return { totalBalance, availableRoi: 0, availableCommission: 0, blockedRoi: 0, fundsFrozen: false };
+  const p2pBalance = Math.max(0, Number((user?.p2pBalance ?? 0).toFixed(2)));
+  
+  if (!user) return { totalBalance, availablePassive: 0, availableNetwork: 0, blockedPassive: 0, p2pBalance: 0, fundsFrozen: false };
   
   if (user.fundsFrozen) {
-    return { totalBalance, availableRoi: 0, availableCommission: 0, blockedRoi: 0, fundsFrozen: true };
+    return { totalBalance, availablePassive: 0, availableNetwork: 0, blockedPassive: 0, p2pBalance, fundsFrozen: true };
   }
 
   // Dynamically calculate and sync direct sales for sponsored accounts
@@ -139,23 +162,24 @@ export async function getWithdrawableBalances(userId: string, tx?: any) {
     }
   }
 
-  // Fetch all commissions
+  // ── Network Earnings (Commissions) ─────────────────────────────────────────
   const commissionTxns = await client.transaction.aggregate({
     where: { userId, type: 'commission', status: 'completed' },
     _sum: { amount: true }
   });
   const totalCommissions = commissionTxns._sum.amount ?? 0;
 
+  // Support both old 'commission' type and new 'network' type withdrawals
   const commissionWithdrawnResult = await client.withdrawal.aggregate({
-    where: { userId, status: { in: ['approved', 'pending'] }, type: 'commission' },
+    where: { userId, status: { in: ['approved', 'pending'] }, type: { in: ['commission', 'network'] } },
     _sum: { amount: true }
   });
   const totalCommissionWithdrawn = commissionWithdrawnResult._sum.amount ?? 0;
   
-  // Available Commission = Commissions - Commission Withdrawn (capped by total available balance)
-  const availableCommission = Math.max(0, Math.min(totalBalance, totalCommissions - totalCommissionWithdrawn));
+  // Available Network = Commissions - Commission Withdrawn (capped by total available balance)
+  const availableNetwork = Math.max(0, Math.min(totalBalance, totalCommissions - totalCommissionWithdrawn));
 
-  // Calculate all ROI earned
+  // ── Passive Earnings (Daily ROI) ───────────────────────────────────────────
   const investments = await client.investment.findMany({ where: { userId } });
   const totalInvestmentEarned = investments.reduce((sum: number, inv: any) => sum + inv.totalEarned, 0);
 
@@ -166,46 +190,48 @@ export async function getWithdrawableBalances(userId: string, tx?: any) {
   const totalDailyRoi = dailyRoiTxns._sum.amount ?? 0;
   const totalRoiEarned = totalInvestmentEarned + totalDailyRoi;
 
-  // Calculate virtual ROI earned (from virtual investments or virtual daily_roi)
-  const virtualInvestmentEarned = investments.filter((i: any) => i.isVirtual).reduce((sum: number, inv: any) => sum + inv.totalEarned, 0);
-  const virtualDailyRoiTxns = await client.transaction.aggregate({
-    where: { userId, type: 'daily_roi', status: 'completed', isVirtual: true } as any,
-    _sum: { amount: true }
-  });
-  const totalVirtualRoiEarned = virtualInvestmentEarned + (virtualDailyRoiTxns._sum.amount ?? 0);
-
+  // Support both old 'roi' type and new 'passive' type withdrawals
   const roiWithdrawnResult = await client.withdrawal.aggregate({
-    where: { userId, status: { in: ['approved', 'pending'] }, type: 'roi' },
+    where: { userId, status: { in: ['approved', 'pending'] }, type: { in: ['roi', 'passive'] } },
     _sum: { amount: true }
   });
   const totalRoiWithdrawn = roiWithdrawnResult._sum.amount ?? 0;
 
-  // Available ROI = ROI - ROI Withdrawn (capped by total available balance)
-  const rawAvailableRoi = Math.max(0, totalRoiEarned - totalRoiWithdrawn);
+  // Available Passive = ROI - ROI Withdrawn (capped by total available balance)
+  const rawAvailablePassive = Math.max(0, totalRoiEarned - totalRoiWithdrawn);
   
-  // Determine if ROI is blocked or if there is any blocked virtual ROI
-  let blockedRoi = 0;
+  // ── Gifted Leader Restrictions ─────────────────────────────────────────────
+  // Simplified: if roiBlocked → block ALL passive earnings
+  // Network earnings are ALWAYS available (earned through own work)
+  let blockedPassive = 0;
   if (user.isSponsored) {
     if (user.sponsoredType === 'goal_locked') {
+      // Goal-based: auto-unlock when direct sales meet goal, or admin can override
       const goalMet = sponsoredDirectSales >= user.sponsoredGoalAmount;
       if (!goalMet || user.roiBlocked) {
-        blockedRoi = Math.max(0, totalVirtualRoiEarned - totalRoiWithdrawn);
+        blockedPassive = rawAvailablePassive;
       }
-    } else if (user.sponsoredType === 'free') {
-      if (user.roiBlocked || (totalRoiWithdrawn >= 12 && sponsoredDirectSales < 10)) {
-        blockedRoi = rawAvailableRoi;
+    } else {
+      // For 'free' type or any other sponsored type:
+      // If roiBlocked is true → block all passive earnings
+      if (user.roiBlocked) {
+        blockedPassive = rawAvailablePassive;
       }
     }
   }
 
-  const availableRoi = Math.max(0, Math.min(totalBalance - blockedRoi, rawAvailableRoi - blockedRoi));
+  const availablePassive = Math.max(0, Math.min(totalBalance - blockedPassive, rawAvailablePassive - blockedPassive));
 
   return {
     totalBalance,
-    availableRoi: Number(availableRoi.toFixed(2)),
-    availableCommission: Number(availableCommission.toFixed(2)),
-    blockedRoi: Number(blockedRoi.toFixed(2)),
+    availablePassive: Number(availablePassive.toFixed(2)),
+    availableNetwork: Number(availableNetwork.toFixed(2)),
+    blockedPassive: Number(blockedPassive.toFixed(2)),
+    p2pBalance,
     fundsFrozen: false,
+    // Legacy compatibility aliases
+    availableRoi: Number(availablePassive.toFixed(2)),
+    availableCommission: Number(availableNetwork.toFixed(2)),
+    blockedRoi: Number(blockedPassive.toFixed(2)),
   };
 }
-

@@ -9,9 +9,16 @@ const schema = z.object({
   amount:        z.number().positive().min(10, 'Minimum withdrawal is $10'),
   walletAddress: z.string().min(10, 'Invalid wallet address'),
   network:       z.enum(['BEP20']).default('BEP20'),
-  type:          z.enum(['roi', 'commission']).default('roi'),
+  // Accept both old and new type names for backwards compatibility
+  type:          z.enum(['roi', 'commission', 'passive', 'network']).default('passive'),
   verificationCode: z.string().optional(),
 });
+
+// Normalize type names: roi → passive, commission → network
+function normalizeWithdrawalType(type: string): 'passive' | 'network' {
+  if (type === 'roi' || type === 'passive') return 'passive';
+  return 'network';
+}
 
 // GET /api/withdrawals
 export async function GET(req: NextRequest) {
@@ -38,7 +45,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Validation failed', details: parsed.error.flatten() }, { status: 400 });
     }
 
-    const { amount, walletAddress, network, type, verificationCode } = parsed.data;
+    const { amount, walletAddress, network, verificationCode } = parsed.data;
+    const type = normalizeWithdrawalType(parsed.data.type);
 
     // Check system settings
     const settings = await prisma.settings.findFirst();
@@ -59,9 +67,13 @@ export async function POST(req: NextRequest) {
     if (!verificationCode) {
       // Preliminary balance check
       const pools = await getWithdrawableBalances(payload.userId, prisma as any);
-      const availableInPool = type === 'roi' ? pools.availableRoi : pools.availableCommission;
+      const availableInPool = type === 'passive' ? pools.availablePassive : pools.availableNetwork;
       
       if (amount > availableInPool) {
+        // For gifted leaders trying to withdraw passive earnings
+        if (type === 'passive' && pools.blockedPassive > 0) {
+          return NextResponse.json({ error: 'Passive earnings withdrawal is currently restricted. Network earnings can be withdrawn normally. Contact management for approval.' }, { status: 400 });
+        }
         return NextResponse.json({ error: 'Insufficient available balance in the selected withdrawal category.' }, { status: 400 });
       }
 
@@ -106,37 +118,16 @@ export async function POST(req: NextRequest) {
 
       // 2. Calculate available balance inside transaction
       const pools = await getWithdrawableBalances(payload.userId, tx);
-      const availableInPool = type === 'roi' ? pools.availableRoi : pools.availableCommission;
+      const availableInPool = type === 'passive' ? pools.availablePassive : pools.availableNetwork;
 
       if (amount > availableInPool) {
+        if (type === 'passive' && pools.blockedPassive > 0) {
+          throw new Error('PASSIVE_BLOCKED');
+        }
         throw new Error('INSUFFICIENT_POOL_BALANCE');
       }
 
-      // Free sponsored check
-      if (user.isSponsored && user.sponsoredType === 'free' && type === 'roi') {
-        // Calculate historical ROI withdrawn inside transaction
-        const roiWithdrawnResult = await tx.withdrawal.aggregate({
-          where: { userId: payload.userId, status: { in: ['approved', 'pending'] }, type: 'roi' },
-          _sum: { amount: true }
-        });
-        const totalRoiWithdrawn = roiWithdrawnResult._sum.amount ?? 0;
-
-        if ((totalRoiWithdrawn + amount) > 12) {
-          if (user.sponsoredDirectSales < 10) {
-            // Lock user's ROI withdrawals
-            await tx.user.update({
-              where: { id: payload.userId },
-              data: { roiBlocked: true }
-            });
-            throw new Error('FREE_ROI_LOCKED');
-          }
-        }
-      }
-
       // Platform Maintenance Fee: $0.01 (flat, per-withdrawal)
-      // The full `amount` is debited from the user's balance.
-      // The admin disburses `netAmount` to the user's wallet — the $0.01
-      // difference is the platform's retained maintenance fee.
       const MAINTENANCE_FEE = 0.01;
       const netAmount = Number((amount - MAINTENANCE_FEE).toFixed(2));
 
@@ -146,8 +137,8 @@ export async function POST(req: NextRequest) {
         data: { balance: { decrement: amount } }
       });
 
-      // 3.5. Deduct from operational capital if it's an ROI withdrawal
-      if (type === 'roi') {
+      // 3.5. Deduct from operational capital if it's a passive earnings withdrawal
+      if (type === 'passive') {
         await deductWithdrawalFromCapital(payload.userId, amount, tx);
       }
 
@@ -157,21 +148,21 @@ export async function POST(req: NextRequest) {
           amount,       // gross amount requested (full balance deduction)
           walletAddress, 
           network, 
-          type,
+          type,         // 'passive' or 'network'
           status: 'pending',
-          // Admin should disburse netAmount to user; $0.01 retained by platform
           note: `Maintenance fee: $${MAINTENANCE_FEE.toFixed(2)} | Net payout: $${netAmount.toFixed(2)}`
         },
       });
 
       // 4. Record outgoing transaction
+      const typeLabel = type === 'passive' ? 'Passive Earnings' : 'Network Earnings';
       await tx.transaction.create({
         data: {
           userId: payload.userId,
           type: 'withdrawal',
           amount: -amount,
           status: 'pending',
-          description: `Withdrawal request (${type === 'roi' ? 'ROI' : 'Commission'}) — ${network} (Net: $${netAmount.toFixed(2)}, Fee: $0.01)`,
+          description: `Withdrawal request (${typeLabel}) — ${network} (Net: $${netAmount.toFixed(2)}, Fee: $0.01)`,
           reference: withdrawal.id,
         },
       });
@@ -205,9 +196,9 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
-    if (err.message === 'FREE_ROI_LOCKED') {
+    if (err.message === 'PASSIVE_BLOCKED') {
       return NextResponse.json(
-        { error: 'ROI withdrawals are locked. A minimum of $10 USD in direct sales is required to withdraw more than $12 USD in ROI.' },
+        { error: 'Passive earnings withdrawal is currently restricted for your account. Network earnings can be withdrawn normally. Please contact management for approval.' },
         { status: 400 }
       );
     }

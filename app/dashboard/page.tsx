@@ -18,7 +18,11 @@ interface StatsData {
     operationalCapital: number;
     totalEarned: number;
     totalCommissions: number;
+    totalEarnings: number;
+    passiveEarnings: number;
+    networkEarnings: number;
     availableBalance: number;
+    p2pBalance: number;
     activeInvestments: number;
     directReferrals: number;
   };
@@ -515,24 +519,28 @@ export default function Dashboard() {
 
   const metrics = [
     {
-      label: t('overviewBalance'),
+      label: t('internalWallet'),
       value: `$${(data?.stats.availableBalance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       change: data?.recentTransactions.length ? t('overviewLedger') : t('overviewFreshAccount'),
+      color: 'text-violet-600 dark:text-violet-400',
     },
     {
-      label: t('depOperatingCapital'), // t('overviewInvested')
-      value: `$${(data?.stats.operationalCapital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      change: t('overviewRoiSub'),
+      label: t('p2pWallet'),
+      value: `$${(data?.stats.p2pBalance ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      change: t('p2pWalletDesc'),
+      color: 'text-amber-600 dark:text-amber-400',
     },
     {
-      label: t('overviewEarned'),
-      value: `$${(data?.stats.totalEarned ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      change: t('overviewDailyPayouts'),
+      label: t('passiveEarnings'),
+      value: `$${(data?.stats.passiveEarnings ?? data?.stats.totalEarned ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      change: t('passiveEarningsSub'),
+      color: 'text-emerald-600 dark:text-emerald-400',
     },
     {
-      label: t('overviewReferralEarnings'),
-      value: `$${(data?.stats.totalCommissions ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      label: t('networkEarnings'),
+      value: `$${(data?.stats.networkEarnings ?? data?.stats.totalCommissions ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       change: `${data?.stats.directReferrals ?? 0} ${t('overviewReferralsCount')}`,
+      color: 'text-blue-600 dark:text-blue-400',
     },
   ];
 
@@ -581,10 +589,10 @@ export default function Dashboard() {
         <>
           {/* ── Metric Cards ────────────────────────────────────────────── */}
           <div id="tour-metrics" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            {metrics.map(({ label, value, change }) => (
+            {metrics.map(({ label, value, change, color }) => (
               <div key={label} className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-4 sm:p-5 shadow-sm dark:shadow-none overflow-hidden min-w-0">
                 <p className="text-[10px] sm:text-xs font-bold font-mono text-slate-550 dark:text-zinc-400 uppercase tracking-widest mb-3 truncate">{label}</p>
-                <p className="text-base sm:text-xl font-black text-slate-950 dark:text-white mb-2 font-mono truncate">{show ? value : '••••••'}</p>
+                <p className={`text-base sm:text-xl font-black mb-2 font-mono truncate ${color || 'text-slate-950 dark:text-white'}`}>{show ? value : '••••••'}</p>
                 <div className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-mono font-bold text-slate-600 dark:text-zinc-350 truncate">{change}</div>
               </div>
             ))}
@@ -697,6 +705,11 @@ export default function Dashboard() {
                     <p className="text-xs text-slate-600 dark:text-zinc-300 font-mono mt-0.5">{t('p2pTransferSubtitle') || 'Zero-fee internal balance transfers'}</p>
                   </div>
                   <span className="ml-auto text-[10px] font-bold text-violet-600 dark:text-violet-300 bg-violet-500/20 px-2.5 py-0.5 rounded-full uppercase tracking-wider">{t('p2pZeroFee') || '0% FEE'}</span>
+                </div>
+                {/* P2P Wallet Info Banner */}
+                <div className="p-3 mb-4 bg-amber-500/5 border border-amber-500/15 rounded-xl">
+                  <p className="text-[10px] font-mono font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">{t('p2pReceivedNote')}</p>
+                  <p className="text-[10px] font-mono text-slate-500 dark:text-zinc-400 mt-0.5">{t('p2pWalletActivationOnly')}</p>
                 </div>
                 <form onSubmit={handleP2pTransfer} className="space-y-4">
                   <div>

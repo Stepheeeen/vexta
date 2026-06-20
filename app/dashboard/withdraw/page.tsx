@@ -88,6 +88,12 @@ function P2PTransferPanel({ balance, onSuccess }: { balance: number; onSuccess: 
             </div>
           </div>
         ) : (
+          <>
+            {/* P2P Wallet Info Banner */}
+            <div className="p-3 mb-3 bg-amber-500/5 border border-amber-500/15 rounded-xl">
+              <p className="text-[10px] font-mono font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">{t('p2pReceivedNote')}</p>
+              <p className="text-[10px] font-mono text-slate-500 dark:text-zinc-400 mt-0.5">{t('p2pWalletActivationOnly')}</p>
+            </div>
           <form onSubmit={handleSubmit} className="grid sm:grid-cols-5 gap-4 items-end">
             <div className="sm:col-span-2">
               <label className="block text-[10px] font-bold font-mono text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">
@@ -137,6 +143,7 @@ function P2PTransferPanel({ balance, onSuccess }: { balance: number; onSuccess: 
               </button>
             </div>
           </form>
+          </>
         )}
       </div>
     </div>
@@ -179,10 +186,14 @@ export default function WithdrawPage() {
 
   // Sponsorship & Pool States
   const [pools, setPools] = useState<{
-    availableRoi: number;
-    availableCommission: number;
-    blockedRoi: number;
+    availablePassive: number;
+    availableNetwork: number;
+    blockedPassive: number;
     fundsFrozen: boolean;
+    // Legacy aliases
+    availableRoi?: number;
+    availableCommission?: number;
+    blockedRoi?: number;
   } | null>(null);
 
   const [userSponsorship, setUserSponsorship] = useState<{
@@ -195,7 +206,7 @@ export default function WithdrawPage() {
     withdrawalsBlocked: boolean;
   } | null>(null);
 
-  const [withdrawType, setWithdrawType] = useState<'roi' | 'commission'>('roi');
+  const [withdrawType, setWithdrawType] = useState<'passive' | 'network'>('passive');
 
   // Form states
   const [amount, setAmount] = useState('');
@@ -264,12 +275,15 @@ export default function WithdrawPage() {
       return;
     }
 
-    const limit = withdrawType === 'roi' ? (pools?.availableRoi ?? 0) : (pools?.availableCommission ?? 0);
+    const limit = withdrawType === 'passive'
+      ? (pools?.availablePassive ?? pools?.availableRoi ?? 0)
+      : (pools?.availableNetwork ?? pools?.availableCommission ?? 0);
     if (numericAmount > limit) {
-      setError(`Insufficient ${withdrawType === 'roi' ? 'ROI' : 'Commission'} balance. Maximum available: $${limit.toLocaleString()}`);
+      const typeLabel = withdrawType === 'passive' ? t('withdrawPassive') : t('withdrawNetwork');
+      setError(`Insufficient ${typeLabel} balance. Maximum available: $${limit.toLocaleString()}`);
       toast({
         title: 'Withdrawal Failed',
-        description: `Insufficient ${withdrawType === 'roi' ? 'ROI' : 'Commission'} balance. Maximum available: $${limit.toLocaleString()}`,
+        description: `Insufficient ${typeLabel} balance. Maximum available: $${limit.toLocaleString()}`,
         variant: 'destructive',
       });
       setSubmitting(false);
@@ -434,20 +448,21 @@ export default function WithdrawPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                 <button
                   type="button"
-                  onClick={() => setWithdrawType('roi')}
+                  onClick={() => setWithdrawType('passive')}
                   className={`relative p-5 rounded-2xl border text-left transition-all ${
-                    withdrawType === 'roi'
-                      ? 'border-violet-600 bg-violet-600/5 dark:bg-violet-600/10'
+                    withdrawType === 'passive'
+                      ? 'border-emerald-600 bg-emerald-600/5 dark:bg-emerald-600/10'
                       : 'border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/3 hover:bg-slate-100 dark:hover:bg-white/5'
                   }`}
                 >
                   <div className="flex justify-between items-start mb-2">
-                    <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 font-mono uppercase tracking-wider">{t("withdrawRoiProfits")}</span>
-                    {withdrawType === 'roi' && <CheckCircle2 className="w-4 h-4 text-violet-500" />}
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 font-mono uppercase tracking-wider">{t("withdrawPassive")}</span>
+                    {withdrawType === 'passive' && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
                   </div>
                   <p className="text-lg font-black text-slate-905 dark:text-white font-mono">
-                    ${pools ? pools.availableRoi.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}
+                    ${pools ? (pools.availablePassive ?? pools.availableRoi ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}
                   </p>
+                  <p className="text-[9px] font-mono text-slate-400 dark:text-zinc-500 mt-1">{t('passiveEarningsSub')}</p>
                   {userSponsorship?.isSponsored && userSponsorship.roiBlocked && (
                     <span className="text-[10px] text-amber-500 font-bold block mt-2">{t("withdrawRoiBlocked")}</span>
                   )}
@@ -455,20 +470,21 @@ export default function WithdrawPage() {
 
                 <button
                   type="button"
-                  onClick={() => setWithdrawType('commission')}
+                  onClick={() => setWithdrawType('network')}
                   className={`relative p-5 rounded-2xl border text-left transition-all ${
-                    withdrawType === 'commission'
-                      ? 'border-violet-600 bg-violet-600/5 dark:bg-violet-600/10'
+                    withdrawType === 'network'
+                      ? 'border-blue-600 bg-blue-600/5 dark:bg-blue-600/10'
                       : 'border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/3 hover:bg-slate-100 dark:hover:bg-white/5'
                   }`}
                 >
                   <div className="flex justify-between items-start mb-2">
-                    <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 font-mono uppercase tracking-wider">{t("withdrawRefComm")}</span>
-                    {withdrawType === 'commission' && <CheckCircle2 className="w-4 h-4 text-violet-500" />}
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 font-mono uppercase tracking-wider">{t("withdrawNetwork")}</span>
+                    {withdrawType === 'network' && <CheckCircle2 className="w-4 h-4 text-blue-500" />}
                   </div>
                   <p className="text-lg font-black text-slate-905 dark:text-white font-mono">
-                    ${pools ? pools.availableCommission.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}
+                    ${pools ? (pools.availableNetwork ?? pools.availableCommission ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}
                   </p>
+                  <p className="text-[9px] font-mono text-slate-400 dark:text-zinc-500 mt-1">{t('networkEarningsSub')}</p>
                 </button>
               </div>
 

@@ -43,7 +43,7 @@ export function Footer() {
           {/* Brand */}
           <div className="md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-4 group">
-              <VextaLogo className="h-8 w-8 transition-transform duration-300 group-hover:scale-105" />
+              <VextaLogo className="h-8 w-8 transition-transform duration-300 group-hover:scale-105" variant="icon-only" />
               <span className="text-xl font-bold text-slate-900 tracking-tight">
                 {SYSTEM_CONFIG.brand.name}
               </span>

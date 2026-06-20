@@ -38,6 +38,8 @@ model User {
   totalEarned     Float    @default(0)
   totalCommission Float    @default(0)
   balance         Float    @default(0)
+  /// P2P Wallet — funds received via P2P transfers. Non-withdrawable, only usable for package activation (max 50%).
+  p2pBalance      Float    @default(0)
   uplineId        String?  @db.ObjectId
 
   // ─── Compounding Capital Tracking ──────────────────────────────────────────
