@@ -188,21 +188,21 @@ export default function ReferralsPage() {
             {/* Commission levels */}
             <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none">
               <h2 className="text-sm font-semibold text-slate-950 dark:text-white mb-5">{t('referralsCommBreakdown')}</h2>
-              <div className="space-y-3">
+              <div className="space-y-1.5">
                 {(data?.byLevel || []).map(({ level, count, earned }) => (
-                  <div key={level} className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-6 h-6 rounded-lg bg-violet-500/10 flex items-center justify-center flex-shrink-0">
-                        <span className="text-[9px] font-bold text-violet-500 dark:text-violet-400">{level}</span>
+                  <div key={level} className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-5 h-5 rounded-md bg-violet-500/10 flex items-center justify-center flex-shrink-0">
+                        <span className="text-[8px] font-bold text-violet-500 dark:text-violet-400">{level}</span>
                       </div>
                       <div>
-                        <p className="text-xs font-medium text-slate-900 dark:text-white">{levelLabels[level] || `Level ${level}`}</p>
-                        <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{count} {t('referralsMembers')}</p>
+                        <p className="text-[11px] font-medium text-slate-900 dark:text-white">{levelLabels[level] || `Level ${level}`}</p>
+                        <p className="text-[9px] text-slate-500 dark:text-gray-500 font-mono">{count} {t('referralsMembers')}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs font-bold text-green-600 dark:text-green-400 font-mono">${earned.toFixed(2)}</p>
-                      <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">{levelRates[level]}</p>
+                      <p className="text-[11px] font-bold text-green-600 dark:text-green-400 font-mono">${earned.toFixed(2)}</p>
+                      <p className="text-[9px] text-slate-500 dark:text-gray-500 font-mono">{levelRates[level]}</p>
                     </div>
                   </div>
                 ))}

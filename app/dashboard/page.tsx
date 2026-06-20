@@ -25,6 +25,7 @@ interface StatsData {
     p2pBalance: number;
     activeInvestments: number;
     directReferrals: number;
+    totalNetworkCount: number;
   };
   investments: any[];
   recentTransactions: any[];
@@ -539,7 +540,7 @@ export default function Dashboard() {
     {
       label: t('networkEarnings'),
       value: `$${(data?.stats.networkEarnings ?? data?.stats.totalCommissions ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      change: `${data?.stats.directReferrals ?? 0} ${t('overviewReferralsCount')}`,
+      change: `${data?.stats.totalNetworkCount ?? 0} ${t('referralsStat2Sub')} · ${data?.stats.directReferrals ?? 0} ${t('overviewReferralsCount')}`,
       color: 'text-blue-600 dark:text-blue-400',
     },
   ];

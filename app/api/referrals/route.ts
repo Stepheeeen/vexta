@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   const payload = getUserFromRequest(req);
   if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const [tree, totals, commissions] = await Promise.all([
+  const [tree, commissionTotals, commissions] = await Promise.all([
     getReferralTree(payload.userId),
     getTotalCommissions(payload.userId),
     prisma.commission.findMany({
@@ -24,12 +24,20 @@ export async function GET(req: NextRequest) {
     return { level, count, earned: +earned.toFixed(2) };
   });
 
+  // Compute totals from tree data
+  const level1Count = tree.find((t) => t.level === 1)?.users.length ?? 0;
+  const totalNetworkCount = tree.reduce((sum, t) => sum + t.users.length, 0);
+
   return NextResponse.json({
     referralCode: (await prisma.user.findUnique({
       where: { id: payload.userId },
       select: { referralCode: true },
     }))?.referralCode,
-    totals,
+    totals: {
+      level1Count,
+      totalNetworkCount,
+      totalEarned: commissionTotals.total,
+    },
     byLevel,
     tree,
     recentCommissions: commissions,

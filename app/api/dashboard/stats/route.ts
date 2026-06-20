@@ -54,6 +54,19 @@ export async function GET(req: NextRequest) {
   // Referrals count (direct)
   const directReferrals = await prisma.referralLink.count({ where: { referrerId: userId } });
 
+  // Total network count (all levels BFS)
+  let totalNetworkCount = 0;
+  let currentLevelIds = [userId];
+  for (let level = 1; level <= 13; level++) {
+    const links = await prisma.referralLink.findMany({
+      where: { referrerId: { in: currentLevelIds } },
+      select: { referredId: true },
+    });
+    if (links.length === 0) break;
+    totalNetworkCount += links.length;
+    currentLevelIds = links.map((l) => l.referredId);
+  }
+
   // Recent transactions
   const recentTxns = await prisma.transaction.findMany({
     where: { userId },
@@ -97,6 +110,7 @@ export async function GET(req: NextRequest) {
       operationalCapital: (userRecord as any)?.operationalCapital || 0,
       activeInvestments,
       directReferrals,
+      totalNetworkCount,
     },
     pools,
     userSponsorship: userRecord,

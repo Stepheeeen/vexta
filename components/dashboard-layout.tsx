@@ -557,12 +557,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
             {/* Language Selection Grid */}
             <div className="space-y-2">
               <span className="text-xs font-semibold text-slate-700 dark:text-gray-300 px-2 block">Language</span>
-              <div className="grid grid-cols-2 gap-1.5 max-h-40 overflow-y-auto p-1 bg-slate-50 dark:bg-white/2 rounded-2xl border border-slate-150 dark:border-white/5">
+              <div className="grid grid-cols-2 gap-1 p-1 bg-slate-50 dark:bg-white/2 rounded-2xl border border-slate-150 dark:border-white/5">
                 {(Object.keys(flags) as Array<keyof typeof flags>).map((lang) => (
                   <button
                     key={lang}
                     onClick={() => setLanguage(lang)}
-                    className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl text-[10px] font-bold transition-all ${
+                    className={`flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-xl text-[10px] font-bold transition-all ${
                       language === lang
                         ? 'bg-violet-600 text-white shadow'
                         : 'bg-white dark:bg-white/5 text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/10'
