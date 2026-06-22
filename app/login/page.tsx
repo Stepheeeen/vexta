@@ -7,8 +7,10 @@ import { BackgroundPattern } from '@/components/background-pattern';
 import { ArrowRight, Activity, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useTranslation } from '@/components/translation-provider';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { useRouter } from 'next/navigation';
 
 export default function Login() {
+  const router = useRouter();
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
     email: '',
@@ -57,11 +59,11 @@ export default function Login() {
       }
 
       if (data.user && !data.user.isVerified) {
-        window.location.href = '/verify';
+        router.push('/verify');
       } else if (data.user && data.user.role === 'admin') {
-        window.location.href = '/admin';
+        router.push('/admin');
       } else {
-        window.location.href = '/dashboard';
+        router.push('/dashboard');
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred during login.');

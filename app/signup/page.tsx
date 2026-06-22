@@ -1,15 +1,17 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { VextaLogoText } from '@/components/vexta-logo';
 import { BackgroundPattern } from '@/components/background-pattern';
-import { ArrowRight, Activity, Hexagon, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { ArrowRight, Activity, Hexagon, Eye, EyeOff, Loader2, Check } from 'lucide-react';
 import { useTranslation } from '@/components/translation-provider';
 import { LanguageSwitcher } from '@/components/language-switcher';
+import { useRouter } from 'next/navigation';
 import { countries } from '@/lib/countries';
 
 export default function SignUp() {
+  const router = useRouter();
   const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -38,6 +40,60 @@ export default function SignUp() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const emailCheckTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [emailChecking, setEmailChecking] = useState(false);
+  const [emailAvailable, setEmailAvailable] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (emailCheckTimeoutRef.current) {
+        clearTimeout(emailCheckTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const checkEmailAvailability = async (email: string) => {
+    const trimmed = email.trim();
+    const isFormatValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
+    if (!isFormatValid) {
+      setEmailAvailable(null);
+      setEmailChecking(false);
+      return;
+    }
+    
+    setEmailChecking(true);
+    try {
+      const res = await fetch(`/api/auth/check-email?email=${encodeURIComponent(trimmed.toLowerCase())}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.exists) {
+          setEmailAvailable(false);
+          setErrors(prev => ({
+            ...prev,
+            email: t('signupEmailExists') === 'signupEmailExists'
+              ? 'An account with this email already exists'
+              : t('signupEmailExists')
+          }));
+        } else {
+          setEmailAvailable(true);
+          setErrors(prev => {
+            const copy = { ...prev };
+            if (copy.email === 'An account with this email already exists' || copy.email === t('signupEmailExists')) {
+              delete copy.email;
+            }
+            return copy;
+          });
+        }
+      } else {
+        setEmailAvailable(false);
+      }
+    } catch (err) {
+      console.error('Email check failed', err);
+      setEmailAvailable(false);
+    } finally {
+      setEmailChecking(false);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -47,6 +103,25 @@ export default function SignUp() {
     }));
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+
+    if (name === 'email') {
+      setEmailAvailable(null);
+      if (emailCheckTimeoutRef.current) {
+        clearTimeout(emailCheckTimeoutRef.current);
+      }
+      
+      const trimmed = value.trim();
+      const isFormatValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
+
+      if (isFormatValid) {
+        setEmailChecking(true);
+        emailCheckTimeoutRef.current = setTimeout(() => {
+          checkEmailAvailability(value);
+        }, 600);
+      } else {
+        setEmailChecking(false);
+      }
     }
   };
 
@@ -70,8 +145,34 @@ export default function SignUp() {
 
   const handleNext = async () => {
     if (validateStep(step)) {
-      if (step < 3) {
-        setStep(step + 1);
+      if (step === 1) {
+        setLoading(true);
+        setSubmitError(null);
+        try {
+          const res = await fetch(`/api/auth/check-email?email=${encodeURIComponent(formData.email.toLowerCase().trim())}`);
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || 'Failed to verify email availability.');
+          }
+          if (data.exists) {
+            setEmailAvailable(false);
+            setErrors(prev => ({
+              ...prev,
+              email: t('signupEmailExists') === 'signupEmailExists'
+                ? 'An account with this email already exists'
+                : t('signupEmailExists')
+            }));
+            return;
+          }
+          setEmailAvailable(true);
+          setStep(2);
+        } catch (err: any) {
+          setSubmitError(err.message || 'An error occurred during email validation.');
+        } finally {
+          setLoading(false);
+        }
+      } else if (step === 2) {
+        setStep(3);
       } else {
         setLoading(true);
         setSubmitError(null);
@@ -82,7 +183,7 @@ export default function SignUp() {
             body: JSON.stringify({
               firstName: formData.firstName,
               lastName: formData.lastName,
-              email: formData.email,
+              email: formData.email.toLowerCase().trim(),
               country: formData.country,
               whatsappOrTelegram: formData.whatsappOrTelegram || undefined,
               password: formData.password,
@@ -93,7 +194,7 @@ export default function SignUp() {
           if (!res.ok) {
             throw new Error(data.error || 'Registration failed');
           }
-          window.location.href = '/verify';
+          router.push('/verify');
         } catch (err: any) {
           setSubmitError(err.message || 'An error occurred during registration.');
         } finally {
@@ -188,15 +289,35 @@ export default function SignUp() {
 
                 <div className="group/input">
                   <label className="block text-[10px] font-mono text-slate-400 dark:text-white/50 uppercase tracking-widest mb-2">{t('signupEmailLabel')}</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className={`w-full bg-slate-50 dark:bg-white/5 border ${errors.email ? 'border-red-500/50 focus:ring-red-500/50' : 'border-slate-200 dark:border-white/5 focus:border-violet-500/50 dark:focus:border-[#00D9FF]/50 focus:ring-violet-500/50 dark:focus:ring-[#00D9FF]/50'} rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono text-sm`}
-                    placeholder="you@example.com"
-                  />
+                  <div className="relative">
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      onBlur={(e) => checkEmailAvailability(e.target.value)}
+                      className={`w-full bg-slate-50 dark:bg-white/5 border ${
+                        errors.email 
+                          ? 'border-red-500/50 focus:ring-red-500/50' 
+                          : emailAvailable === true
+                            ? 'border-emerald-500/50 dark:border-[#00FF88]/50 focus:border-emerald-500 dark:focus:border-[#00FF88] focus:ring-emerald-500/50 dark:focus:ring-[#00FF88]/50'
+                            : 'border-slate-200 dark:border-white/5 focus:border-violet-500/50 dark:focus:border-[#00D9FF]/50 focus:ring-violet-500/50 dark:focus:ring-[#00D9FF]/50'
+                      } rounded-xl pl-4 pr-10 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono text-sm`}
+                      placeholder="you@example.com"
+                    />
+                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
+                      {emailChecking && (
+                        <Loader2 className="w-4 h-4 text-violet-500 dark:text-[#00D9FF] animate-spin" />
+                      )}
+                      {!emailChecking && emailAvailable === true && (
+                        <Check className="w-4 h-4 text-emerald-500 dark:text-[#00FF88]" />
+                      )}
+                    </div>
+                  </div>
                   {errors.email && <p className="text-[10px] text-red-500 dark:text-red-400 mt-1 font-mono uppercase tracking-wider">{errors.email}</p>}
+                  {!emailChecking && emailAvailable === true && (
+                    <p className="text-[10px] text-emerald-500 dark:text-[#00FF88] mt-1 font-mono uppercase tracking-wider">Email is available</p>
+                  )}
                 </div>
 
                 <div className="group/input">
@@ -311,13 +432,20 @@ export default function SignUp() {
                   <p className="text-[10px] text-slate-500 dark:text-[#808A9D] mt-2 font-mono uppercase">{t('signupShareHint')}</p>
                 </div>
 
-                <label className="flex items-start gap-3 cursor-pointer group mt-4">
+                <div 
+                  onClick={() => {
+                    if (loading) return;
+                    setFormData(prev => ({ ...prev, acceptTerms: !prev.acceptTerms }));
+                    if (errors.acceptTerms) setErrors(prev => ({ ...prev, acceptTerms: '' }));
+                  }}
+                  className="flex items-start gap-3 cursor-pointer group mt-4"
+                >
                   <div className="relative flex items-center justify-center mt-0.5">
                     <input
                       type="checkbox"
                       name="acceptTerms"
                       checked={formData.acceptTerms}
-                      onChange={handleChange}
+                      readOnly
                       className={`w-5 h-5 rounded-md border ${errors.acceptTerms ? 'border-red-500 bg-red-500/10' : 'border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-white/5'} appearance-none checked:bg-slate-900 dark:checked:bg-white checked:border-slate-900 dark:checked:border-white transition-all cursor-pointer peer`}
                       disabled={loading}
                     />
@@ -327,13 +455,13 @@ export default function SignUp() {
                       </svg>
                     </div>
                   </div>
-                  <div className="flex flex-col">
+                  <div className="flex flex-col select-none">
                     <span className="text-[10px] text-slate-500 dark:text-[#808A9D] font-mono leading-relaxed uppercase tracking-wider">
                       {t('signupTerms')}
                     </span>
                     {errors.acceptTerms && <span className="text-[10px] text-red-500 dark:text-red-400 mt-1 font-mono uppercase tracking-wider">{errors.acceptTerms}</span>}
                   </div>
-                </label>
+                </div>
               </div>
             )}
           </div>
@@ -351,7 +479,7 @@ export default function SignUp() {
             )}
             <button
               onClick={handleNext}
-              disabled={loading}
+              disabled={loading || (step === 1 && (emailChecking || emailAvailable === false))}
               className={`flex-[2] px-4 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-gray-100 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group/btn relative overflow-hidden disabled:opacity-50`}
             >
               {loading ? (

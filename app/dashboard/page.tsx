@@ -591,10 +591,12 @@ export default function Dashboard() {
           {/* ── Metric Cards ────────────────────────────────────────────── */}
           <div id="tour-metrics" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             {metrics.map(({ label, value, change, color }) => (
-              <div key={label} className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-4 sm:p-5 shadow-sm dark:shadow-none overflow-hidden min-w-0">
-                <p className="text-[10px] sm:text-xs font-bold font-mono text-slate-550 dark:text-zinc-400 uppercase tracking-widest mb-3 truncate">{label}</p>
-                <p className={`text-base sm:text-xl font-black mb-2 font-mono truncate ${color || 'text-slate-950 dark:text-white'}`}>{show ? value : '••••••'}</p>
-                <div className="inline-flex items-center gap-1 text-[10px] sm:text-xs font-mono font-bold text-slate-600 dark:text-zinc-350 truncate">{change}</div>
+              <div key={label} className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-4 sm:p-5 shadow-sm dark:shadow-none overflow-hidden min-w-0 flex flex-col justify-between h-full">
+                <div>
+                  <p className="text-[10px] sm:text-xs font-bold font-mono text-slate-550 dark:text-zinc-400 uppercase tracking-widest mb-3 truncate">{label}</p>
+                  <p className={`text-base sm:text-xl font-black mb-2 font-mono truncate ${color || 'text-slate-950 dark:text-white'}`}>{show ? value : '••••••'}</p>
+                </div>
+                <div className="text-[10px] sm:text-xs font-mono font-bold text-slate-600 dark:text-zinc-350 leading-relaxed whitespace-normal break-words mt-auto">{change}</div>
               </div>
             ))}
           </div>
