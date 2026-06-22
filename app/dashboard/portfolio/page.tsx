@@ -6,6 +6,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { ProfitCalculator } from '@/components/profit-calculator';
 
 interface StatsData {
   stats: {
@@ -39,6 +41,7 @@ export default function PortfolioPage() {
   const [loading, setLoading] = useState(true);
   const [daysActive, setDaysActive] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [isActivationModalOpen, setIsActivationModalOpen] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -84,15 +87,9 @@ export default function PortfolioPage() {
   }, []);
 
   const handleSimulate = async () => {
-    router.push('/dashboard/deposit');
+    setIsActivationModalOpen(true);
   };
 
-  const stats = [
-    { label: t('depOperatingCapital'), value: `$${(data?.stats.operationalCapital ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: t('portfolioStat1Sub') },
-    { label: t('portfolioActiveContracts'), value: `${data?.stats.activeInvestments ?? 0}`, change: t('portfolioActiveContractsSub') },
-    { label: t('portfolioStat3'), value: `$${(data?.stats.totalEarned ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, change: t('portfolioStat3Sub') },
-    { label: t('portfolioStat4'), value: `${daysActive}`, change: t('portfolioStat4Sub') },
-  ];
 
   return (
     <DashboardLayout>
@@ -115,57 +112,72 @@ export default function PortfolioPage() {
         </div>
       ) : (
         <>
-          {/* Step-by-Step Guideline Banner */}
-          <div className="bg-gradient-to-br from-violet-600/10 via-blue-600/5 to-transparent border border-violet-500/10 rounded-2xl p-6 mb-6 shadow-sm">
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <HelpCircle className="w-5 h-5 text-violet-500 dark:text-violet-400" />
-                  <h3 className="text-sm font-semibold text-slate-950 dark:text-white">{t('portfolioGuideTitle')}</h3>
-                </div>
-                <p className="text-xs text-slate-500 dark:text-gray-400 max-w-2xl leading-relaxed">
-                  {t('portfolioGuideDesc')}
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-slate-200/50 dark:border-white/5 text-[11px] font-mono">
-                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-violet-500 font-bold block mb-0.5">{t('portfolioGuideStep1Title')}</span>
-                    <span className="text-slate-400">{t('portfolioGuideStep1Sub')}</span>
-                  </div>
-                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-violet-500 font-bold block mb-0.5">{t('portfolioGuideStep2Title')}</span>
-                    <span className="text-slate-400">{t('portfolioGuideStep2Sub')}</span>
-                  </div>
-                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-violet-500 font-bold block mb-0.5">{t('portfolioGuideStep3Title')}</span>
-                    <span className="text-slate-400">{t('portfolioGuideStep3Sub')}</span>
-                  </div>
-                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-violet-500 font-bold block mb-0.5">{t('portfolioGuideStep4Title')}</span>
-                    <span className="text-slate-400">{t('portfolioGuideStep4Sub')}</span>
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={handleSimulate}
-                className="flex-shrink-0 flex items-center gap-1.5 px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold shadow-md shadow-violet-600/15 transition-all hover:-translate-y-0.5 duration-200"
-              >
-                <ArrowRight className="w-3.5 h-3.5 fill-current" />
-                <span>{t('portfolioSimulateBtn')}</span>
-              </button>
-            </div>
-          </div>
+          {/* ── Premium Hero Section ────────────────────────────────────────── */}
+          <div className="relative mb-8">
+            {/* Background glowing gradients */}
+            <div className="absolute inset-0 bg-gradient-to-r from-violet-600/10 via-fuchsia-600/10 to-blue-600/10 rounded-3xl blur-xl" />
+            <div className="absolute inset-0 bg-gradient-to-b from-white/40 to-white/0 dark:from-white/5 dark:to-transparent rounded-3xl" />
+            
+            <div className="relative bg-white/60 dark:bg-[#0A0F14]/80 backdrop-blur-2xl border border-slate-200/50 dark:border-white/10 rounded-3xl p-8 overflow-hidden shadow-xl shadow-violet-900/5">
+              {/* Decorative elements */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-violet-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3" />
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3" />
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {stats.map(({ label, value, change }) => (
-              <div key={label} className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-5 shadow-sm dark:shadow-none">
-                <p className="text-[10px] font-mono text-slate-400 dark:text-gray-500 uppercase tracking-widest mb-3">{label}</p>
-                <p className="text-xl font-bold text-slate-950 dark:text-white font-mono mb-2">{value}</p>
-                <div className="text-[10px] font-mono text-slate-500 dark:text-gray-400">
-                  {change}
+              <div className="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+                <div>
+                  <p className="text-xs font-bold font-mono text-violet-600 dark:text-violet-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
+                    {t('depOperatingCapital') || 'Total Active Capital'}
+                  </p>
+                  <h2 className="text-5xl md:text-6xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-slate-900 via-violet-900 to-slate-900 dark:from-white dark:via-violet-200 dark:to-slate-300 font-mono drop-shadow-sm">
+                    ${(data?.stats.totalInvested ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </h2>
+                  <p className="text-sm text-slate-500 dark:text-zinc-400 font-mono mt-3 max-w-sm">
+                    {t('portfolioStat1Sub') || 'Total amount of money you have invested'}
+                  </p>
+                </div>
+
+                <div className="w-full md:w-auto flex flex-col gap-3">
+                  <Dialog open={isActivationModalOpen} onOpenChange={setIsActivationModalOpen}>
+                    <DialogTrigger asChild>
+                      <button className="relative group w-full md:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white rounded-2xl font-bold shadow-lg shadow-violet-600/25 transition-all hover:scale-105 hover:shadow-violet-600/40 active:scale-95">
+                        <div className="absolute inset-0 rounded-2xl bg-white/20 group-hover:opacity-0 transition-opacity" />
+                        <TrendingUp className="w-5 h-5 relative z-10" />
+                        <span className="relative z-10 text-sm tracking-wide">{t('portfolioActivatePackage') || 'Activate Package'}</span>
+                      </button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-md bg-transparent border-none shadow-none p-0">
+                      <ProfitCalculator 
+                        availableBalance={data?.stats.availableBalance || 0} 
+                        onSuccess={() => {
+                          setIsActivationModalOpen(false);
+                          fetchData();
+                        }}
+                      />
+                    </DialogContent>
+                  </Dialog>
+                  <p className="text-[10px] text-center text-slate-400 dark:text-zinc-500 font-mono uppercase tracking-widest">
+                    Available: ${(data?.stats.availableBalance ?? 0).toLocaleString()} USDT
+                  </p>
                 </div>
               </div>
-            ))}
+
+              {/* Stats Grid inside the Hero */}
+              <div className="relative mt-10 pt-8 border-t border-slate-200/50 dark:border-white/10 grid grid-cols-2 md:grid-cols-3 gap-6">
+                <div>
+                  <p className="text-[10px] font-mono text-slate-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5">{t('portfolioActiveContracts') || 'Active Contracts'}</p>
+                  <p className="text-2xl font-bold text-slate-800 dark:text-white font-mono">{data?.stats.activeInvestments ?? 0}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] font-mono text-slate-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5">{t('portfolioStat3') || 'Total ROI Earned'}</p>
+                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">+${(data?.stats.totalEarned ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                </div>
+                <div className="col-span-2 md:col-span-1">
+                  <p className="text-[10px] font-mono text-slate-400 dark:text-zinc-500 uppercase tracking-widest mb-1.5">{t('portfolioStat4') || 'Days Active'}</p>
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400 font-mono">{daysActive} <span className="text-sm font-normal text-slate-400 dark:text-zinc-500 ml-1">Days</span></p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Plans */}

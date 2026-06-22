@@ -118,10 +118,20 @@ export async function POST(req: NextRequest) {
   if (status === PLISIO_STATUS_COMPLETED) {
     await handleCompletedPayment(invoice, tx_url);
   } else if (status === PLISIO_STATUS_MISMATCH) {
-    console.error(
+    console.warn(
       `[plisio/webhook] MISMATCH on ${txn_id}: ` +
-      `expected $${source_amount}, received ${invoice_total_sum}. Manual review required.`
+      `expected $${source_amount}, received ${invoice_total_sum}. Processing actual received amount.`
     );
+    const actualReceived = parseFloat(invoice_total_sum);
+    if (!isNaN(actualReceived) && actualReceived > 0) {
+      const updatedInvoice = await prisma.plisioInvoice.update({
+        where: { id: invoice.id },
+        data: { amount: actualReceived }
+      });
+      await handleCompletedPayment(updatedInvoice, tx_url);
+    } else {
+      console.error(`[plisio/webhook] MISMATCH: Could not parse actual amount received: ${invoice_total_sum}`);
+    }
   } else if (
     status === PLISIO_STATUS_EXPIRED   ||
     status === PLISIO_STATUS_CANCELLED ||

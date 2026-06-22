@@ -558,10 +558,6 @@ export default function ArbitragePage() {
                 {data && data.investments.length > 0 ? (
                   data.investments.map((plan, idx) => {
                     const active = plan.status === 'active';
-                    let pair = 'BTC/USD';
-                    if (plan.plan.toUpperCase().includes('ADVANCE')) pair = 'ETH/USD';
-                    if (plan.plan.toUpperCase().includes('ULTRA')) pair = 'SOL/USD';
-
                     // 200% cap progress: totalEarned / maxPayout
                     const maxPayout = (plan as any).maxPayout > 0
                       ? (plan as any).maxPayout
@@ -579,7 +575,7 @@ export default function ArbitragePage() {
                               <TrendingUp className={`w-4 h-4 ${active ? 'text-green-500 dark:text-green-400' : 'text-slate-500 dark:text-zinc-400'}`} />
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm sm:text-base font-bold text-slate-900 dark:text-white font-mono">{pair} ({plan.plan})</p>
+                              <p className="text-sm sm:text-base font-bold text-slate-900 dark:text-white font-mono">{plan.plan}</p>
                               <p className="text-xs text-slate-500 dark:text-zinc-400 font-mono mt-0.5">
                                 Cap: ${plan.totalEarned.toFixed(2)} / ${maxPayout.toFixed(2)} &nbsp;·&nbsp; ${capRemaining.toFixed(2)} remaining
                               </p>
