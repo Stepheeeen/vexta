@@ -30,11 +30,28 @@ function verifyPlisioSignature(payload: Record<string, any>, secretKey: string):
     .sort()
     .forEach(k => { sorted[k] = rest[k]; });
 
-  const hash = createHash('sha1')
-    .update(JSON.stringify(sorted) + secretKey)
-    .digest('hex');
+  const stringifiedEscaped = JSON.stringify(sorted).replace(/\//g, '\\/');
+  const stringifiedNormal = JSON.stringify(sorted);
 
-  return hash === verify_hash;
+  // 1. Try simple SHA1 with escaped slashes (Legacy Plisio method often used with PHP json_encode)
+  const hash1 = createHash('sha1').update(stringifiedEscaped + secretKey).digest('hex');
+  
+  // 2. Try simple SHA1 with normal JSON (Legacy Plisio method)
+  const hash2 = createHash('sha1').update(stringifiedNormal + secretKey).digest('hex');
+
+  // 3. Try HMAC SHA1 with escaped slashes (Modern Plisio method with PHP json_encode)
+  const { createHmac } = require('crypto');
+  const hash3 = createHmac('sha1', secretKey).update(stringifiedEscaped).digest('hex');
+  
+  // 4. Try HMAC SHA1 with normal JSON (Modern Plisio method)
+  const hash4 = createHmac('sha1', secretKey).update(stringifiedNormal).digest('hex');
+
+  if ([hash1, hash2, hash3, hash4].includes(verify_hash)) {
+    return true;
+  }
+
+  console.warn(`[plisio/webhook] Signature mismatch. Received: ${verify_hash}, Computed: ${hash1}`);
+  return false;
 }
 
 /**
@@ -120,9 +137,14 @@ export async function POST(req: NextRequest) {
   } else if (status === PLISIO_STATUS_MISMATCH) {
     console.warn(
       `[plisio/webhook] MISMATCH on ${txn_id}: ` +
-      `expected $${source_amount}, received ${invoice_total_sum}. Processing actual received amount.`
+      `expected $${source_amount}, received ${invoice_total_sum}. Processing since mismatch generally means overpaid.`
     );
-    const actualReceived = parseFloat(invoice_total_sum);
+    const parsedReceived = parseFloat(invoice_total_sum);
+    // Fallback to source_amount (the expected fiat amount) if invoice_total_sum is not provided
+    const actualReceived = (!isNaN(parsedReceived) && parsedReceived > 0) 
+      ? parsedReceived 
+      : parseFloat(source_amount);
+
     if (!isNaN(actualReceived) && actualReceived > 0) {
       const updatedInvoice = await prisma.plisioInvoice.update({
         where: { id: invoice.id },

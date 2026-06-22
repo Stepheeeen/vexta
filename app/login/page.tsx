@@ -59,11 +59,11 @@ export default function Login() {
       }
 
       if (data.user && !data.user.isVerified) {
-        router.push('/verify');
+        window.location.href = '/verify';
       } else if (data.user && data.user.role === 'admin') {
-        router.push('/admin');
+        window.location.href = '/admin';
       } else {
-        router.push('/dashboard');
+        window.location.href = '/dashboard';
       }
     } catch (err: any) {
       setError(err.message || 'An error occurred during login.');

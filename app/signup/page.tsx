@@ -194,7 +194,7 @@ export default function SignUp() {
           if (!res.ok) {
             throw new Error(data.error || 'Registration failed');
           }
-          router.push('/verify');
+          window.location.href = '/verify';
         } catch (err: any) {
           setSubmitError(err.message || 'An error occurred during registration.');
         } finally {

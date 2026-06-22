@@ -50,7 +50,10 @@ function PlanCard({ plan, onSelect }: { plan: Plan; onSelect: (amount: number) =
   };
 
   return (
-    <div className={`relative flex flex-col p-5 rounded-2xl border bg-gradient-to-br ${colors[plan.tag] || 'from-white/5 to-white/2 border-white/10'} transition-all hover:scale-[1.01] hover:shadow-lg group`}>
+    <div 
+      onClick={() => onSelect(plan.minDeposit)}
+      className={`cursor-pointer relative flex flex-col p-5 rounded-2xl border bg-gradient-to-br ${colors[plan.tag] || 'from-white/5 to-white/2 border-white/10'} transition-all hover:scale-[1.05] hover:shadow-xl hover:shadow-violet-500/10 group`}
+    >
       {plan.tag === 'ADVANCE PLAN' && (
         <div className="absolute -top-2.5 right-4 bg-amber-500 text-white text-[9px] font-bold px-3 py-0.5 rounded-full uppercase tracking-wider shadow">
           {t('mostPopular')}
@@ -90,13 +93,12 @@ function PlanCard({ plan, onSelect }: { plan: Plan; onSelect: (amount: number) =
         </div>
       </div>
 
-      <button
-        onClick={() => onSelect(plan.minDeposit)}
-        className="w-full mt-auto py-2.5 rounded-xl text-xs font-bold bg-white/10 hover:bg-violet-600 hover:text-white text-slate-800 dark:text-white border border-white/10 hover:border-violet-600 transition-all duration-200 flex items-center justify-center gap-1.5 group-hover:border-violet-500/50"
+      <div
+        className="w-full mt-auto py-2.5 rounded-xl text-xs font-bold bg-white/5 group-hover:bg-violet-600 group-hover:text-white text-slate-800 dark:text-white border border-slate-200 dark:border-white/10 group-hover:border-violet-600 transition-all duration-300 flex items-center justify-center gap-1.5"
       >
         {t('depDepositFrom')} ${plan.minDeposit.toLocaleString()}
-        <ChevronRight className="w-3.5 h-3.5" />
-      </button>
+        <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+      </div>
     </div>
   );
 }
