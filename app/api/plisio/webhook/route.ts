@@ -90,9 +90,14 @@ export async function POST(req: NextRequest) {
 
   try {
     rawBody = await req.text();
-    // Plisio sends URL-encoded form data
-    const params = new URLSearchParams(rawBody);
-    payload = Object.fromEntries(params.entries());
+    console.log('[plisio/webhook] Received raw body:', rawBody);
+    
+    try {
+      payload = JSON.parse(rawBody);
+    } catch {
+      const params = new URLSearchParams(rawBody);
+      payload = Object.fromEntries(params.entries());
+    }
   } catch {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
