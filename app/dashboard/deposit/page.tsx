@@ -7,7 +7,8 @@ import {
   TrendingUp, Star, Rocket, History,
   ChevronRight,
   Zap,
-  Crown
+  Crown,
+  Clock, AlertTriangle, FileText
 } from 'lucide-react';
 import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
@@ -203,12 +204,49 @@ export default function DepositPage() {
         </p>
       </div>
 
-      {/* BEP20 Only Banner */}
-      <div className="flex items-center gap-3 p-4 mb-8 bg-gradient-to-r from-violet-600/10 via-blue-600/5 to-transparent border border-violet-500/20 rounded-2xl">
-        <ShieldCheck className="w-5 h-5 text-violet-500 flex-shrink-0" />
-        <p className="text-xs text-slate-700 dark:text-gray-300">
-          <span className="font-bold text-violet-600 dark:text-violet-400">{t('depBep20Only')}</span> — {t('depBep20Desc')}
-        </p>
+      {/* Critical Deposit Rules Banner */}
+      <div className="mb-8 overflow-hidden rounded-2xl border border-amber-500/30 bg-amber-500/5 dark:bg-amber-500/10 shadow-lg shadow-amber-500/5">
+        <div className="bg-amber-500/20 px-5 py-3 border-b border-amber-500/20 flex items-center gap-3">
+          <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-500 flex-shrink-0" />
+          <h3 className="font-bold text-amber-800 dark:text-amber-400 text-sm tracking-wide uppercase">
+            {t('depCriticalRulesTitle') || 'Critical Deposit Rules (Read Before Paying)'}
+          </h3>
+        </div>
+        <div className="p-5 grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full bg-white dark:bg-black/20 flex items-center justify-center flex-shrink-0 border border-amber-500/20">
+              <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-500" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">USDT BEP-20 Only</p>
+              <p className="text-xs text-slate-600 dark:text-gray-400">
+                Send ONLY Tether (USDT) on the <strong className="text-slate-800 dark:text-gray-300">Binance Smart Chain (BEP-20)</strong>. Using TRC-20 or ERC-20 will result in permanent loss of funds.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full bg-white dark:bg-black/20 flex items-center justify-center flex-shrink-0 border border-amber-500/20">
+              <FileText className="w-4 h-4 text-amber-600 dark:text-amber-500" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">Send the EXACT Amount</p>
+              <p className="text-xs text-slate-600 dark:text-gray-400">
+                If your exchange charges a withdrawal fee (e.g. $0.30), you must add it to your total. If the gateway receives even 1 cent less than the invoice amount, your payment will fail.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full bg-white dark:bg-black/20 flex items-center justify-center flex-shrink-0 border border-amber-500/20">
+              <Clock className="w-4 h-4 text-amber-600 dark:text-amber-500" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">30 Minute Time Limit</p>
+              <p className="text-xs text-slate-600 dark:text-gray-400">
+                Invoices expire after 30 minutes. Do not send funds from exchanges (like Coinbase or Luno) that delay withdrawals for hours.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {loading ? (
