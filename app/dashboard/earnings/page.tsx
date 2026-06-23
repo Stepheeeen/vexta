@@ -156,45 +156,7 @@ export default function EarningsPage() {
         </div>
       ) : (
         <>
-          {/* Step-by-Step Guideline Banner */}
-          <div className="bg-gradient-to-br from-violet-600/10 via-blue-600/5 to-transparent border border-violet-500/10 rounded-2xl p-6 mb-6 shadow-sm">
-            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <HelpCircle className="w-5 h-5 text-violet-500 dark:text-violet-400" />
-                  <h3 className="text-sm font-semibold text-slate-950 dark:text-white">{t('earningsGuideTitle')}</h3>
-                </div>
-                <p className="text-xs text-slate-500 dark:text-gray-400 max-w-2xl leading-relaxed">
-                  {t('earningsGuideDesc')}
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-slate-200/50 dark:border-white/5 text-[11px] font-mono">
-                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-violet-500 font-bold block mb-0.5">{t('earningsGuideStep1Title')}</span>
-                    <span className="text-slate-400">{t('earningsGuideStep1Sub')}</span>
-                  </div>
-                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-violet-500 font-bold block mb-0.5">{t('earningsGuideStep2Title')}</span>
-                    <span className="text-slate-400">{t('earningsGuideStep2Sub')}</span>
-                  </div>
-                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-violet-500 font-bold block mb-0.5">{t('earningsGuideStep3Title')}</span>
-                    <span className="text-slate-400">{t('earningsGuideStep3Sub')}</span>
-                  </div>
-                  <div className="p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-violet-500 font-bold block mb-0.5">{t('earningsGuideStep4Title')}</span>
-                    <span className="text-slate-400">{t('earningsGuideStep4Sub')}</span>
-                  </div>
-                </div>
-              </div>
-              <button
-                onClick={handleSimulate}
-                className="flex-shrink-0 flex items-center gap-1.5 px-5 py-3 rounded-xl bg-violet-600 hover:bg-violet-700 text-white text-xs font-semibold shadow-md shadow-violet-600/15 transition-all hover:-translate-y-0.5 duration-200"
-              >
-                <ArrowRight className="w-3.5 h-3.5 fill-current" />
-                <span>{t('earningsSimulateBtn')}</span>
-              </button>
-            </div>
-          </div>
+
 
           {/* Stats */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">

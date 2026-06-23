@@ -52,6 +52,7 @@ model User {
   sponsoredGoalAmount   Float    @default(0)
   sponsoredGiftedAmount Float    @default(0)
   sponsoredDirectSales  Float    @default(0)
+  sponsoredWithdrawalPercentage Float @default(100)
   roiBlocked            Boolean  @default(false)
   withdrawalsBlocked    Boolean  @default(false)
   fundsFrozen           Boolean  @default(false)

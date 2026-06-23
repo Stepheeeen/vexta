@@ -44,7 +44,7 @@ export async function getAvailableBalance(userId: string, tx?: any): Promise<num
     _sum: { amount: true }
   });
   const totalDailyRoi = dailyRoiTxns._sum.amount ?? 0;
-  const totalEarned = totalInvestmentEarned + totalDailyRoi;
+  const totalEarned = totalDailyRoi;
 
   // 3. Commissions
   const commissionTxns = await client.transaction.aggregate({
@@ -121,6 +121,7 @@ export async function getWithdrawableBalances(userId: string, tx?: any) {
       sponsoredType: true,
       sponsoredGoalAmount: true,
       sponsoredDirectSales: true,
+      sponsoredWithdrawalPercentage: true,
       roiBlocked: true,
       fundsFrozen: true,
     }
@@ -162,6 +163,22 @@ export async function getWithdrawableBalances(userId: string, tx?: any) {
     }
   }
 
+  // ── Consolidated Withdrawals (type 'all') ────────────────────────────────
+  // These contain a split between passive and network amounts in their note
+  const allWithdrawals = await client.withdrawal.findMany({
+    where: { userId, status: { in: ['approved', 'pending'] }, type: 'all' },
+    select: { note: true }
+  });
+  let allPassiveWithdrawn = 0;
+  let allNetworkWithdrawn = 0;
+  for (const w of allWithdrawals) {
+    const splitMatch = w.note?.match(/\[ALL:P=([0-9.]+),N=([0-9.]+)\]/);
+    if (splitMatch) {
+      allPassiveWithdrawn += parseFloat(splitMatch[1]);
+      allNetworkWithdrawn += parseFloat(splitMatch[2]);
+    }
+  }
+
   // ── Network Earnings (Commissions) ─────────────────────────────────────────
   const commissionTxns = await client.transaction.aggregate({
     where: { userId, type: 'commission', status: 'completed' },
@@ -174,7 +191,7 @@ export async function getWithdrawableBalances(userId: string, tx?: any) {
     where: { userId, status: { in: ['approved', 'pending'] }, type: { in: ['commission', 'network'] } },
     _sum: { amount: true }
   });
-  const totalCommissionWithdrawn = commissionWithdrawnResult._sum.amount ?? 0;
+  const totalCommissionWithdrawn = (commissionWithdrawnResult._sum.amount ?? 0) + allNetworkWithdrawn;
   
   // Available Network = Commissions - Commission Withdrawn (capped by total available balance)
   const availableNetwork = Math.max(0, Math.min(totalBalance, totalCommissions - totalCommissionWithdrawn));
@@ -188,14 +205,14 @@ export async function getWithdrawableBalances(userId: string, tx?: any) {
     _sum: { amount: true }
   });
   const totalDailyRoi = dailyRoiTxns._sum.amount ?? 0;
-  const totalRoiEarned = totalInvestmentEarned + totalDailyRoi;
+  const totalRoiEarned = totalDailyRoi;
 
   // Support both old 'roi' type and new 'passive' type withdrawals
   const roiWithdrawnResult = await client.withdrawal.aggregate({
     where: { userId, status: { in: ['approved', 'pending'] }, type: { in: ['roi', 'passive'] } },
     _sum: { amount: true }
   });
-  const totalRoiWithdrawn = roiWithdrawnResult._sum.amount ?? 0;
+  const totalRoiWithdrawn = (roiWithdrawnResult._sum.amount ?? 0) + allPassiveWithdrawn;
 
   // Available Passive = ROI - ROI Withdrawn (capped by total available balance)
   const rawAvailablePassive = Math.max(0, totalRoiEarned - totalRoiWithdrawn);
@@ -205,18 +222,19 @@ export async function getWithdrawableBalances(userId: string, tx?: any) {
   // Network earnings are ALWAYS available (earned through own work)
   let blockedPassive = 0;
   if (user.isSponsored) {
+    let isFullyBlocked = user.roiBlocked;
     if (user.sponsoredType === 'goal_locked') {
-      // Goal-based: auto-unlock when direct sales meet goal, or admin can override
       const goalMet = sponsoredDirectSales >= user.sponsoredGoalAmount;
-      if (!goalMet || user.roiBlocked) {
-        blockedPassive = rawAvailablePassive;
-      }
+      if (!goalMet) isFullyBlocked = true;
+    }
+    
+    if (isFullyBlocked) {
+      blockedPassive = rawAvailablePassive;
     } else {
-      // For 'free' type or any other sponsored type:
-      // If roiBlocked is true → block all passive earnings
-      if (user.roiBlocked) {
-        blockedPassive = rawAvailablePassive;
-      }
+      // Goal met or not fully blocked. Apply percentage restriction.
+      const allowedPercentage = user.sponsoredWithdrawalPercentage ?? 100;
+      const blockedPercentage = Math.max(0, 100 - allowedPercentage);
+      blockedPassive = rawAvailablePassive * (blockedPercentage / 100);
     }
   }
 

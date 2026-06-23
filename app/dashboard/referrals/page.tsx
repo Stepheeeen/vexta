@@ -191,16 +191,16 @@ export default function ReferralsPage() {
               <div className="space-y-1.5">
                 {(data?.byLevel || []).map(({ level, count, earned }) => (
                   <div key={level} className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5">
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
                       <div className="w-5 h-5 rounded-md bg-violet-500/10 flex items-center justify-center flex-shrink-0">
                         <span className="text-[8px] font-bold text-violet-500 dark:text-violet-400">{level}</span>
                       </div>
-                      <div>
-                        <p className="text-[11px] font-medium text-slate-900 dark:text-white">{levelLabels[level] || `Level ${level}`}</p>
-                        <p className="text-[9px] text-slate-500 dark:text-gray-500 font-mono">{count} {t('referralsMembers')}</p>
+                      <div className="min-w-0 flex-1 pr-2">
+                        <p className="text-[11px] font-medium text-slate-900 dark:text-white truncate">{levelLabels[level] || `Level ${level}`}</p>
+                        <p className="text-[9px] text-slate-500 dark:text-gray-500 font-mono truncate">{count} {t('referralsMembers')}</p>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right flex-shrink-0">
                       <p className="text-[11px] font-bold text-green-600 dark:text-green-400 font-mono">${earned.toFixed(2)}</p>
                       <p className="text-[9px] text-slate-500 dark:text-gray-500 font-mono">{levelRates[level]}</p>
                     </div>

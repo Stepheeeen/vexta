@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
     _sum: { amount: true }
   });
   const totalDailyRoi = dailyRoiTxns._sum.amount ?? 0;
-  const passiveEarnings = +(totalEarned + totalDailyRoi).toFixed(2);
+  const passiveEarnings = +(totalDailyRoi).toFixed(2);
 
   // ── Network Earnings (Commissions) ─────────────────────────────────────────
   const commissionTxns = await prisma.transaction.aggregate({

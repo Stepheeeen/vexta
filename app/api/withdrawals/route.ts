@@ -10,12 +10,13 @@ const schema = z.object({
   walletAddress: z.string().min(10, 'Invalid wallet address'),
   network:       z.enum(['BEP20']).default('BEP20'),
   // Accept both old and new type names for backwards compatibility
-  type:          z.enum(['roi', 'commission', 'passive', 'network']).default('passive'),
+  type:          z.enum(['roi', 'commission', 'passive', 'network', 'all']).default('passive'),
   verificationCode: z.string().optional(),
 });
 
 // Normalize type names: roi → passive, commission → network
-function normalizeWithdrawalType(type: string): 'passive' | 'network' {
+function normalizeWithdrawalType(type: string): 'passive' | 'network' | 'all' {
+  if (type === 'all') return 'all';
   if (type === 'roi' || type === 'passive') return 'passive';
   return 'network';
 }
@@ -67,11 +68,14 @@ export async function POST(req: NextRequest) {
     if (!verificationCode) {
       // Preliminary balance check
       const pools = await getWithdrawableBalances(payload.userId, prisma as any);
-      const availableInPool = type === 'passive' ? pools.availablePassive : pools.availableNetwork;
+      let availableInPool = 0;
+      if (type === 'passive') availableInPool = pools.availablePassive;
+      else if (type === 'network') availableInPool = pools.availableNetwork;
+      else if (type === 'all') availableInPool = pools.availablePassive + pools.availableNetwork;
       
       if (amount > availableInPool) {
         // For gifted leaders trying to withdraw passive earnings
-        if (type === 'passive' && pools.blockedPassive > 0) {
+        if ((type === 'passive' || type === 'all') && pools.blockedPassive > 0 && amount > pools.availableNetwork) {
           return NextResponse.json({ error: 'Passive earnings withdrawal is currently restricted. Network earnings can be withdrawn normally. Contact management for approval.' }, { status: 400 });
         }
         return NextResponse.json({ error: 'Insufficient available balance in the selected withdrawal category.' }, { status: 400 });
@@ -118,18 +122,41 @@ export async function POST(req: NextRequest) {
 
       // 2. Calculate available balance inside transaction
       const pools = await getWithdrawableBalances(payload.userId, tx);
-      const availableInPool = type === 'passive' ? pools.availablePassive : pools.availableNetwork;
+      let availableInPool = 0;
+      if (type === 'passive') availableInPool = pools.availablePassive;
+      else if (type === 'network') availableInPool = pools.availableNetwork;
+      else if (type === 'all') availableInPool = pools.availablePassive + pools.availableNetwork;
 
       if (amount > availableInPool) {
-        if (type === 'passive' && pools.blockedPassive > 0) {
+        if ((type === 'passive' || type === 'all') && pools.blockedPassive > 0 && amount > pools.availableNetwork) {
           throw new Error('PASSIVE_BLOCKED');
         }
         throw new Error('INSUFFICIENT_POOL_BALANCE');
       }
 
-      // Platform Maintenance Fee: $0.01 (flat, per-withdrawal)
+      // Dynamic Fee Calculation
+      // < $600: 6% fee, >= $600: 2% fee
+      const feePercentage = amount >= 600 ? 0.02 : 0.06;
+      const percentageFee = amount * feePercentage;
       const MAINTENANCE_FEE = 0.01;
-      const netAmount = Number((amount - MAINTENANCE_FEE).toFixed(2));
+      const totalFee = Number((percentageFee + MAINTENANCE_FEE).toFixed(2));
+      const netAmount = Number((amount - totalFee).toFixed(2));
+
+      // Calculate Passive vs Network split if type is 'all'
+      let passiveAmount = 0;
+      let networkAmount = 0;
+      if (type === 'all') {
+        if (amount <= pools.availablePassive) {
+          passiveAmount = amount;
+        } else {
+          passiveAmount = pools.availablePassive;
+          networkAmount = amount - pools.availablePassive;
+        }
+      } else if (type === 'passive') {
+        passiveAmount = amount;
+      } else {
+        networkAmount = amount;
+      }
 
       // 3. Decrement user's persisted balance by the full requested amount
       await tx.user.update({
@@ -137,9 +164,15 @@ export async function POST(req: NextRequest) {
         data: { balance: { decrement: amount } }
       });
 
-      // 3.5. Deduct from operational capital if it's a passive earnings withdrawal
-      if (type === 'passive') {
-        await deductWithdrawalFromCapital(payload.userId, amount, tx);
+      // 3.5. Deduct from operational capital if it involves passive earnings
+      if (passiveAmount > 0) {
+        await deductWithdrawalFromCapital(payload.userId, passiveAmount, tx);
+      }
+
+      // Generate the note for the withdrawal record
+      let noteStr = `Fee: $${totalFee.toFixed(2)} | Net payout: $${netAmount.toFixed(2)}`;
+      if (type === 'all') {
+        noteStr = `[ALL:P=${passiveAmount},N=${networkAmount}] ` + noteStr;
       }
 
       const withdrawal = await tx.withdrawal.create({
@@ -148,21 +181,24 @@ export async function POST(req: NextRequest) {
           amount,       // gross amount requested (full balance deduction)
           walletAddress, 
           network, 
-          type,         // 'passive' or 'network'
+          type,         // 'passive', 'network', or 'all'
           status: 'pending',
-          note: `Maintenance fee: $${MAINTENANCE_FEE.toFixed(2)} | Net payout: $${netAmount.toFixed(2)}`
+          note: noteStr
         },
       });
 
       // 4. Record outgoing transaction
-      const typeLabel = type === 'passive' ? 'Passive Earnings' : 'Network Earnings';
+      let typeLabel = 'Passive Earnings';
+      if (type === 'network') typeLabel = 'Network Earnings';
+      if (type === 'all') typeLabel = 'Consolidated (All)';
+      
       await tx.transaction.create({
         data: {
           userId: payload.userId,
           type: 'withdrawal',
           amount: -amount,
           status: 'pending',
-          description: `Withdrawal request (${typeLabel}) — ${network} (Net: $${netAmount.toFixed(2)}, Fee: $0.01)`,
+          description: `Withdrawal request (${typeLabel}) — ${network} (Net: $${netAmount.toFixed(2)}, Fee: $${totalFee.toFixed(2)})`,
           reference: withdrawal.id,
         },
       });

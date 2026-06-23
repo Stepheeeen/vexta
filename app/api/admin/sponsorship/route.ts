@@ -112,6 +112,7 @@ export async function GET(req: NextRequest) {
         totalCommissionWithdrawn,
         roiBlocked: u.roiBlocked,
         fundsFrozen: u.fundsFrozen,
+        sponsoredWithdrawalPercentage: u.sponsoredWithdrawalPercentage,
         joined: u.createdAt.toISOString().split('T')[0]
       });
     }
@@ -193,7 +194,7 @@ export async function POST(req: NextRequest) {
       });
 
       // 4. Update sponsored details on user
-      const sponsoredGoalAmount = sponsoredType === 'goal_locked' ? sponsoredGiftedAmount * 2 : 0;
+      const sponsoredGoalAmount = sponsoredType === 'goal_locked' ? sponsoredGiftedAmount * 3 : 0;
       await tx.user.update({
         where: { id: userId },
         data: {
@@ -223,7 +224,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { userId, action, withdrawalId, newAmount } = await req.json();
+    const { userId, action, withdrawalId, newAmount, newPercentage } = await req.json();
 
     if (!userId || !action) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
@@ -241,6 +242,25 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({
         success: true,
         message: `ROI withdrawals ${updated.roiBlocked ? 'blocked' : 'unblocked'} successfully`
+      });
+    }
+
+    if (action === 'set_withdrawal_percentage') {
+      if (newPercentage == null || newPercentage < 0 || newPercentage > 100) {
+        return NextResponse.json({ error: 'Invalid percentage. Must be between 0 and 100.' }, { status: 400 });
+      }
+
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+
+      await prisma.user.update({
+        where: { id: userId },
+        data: { sponsoredWithdrawalPercentage: newPercentage }
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: `Withdrawal percentage updated to ${newPercentage}%`
       });
     }
 

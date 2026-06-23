@@ -39,7 +39,7 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     portfolioGuideDesc: "Your portfolio represents your total locked value, active plans, accumulated yield, and system longevity statistics. Track contract progress bars to monitor your investments.",
     portfolioSimulateBtn: "Add Asset",
     portfolioProcessingBtn: "Processing...",
-    withdrawGuideDesc: "Request a payout of your available wallet balance. In standard accounts, withdrawal processing takes up to 24 hours.",
+    withdrawGuideDesc: "Request a payout of your available wallet balance. In standard accounts, withdrawal processing takes up to 48 hours.",
     withdrawGuideStep1Title: "1. Request Payout",
     withdrawGuideStep1Sub: "Withdraw your available balance",
     withdrawSimulateBtn: "Withdraw Funds",

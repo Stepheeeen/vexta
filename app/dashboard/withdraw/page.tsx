@@ -1,7 +1,7 @@
 'use client';
 
 import { DashboardLayout } from '@/components/dashboard-layout';
-import { Wallet, AlertCircle, Loader2, ArrowLeftRight, CheckCircle2, HelpCircle, Send, Users, ArrowRight } from 'lucide-react';
+import { Wallet, AlertCircle, Loader2, ArrowLeftRight, CheckCircle2, HelpCircle, Send, Users, ArrowRight, Zap } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
@@ -206,7 +206,7 @@ export default function WithdrawPage() {
     withdrawalsBlocked: boolean;
   } | null>(null);
 
-  const [withdrawType, setWithdrawType] = useState<'passive' | 'network'>('passive');
+  const [withdrawType, setWithdrawType] = useState<'passive' | 'network' | 'all'>('passive');
 
   // Form states
   const [amount, setAmount] = useState('');
@@ -275,11 +275,16 @@ export default function WithdrawPage() {
       return;
     }
 
-    const limit = withdrawType === 'passive'
-      ? (pools?.availablePassive ?? pools?.availableRoi ?? 0)
-      : (pools?.availableNetwork ?? pools?.availableCommission ?? 0);
+    let limit = 0;
+    if (withdrawType === 'passive') limit = (pools?.availablePassive ?? pools?.availableRoi ?? 0);
+    else if (withdrawType === 'network') limit = (pools?.availableNetwork ?? pools?.availableCommission ?? 0);
+    else if (withdrawType === 'all') limit = (pools?.availablePassive ?? 0) + (pools?.availableNetwork ?? 0);
+
     if (numericAmount > limit) {
-      const typeLabel = withdrawType === 'passive' ? t('withdrawPassive') : t('withdrawNetwork');
+      let typeLabel = t('withdrawPassive');
+      if (withdrawType === 'network') typeLabel = t('withdrawNetwork');
+      if (withdrawType === 'all') typeLabel = t('withdrawAll') || 'Combined Balance';
+      
       setError(`Insufficient ${typeLabel} balance. Maximum available: $${limit.toLocaleString()}`);
       toast({
         title: 'Withdrawal Failed',
@@ -444,12 +449,35 @@ export default function WithdrawPage() {
                 <h2 className="text-base font-bold text-slate-950 dark:text-white">{t('withdrawRequestTitle')}</h2>
               </div>
 
+              {/* Fee Structure Banner */}
+              <div className="mb-6 p-4 rounded-xl border border-violet-500/20 bg-violet-500/5 text-violet-700 dark:text-violet-300 text-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-violet-500/10 rounded-lg shrink-0">
+                    <Zap className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                  </div>
+                  <div>
+                    <p className="font-bold mb-0.5 text-sm">Dynamic Withdrawal Fees</p>
+                    <p className="text-violet-600/80 dark:text-violet-400/80">Combine balances into a single request to reach the lower fee tier!</p>
+                  </div>
+                </div>
+                <div className="flex gap-3 shrink-0">
+                  <div className="text-center px-4 py-2 bg-white dark:bg-white/5 rounded-lg border border-violet-500/10">
+                    <p className="font-mono font-bold text-sm">6%</p>
+                    <p className="text-[9px] uppercase tracking-wider font-bold opacity-70">Under $600</p>
+                  </div>
+                  <div className="text-center px-4 py-2 bg-white dark:bg-white/5 rounded-lg border border-violet-500/10">
+                    <p className="font-mono font-bold text-sm">2%</p>
+                    <p className="text-[9px] uppercase tracking-wider font-bold opacity-70">$600 or more</p>
+                  </div>
+                </div>
+              </div>
+
               {/* Pool Balance Selection */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
                 <button
                   type="button"
                   onClick={() => setWithdrawType('passive')}
-                  className={`relative p-5 rounded-2xl border text-left transition-all ${
+                  className={`relative p-4 rounded-2xl border text-left transition-all ${
                     withdrawType === 'passive'
                       ? 'border-emerald-600 bg-emerald-600/5 dark:bg-emerald-600/10'
                       : 'border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/3 hover:bg-slate-100 dark:hover:bg-white/5'
@@ -471,7 +499,7 @@ export default function WithdrawPage() {
                 <button
                   type="button"
                   onClick={() => setWithdrawType('network')}
-                  className={`relative p-5 rounded-2xl border text-left transition-all ${
+                  className={`relative p-4 rounded-2xl border text-left transition-all ${
                     withdrawType === 'network'
                       ? 'border-blue-600 bg-blue-600/5 dark:bg-blue-600/10'
                       : 'border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/3 hover:bg-slate-100 dark:hover:bg-white/5'
@@ -485,6 +513,25 @@ export default function WithdrawPage() {
                     ${pools ? (pools.availableNetwork ?? pools.availableCommission ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}
                   </p>
                   <p className="text-[9px] font-mono text-slate-400 dark:text-zinc-500 mt-1">{t('networkEarningsSub')}</p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setWithdrawType('all')}
+                  className={`relative p-4 rounded-2xl border text-left transition-all ${
+                    withdrawType === 'all'
+                      ? 'border-violet-600 bg-violet-600/5 dark:bg-violet-600/10 shadow-lg shadow-violet-500/10'
+                      : 'border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/3 hover:bg-slate-100 dark:hover:bg-white/5'
+                  }`}
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 font-mono uppercase tracking-wider">{t("withdrawAll") || 'Withdraw All'}</span>
+                    {withdrawType === 'all' && <CheckCircle2 className="w-4 h-4 text-violet-500" />}
+                  </div>
+                  <p className="text-lg font-black text-violet-600 dark:text-violet-400 font-mono">
+                    ${pools ? ((pools.availablePassive ?? 0) + (pools.availableNetwork ?? 0)).toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}
+                  </p>
+                  <p className="text-[9px] font-mono text-slate-400 dark:text-zinc-500 mt-1">{t('withdrawConsolidatedSub') || 'Consolidate to save fees'}</p>
                 </button>
               </div>
 
@@ -609,15 +656,17 @@ export default function WithdrawPage() {
                         ${parseFloat(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </div>
-                    {/* Platform Maintenance Fee */}
+                    {/* Fee Calculation */}
                     <div className="flex justify-between items-center text-slate-600 dark:text-zinc-400">
                       <span className="font-semibold flex items-center gap-1.5">
-                        {t('withdrawMaintenanceFeeLabel') || 'Platform Maintenance Fee'}
+                        Withdrawal Fee
                         <span className="text-[9px] bg-slate-200 dark:bg-white/10 text-slate-500 dark:text-zinc-400 px-1.5 py-0.5 rounded-md uppercase tracking-wide font-bold">
-                          Fixed
+                          {parseFloat(amount) >= 600 ? '2%' : '6%'} + $0.01
                         </span>
                       </span>
-                      <span className="font-bold text-amber-500 dark:text-amber-400">-$0.01</span>
+                      <span className="font-bold text-amber-500 dark:text-amber-400">
+                        -${((parseFloat(amount) >= 600 ? parseFloat(amount) * 0.02 : parseFloat(amount) * 0.06) + 0.01).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
                     </div>
                     {/* Divider */}
                     <div className="border-t border-violet-500/15 pt-2 mt-1">
@@ -626,7 +675,7 @@ export default function WithdrawPage() {
                           {t('withdrawNetPayoutLabel') || 'You Receive'}
                         </span>
                         <span className="font-extrabold text-emerald-600 dark:text-emerald-400 text-sm">
-                          ${Math.max(0, parseFloat(amount) - 0.01).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          ${Math.max(0, parseFloat(amount) - ((parseFloat(amount) >= 600 ? parseFloat(amount) * 0.02 : parseFloat(amount) * 0.06) + 0.01)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                       </div>
                     </div>
