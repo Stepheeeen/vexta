@@ -54,6 +54,7 @@ export default function AdminSponsorship() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
   const [sponsoredType, setSponsoredType] = useState<'free' | 'goal_locked'>('free');
+  const [goalMultiplier, setGoalMultiplier] = useState('3');
   const [giftAmount, setGiftAmount] = useState('');
   const [gifting, setGifting] = useState(false);
 
@@ -107,7 +108,7 @@ export default function AdminSponsorship() {
   const handleSearchUsers = async () => {
     if (!searchQuery.trim()) return;
     try {
-      const res = await fetch(`/api/admin/sponsorship?mode=search_users&search=${encodeURIComponent(searchQuery)}`);
+      const res = await fetch(`/api/admin/sponsorship?mode=search_users&search=${encodeURIComponent(searchQuery.trim())}`);
       if (!res.ok) throw new Error('Search failed');
       const data = await res.json();
       setSearchResults(data.users || []);
@@ -133,7 +134,8 @@ export default function AdminSponsorship() {
         body: JSON.stringify({
           userId: selectedUser.id,
           sponsoredType,
-          sponsoredGiftedAmount: amount
+          sponsoredGiftedAmount: amount,
+          goalMultiplier: parseFloat(goalMultiplier)
         })
       });
       const data = await res.json();
@@ -586,9 +588,25 @@ export default function AdminSponsorship() {
                     className="w-full bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white focus:outline-none"
                   >
                     <option value="free">Free Account (No initial lock. Blocked if withdrawn &gt; $12 without referrals)</option>
-                    <option value="goal_locked">Goal-Locked Account (ROI withdrawals locked until 2x direct sales generated)</option>
+                    <option value="goal_locked">Goal-Locked Account (ROI withdrawals locked until goal is reached)</option>
                   </select>
                 </div>
+
+                {sponsoredType === 'goal_locked' && (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 uppercase mb-2">
+                      Goal Multiplier
+                    </label>
+                    <select
+                      value={goalMultiplier}
+                      onChange={e => setGoalMultiplier(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white focus:outline-none"
+                    >
+                      <option value="2">2x (Must generate double the gifted amount)</option>
+                      <option value="3">3x (Must generate triple the gifted amount)</option>
+                    </select>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 uppercase mb-2">

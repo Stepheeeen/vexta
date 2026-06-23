@@ -132,11 +132,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { userId, sponsoredType, sponsoredGiftedAmount } = await req.json();
+    const { userId, sponsoredType, sponsoredGiftedAmount, goalMultiplier } = await req.json();
 
     if (!userId || !sponsoredType || !sponsoredGiftedAmount || sponsoredGiftedAmount <= 0) {
       return NextResponse.json({ error: 'Missing or invalid parameters' }, { status: 400 });
     }
+
+    const multiplier = goalMultiplier && !isNaN(parseFloat(goalMultiplier)) ? parseFloat(goalMultiplier) : 3;
 
     // Find target user
     const targetUser = await prisma.user.findUnique({ where: { id: userId } });
@@ -168,16 +170,24 @@ export async function POST(req: NextRequest) {
       });
 
       // 2. Create the virtual investment
+      const tierBonus = plan.bonus ? +(sponsoredGiftedAmount * plan.bonus).toFixed(2) : 0;
+      const activeCapital = +(sponsoredGiftedAmount + tierBonus).toFixed(2);
+      const maxPayout = +(sponsoredGiftedAmount * 2).toFixed(2);
+
       const investment = await tx.investment.create({
         data: {
           userId,
           planId: plan.id,
           amount: sponsoredGiftedAmount,
+          bonusAmount: tierBonus,
+          tierBonus,
+          activeCapital,
+          maxPayout,
           startDate,
           endDate,
           status: 'active',
           isVirtual: true // Mark as virtual
-        }
+        } as any
       });
 
       // 3. Create virtual transaction (to track plan activation history)
@@ -194,7 +204,7 @@ export async function POST(req: NextRequest) {
       });
 
       // 4. Update sponsored details on user
-      const sponsoredGoalAmount = sponsoredType === 'goal_locked' ? sponsoredGiftedAmount * 3 : 0;
+      const sponsoredGoalAmount = sponsoredType === 'goal_locked' ? sponsoredGiftedAmount * multiplier : 0;
       await tx.user.update({
         where: { id: userId },
         data: {
@@ -203,6 +213,7 @@ export async function POST(req: NextRequest) {
           sponsoredGiftedAmount: { increment: sponsoredGiftedAmount },
           sponsoredGoalAmount: { increment: sponsoredGoalAmount },
           activeDeposit: { increment: sponsoredGiftedAmount },
+          operationalCapital: { increment: activeCapital },
           planRate: plan.dailyROI * 100,
           roiBlocked: false,
         }

@@ -392,24 +392,7 @@ export default function WithdrawPage() {
                 <p className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-zinc-300 max-w-2xl leading-relaxed">
                   {t('withdrawGuideDesc')}
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 mt-4 pt-4 border-t border-slate-200/50 dark:border-white/5 text-xs font-mono">
-                  <div className="p-3 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-xs sm:text-sm font-extrabold block mb-1 text-violet-600 dark:text-violet-300">{t('withdrawGuideStep1Title')}</span>
-                    <span className="text-slate-600 dark:text-zinc-300 font-semibold">{t('withdrawGuideStep1Sub')}</span>
-                  </div>
-                  <div className="p-3 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-xs sm:text-sm font-extrabold block mb-1 text-violet-600 dark:text-violet-300">{t('withdrawGuideStep2Title')}</span>
-                    <span className="text-slate-600 dark:text-zinc-300 font-semibold">{t('withdrawGuideStep2Sub')}</span>
-                  </div>
-                  <div className="p-3 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-xs sm:text-sm font-extrabold block mb-1 text-violet-600 dark:text-violet-300">{t('withdrawGuideStep3Title')}</span>
-                    <span className="text-slate-600 dark:text-zinc-300 font-semibold">{t('withdrawGuideStep3Sub')}</span>
-                  </div>
-                  <div className="p-3 bg-slate-50 dark:bg-white/2 rounded-xl">
-                    <span className="text-xs sm:text-sm font-extrabold block mb-1 text-violet-600 dark:text-violet-300">{t('withdrawGuideStep4Title')}</span>
-                    <span className="text-slate-600 dark:text-zinc-300 font-semibold">{t('withdrawGuideStep4Sub')}</span>
-                  </div>
-                </div>
+
               </div>
               <button
                 onClick={handleSimulate}
