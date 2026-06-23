@@ -490,12 +490,20 @@ export default function Dashboard() {
               <div className="space-y-3">
                 {data && data.recentTransactions.length > 0 ? (
                   data.recentTransactions.slice(0, 5).map((tx, idx) => {
+                    const isForfeited = tx.amount === 0 && tx.description?.includes('forfeited');
                     const positive = tx.amount > 0;
+                    const iconBg   = isForfeited ? 'bg-amber-500/10'  : positive ? 'bg-green-500/10'  : 'bg-red-500/10';
+                    const amtColor = isForfeited ? 'text-amber-600 dark:text-amber-400' : positive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
                     return (
                       <div key={idx} className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-all">
                         <div className="flex items-center gap-3">
-                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${positive ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
-                            {positive ? <ArrowUpRight className="w-3.5 h-3.5 text-green-500" /> : <ArrowDownRight className="w-3.5 h-3.5 text-red-500" />}
+                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${iconBg}`}>
+                            {isForfeited
+                              ? <ArrowDownRight className="w-3.5 h-3.5 text-amber-500" />
+                              : positive
+                                ? <ArrowUpRight className="w-3.5 h-3.5 text-green-500" />
+                                : <ArrowDownRight className="w-3.5 h-3.5 text-red-500" />
+                            }
                           </div>
                           <div>
                             <p className="text-xs font-bold text-slate-900 dark:text-white">{tx.description || tx.type.toUpperCase()}</p>
@@ -503,7 +511,7 @@ export default function Dashboard() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className={`text-sm sm:text-base font-extrabold font-mono ${positive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                          <p className={`text-sm sm:text-base font-extrabold font-mono ${amtColor}`}>
                             {positive ? '+' : ''}${tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
                           <p className="text-[10px] font-bold text-violet-600 dark:text-violet-300 font-mono">{tx.status.toUpperCase()}</p>
@@ -515,6 +523,7 @@ export default function Dashboard() {
                   <p className="text-xs sm:text-sm text-slate-600 dark:text-zinc-400 font-semibold font-mono py-6 text-center">{t('overviewNoActivity')}</p>
                 )}
               </div>
+
             </div>
           </div>
         </>

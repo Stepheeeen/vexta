@@ -242,14 +242,22 @@ export default function EarningsPage() {
             <div className="space-y-3">
               {filteredTransactions.length > 0 ? (
                 filteredTransactions.map((tx, idx) => {
+                  const isForfeited = tx.amount === 0 && tx.description?.includes('forfeited');
                   const positive = tx.amount > 0;
+                  const amtColor = isForfeited
+                    ? 'text-amber-500 dark:text-amber-400'
+                    : positive
+                      ? 'text-green-500 dark:text-green-400'
+                      : 'text-red-500 dark:text-red-400';
                   
                   return (
                     <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-all">
                       <div className="flex items-center gap-3 min-w-0">
-                        {positive
-                          ? <ArrowUpRight className="w-5 h-5 text-green-500 dark:text-green-400 flex-shrink-0" />
-                          : <ArrowDownRight className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0" />
+                        {isForfeited
+                          ? <ArrowDownRight className="w-5 h-5 text-amber-500 dark:text-amber-400 flex-shrink-0" />
+                          : positive
+                            ? <ArrowUpRight className="w-5 h-5 text-green-500 dark:text-green-400 flex-shrink-0" />
+                            : <ArrowDownRight className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0" />
                         }
                         <div className="min-w-0">
                           <p className="text-xs font-medium text-slate-900 dark:text-white truncate">{tx.description || tx.type.toUpperCase()}</p>
@@ -265,7 +273,7 @@ export default function EarningsPage() {
                         <span className={`text-[9px] font-mono px-2.5 py-1 rounded-full ${typeColor[tx.type] || 'bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-gray-400'}`}>
                           {tx.type === 'daily_roi' ? 'PASSIVE' : tx.type === 'commission' ? 'NETWORK' : tx.type.toUpperCase().replace('_', ' ')}
                         </span>
-                        <p className={`text-sm font-bold font-mono ${positive ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'}`}>
+                        <p className={`text-sm font-bold font-mono ${amtColor}`}>
                           {positive ? '+' : ''}${tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </p>
                       </div>
