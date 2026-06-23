@@ -139,9 +139,15 @@ export default function DepositPage() {
 
         if (statsRes.ok) {
           const statsData = await statsRes.json();
-          const txs: DepositTx[] = (statsData.recentTransactions || []).filter((tx: any) => tx.type === 'deposit');
+          // Only show real USDT deposits (not investment activation transactions)
+          const txs: DepositTx[] = (statsData.recentTransactions || []).filter(
+            (tx: any) =>
+              tx.type === 'deposit' &&
+              tx.status === 'completed' &&
+              !tx.description?.includes('Investment activated')
+          );
           setDeposits(txs.slice(0, 8));
-          const total = txs.filter(tx => tx.status === 'completed').reduce((sum, tx) => sum + tx.amount, 0);
+          const total = txs.reduce((sum, tx) => sum + tx.amount, 0);
           setTotalDeposited(total);
         }
       } catch (err) {

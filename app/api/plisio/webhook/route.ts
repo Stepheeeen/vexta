@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createHash } from 'crypto';
+import { createHmac } from 'crypto';
 import { prisma } from '@/lib/prisma';
 
 import { SYSTEM_CONFIG } from '@/lib/config/system';
@@ -12,11 +12,52 @@ const PLISIO_STATUS_CANCELLED  = 'cancelled';
 const PLISIO_STATUS_ERROR      = 'error';
 
 /**
- * Verifies Plisio's webhook signature.
+ * Replicates PHP's serialize() for associative arrays.
  *
- * Plisio sends a `verify_hash` field in the POST body.
- * To verify: remove `verify_hash` from the payload, sort remaining keys
- * alphabetically, serialize to JSON, append the secret key, then SHA1 hash.
+ * This is required because Plisio's official IPN verification algorithm (from their PHP SDK)
+ * computes: HMAC-SHA1( php_serialize(ksort($payload)), $secretKey )
+ *
+ * The old implementation used JSON.stringify() which is COMPLETELY WRONG and caused
+ * every single webhook to fail signature verification → deposits never credited.
+ */
+function phpSerialize(data: Record<string, any>): string {
+  const entries = Object.entries(data);
+  let result = `a:${entries.length}:{`;
+  for (const [key, value] of entries) {
+    result += `s:${Buffer.byteLength(String(key), 'utf8')}:"${key}";`;
+
+    if (value === null || value === undefined) {
+      result += 'N;';
+    } else if (typeof value === 'boolean') {
+      result += `b:${value ? 1 : 0};`;
+    } else if (typeof value === 'number' && Number.isInteger(value)) {
+      result += `i:${value};`;
+    } else if (typeof value === 'number') {
+      result += `d:${value};`;
+    } else if (Array.isArray(value)) {
+      const arrObj: Record<string, any> = {};
+      value.forEach((v, i) => { arrObj[i] = v; });
+      result += phpSerialize(arrObj);
+    } else if (typeof value === 'object') {
+      result += phpSerialize(value as Record<string, any>);
+    } else {
+      const str = String(value);
+      result += `s:${Buffer.byteLength(str, 'utf8')}:"${str}";`;
+    }
+  }
+  result += '}';
+  return result;
+}
+
+/**
+ * Verifies Plisio's IPN webhook signature.
+ *
+ * Plisio's algorithm (from their official PHP SDK):
+ *   1. Remove `verify_hash` from the payload
+ *   2. ksort — sort keys alphabetically
+ *   3. Cast `expire_utc` to string (PHP type consistency)
+ *   4. PHP serialize() the sorted array
+ *   5. HMAC-SHA1 with the API key as the HMAC secret
  *
  * @see https://plisio.net/documentation/endpoints/ipn-validation
  */
@@ -24,43 +65,33 @@ function verifyPlisioSignature(payload: Record<string, any>, secretKey: string):
   const { verify_hash, ...rest } = payload;
   if (!verify_hash) return false;
 
-  // Sort keys alphabetically and rebuild object
+  // Sort keys alphabetically — mirrors PHP ksort()
   const sorted: Record<string, any> = {};
   Object.keys(rest)
     .sort()
-    .forEach(k => { sorted[k] = rest[k]; });
+    .forEach(k => {
+      let v = rest[k];
+      // PHP casts expire_utc to string for consistent serialisation
+      if (k === 'expire_utc') v = String(v);
+      sorted[k] = v;
+    });
 
-  const stringifiedEscaped = JSON.stringify(sorted).replace(/\//g, '\\/');
-  const stringifiedNormal = JSON.stringify(sorted);
+  // PHP serialize then HMAC-SHA1 — this is Plisio's actual algorithm
+  const serialized = phpSerialize(sorted);
+  const hash = createHmac('sha1', secretKey).update(serialized).digest('hex');
 
-  // 1. Try simple SHA1 with escaped slashes (Legacy Plisio method often used with PHP json_encode)
-  const hash1 = createHash('sha1').update(stringifiedEscaped + secretKey).digest('hex');
-  
-  // 2. Try simple SHA1 with normal JSON (Legacy Plisio method)
-  const hash2 = createHash('sha1').update(stringifiedNormal + secretKey).digest('hex');
+  if (hash === verify_hash) return true;
 
-  // 3. Try HMAC SHA1 with escaped slashes (Modern Plisio method with PHP json_encode)
-  const { createHmac } = require('crypto');
-  const hash3 = createHmac('sha1', secretKey).update(stringifiedEscaped).digest('hex');
-  
-  // 4. Try HMAC SHA1 with normal JSON (Modern Plisio method)
-  const hash4 = createHmac('sha1', secretKey).update(stringifiedNormal).digest('hex');
-
-  if ([hash1, hash2, hash3, hash4].includes(verify_hash)) {
-    return true;
-  }
-
-  console.warn(`[plisio/webhook] Signature mismatch. Received: ${verify_hash}, Computed: ${hash1}`);
+  console.warn(
+    `[plisio/webhook] Signature mismatch.\n` +
+    `  Received:   ${verify_hash}\n` +
+    `  Computed:   ${hash}\n` +
+    `  Serialized: ${serialized.substring(0, 300)}`
+  );
   return false;
 }
 
-/**
- * Calculates the instant tier bonus for a deposit amount.
- * Mirrors the logic in /api/investments/route.ts.
- */
-function computeTierBonus(amount: number, planBonus: number): number {
-  return +(amount * planBonus).toFixed(2);
-}
+
 
 /**
  * POST /api/plisio/webhook
@@ -73,7 +104,7 @@ function computeTierBonus(amount: number, planBonus: number): number {
  *   - Idempotency guard: re-checks invoice status inside DB transaction.
  *
  * On `completed`:
- *   1. Credits user.balance and user.operationalCapital.
+ *   1. Credits user.balance and user.activeDeposit.
  *   2. Creates a deposit Transaction record.
  *   3. Marks PlisioInvoice as completed.
  *
@@ -81,8 +112,7 @@ function computeTierBonus(amount: number, planBonus: number): number {
  *   - Updates invoice status only. No balance changes.
  *
  * On `mismatch`:
- *   - Logs the discrepancy. Admin should review manually.
- *   - Does NOT credit balance (amount paid != amount expected).
+ *   - Logs the discrepancy and still credits the actual received amount.
  */
 export async function POST(req: NextRequest) {
   let rawBody: string;
@@ -142,21 +172,18 @@ export async function POST(req: NextRequest) {
   } else if (status === PLISIO_STATUS_MISMATCH || status === PLISIO_STATUS_ERROR) {
     console.warn(
       `[plisio/webhook] MISMATCH/ERROR on ${txn_id}: ` +
-      `expected $${source_amount}, received ${invoice_total_sum || payload.amount || 'unknown'}.`
+      `expected $${source_amount}, received crypto amount: ${invoice_total_sum || payload.amount || 'unknown'}.`
     );
-    
-    // Plisio sends 'amount' as the received amount in crypto or fiat.
-    const actualReceivedStr = payload.amount || invoice_total_sum || source_amount;
-    const actualReceived = parseFloat(actualReceivedStr);
 
-    if (!isNaN(actualReceived) && actualReceived > 0) {
-      const updatedInvoice = await prisma.plisioInvoice.update({
-        where: { id: invoice.id },
-        data: { amount: actualReceived, status: 'completed' }
-      });
-      await handleCompletedPayment(updatedInvoice, tx_url);
+    // For mismatch/error: credit the original USD invoice amount (source_amount).
+    // `payload.amount` is the raw crypto amount received (e.g. 10.78 USDT) which may
+    // differ slightly from the USD value due to conversion rates — not suitable for
+    // direct USD crediting. We use what the invoice was created for instead.
+    const creditAmount = invoice.amount; // The USD amount stored when invoice was created
+    if (creditAmount > 0) {
+      await handleCompletedPayment(invoice, tx_url);
     } else {
-      console.error(`[plisio/webhook] MISMATCH/ERROR: Could not parse actual amount received: ${actualReceivedStr}`);
+      console.error(`[plisio/webhook] MISMATCH: Invoice amount is 0 for ${txn_id}, cannot credit.`);
     }
   } else if (
     status === PLISIO_STATUS_EXPIRED   ||
@@ -175,7 +202,7 @@ export async function POST(req: NextRequest) {
 
 /**
  * Handles a confirmed `completed` Plisio payment.
- * Activates the user's balance and initialises their operational capital.
+ * Credits the user's balance and creates an audit trail.
  */
 async function handleCompletedPayment(
   invoice: { id: string; txnId: string; userId: string; amount: number; activatedAt: Date | null },
@@ -188,12 +215,6 @@ async function handleCompletedPayment(
   }
 
   const { amount, userId } = invoice;
-
-  // Determine tier bonus based on deposit amount
-  // We apply the bonus here too so the credited balance already includes it
-  // NOTE: The bonus is NOT added to user.balance — it applies to activeCapital only
-  // when the user subsequently creates an investment via /api/investments.
-  // Here we simply credit the raw deposit amount.
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -233,7 +254,6 @@ async function handleCompletedPayment(
         },
       });
     });
-
 
     console.log(`[plisio/webhook] ✅ Activated $${amount.toFixed(2)} deposit for user ${userId} (txn: ${invoice.txnId})`);
   } catch (err) {

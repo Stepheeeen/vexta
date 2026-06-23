@@ -35,6 +35,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Payment gateway not configured' }, { status: 503 });
   }
 
+  if (!callbackUrl) {
+    // Hard block — without a callback URL Plisio cannot notify us of payment completion.
+    // The invoice would be created but the deposit would never appear in the user's balance.
+    console.error('[plisio/create-invoice] PLISIO_CALLBACK_URL is not configured. Blocking invoice creation.');
+    return NextResponse.json(
+      { error: 'Payment gateway misconfigured. Please contact support.' },
+      { status: 503 }
+    );
+  }
+
   // Fetch user for display name on invoice
   const user = await prisma.user.findUnique({
     where: { id: payload.userId },
@@ -52,6 +62,29 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    // Guard: if user already has a pending invoice created in the last 30 minutes, reuse it.
+    // This prevents duplicate invoices from double-clicks or page refreshes.
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+    const existingInvoice = await prisma.plisioInvoice.findFirst({
+      where: {
+        userId:    payload.userId,
+        status:    'pending',
+        amount,
+        createdAt: { gte: thirtyMinutesAgo },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (existingInvoice?.invoiceUrl) {
+      console.log(`[plisio/create-invoice] Reusing existing pending invoice ${existingInvoice.txnId} for user ${payload.userId}`);
+      return NextResponse.json({
+        message:    'Existing invoice reused',
+        invoiceUrl: existingInvoice.invoiceUrl,
+        txnId:      existingInvoice.txnId,
+        invoiceId:  existingInvoice.id,
+      }, { status: 200 });
+    }
+
     // Build Plisio invoice creation request
     // Docs: https://plisio.net/documentation/endpoints/create-invoice
     const orderNumber = `VEXTA-${payload.userId.slice(-8).toUpperCase()}-${Date.now()}`;

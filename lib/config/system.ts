@@ -7,7 +7,10 @@ export const SYSTEM_CONFIG = {
   },
 
   // ─── Plisio USDT BEP-20 Gateway ─────────────────────────────────────────────
-  // Plisio uses a single SECRET_KEY for all API calls (passed as ?api_key= param)
+  // Plisio uses a single API key for everything:
+  //   - Passed as `api_key` param when calling Plisio REST endpoints (create invoices, check status)
+  //   - Used as the secret key to verify IPN `verify_hash` signatures
+  // Get it from: https://plisio.net/account/api
   plisio: {
     secretKey:    process.env.PLISIO_SECRET_KEY || '',
     masterWallet: process.env.PLISIO_MASTER_WALLET || '',
