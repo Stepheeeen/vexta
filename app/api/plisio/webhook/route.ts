@@ -139,30 +139,28 @@ export async function POST(req: NextRequest) {
   // 3. Route by status
   if (status === PLISIO_STATUS_COMPLETED) {
     await handleCompletedPayment(invoice, tx_url);
-  } else if (status === PLISIO_STATUS_MISMATCH) {
+  } else if (status === PLISIO_STATUS_MISMATCH || status === PLISIO_STATUS_ERROR) {
     console.warn(
-      `[plisio/webhook] MISMATCH on ${txn_id}: ` +
-      `expected $${source_amount}, received ${invoice_total_sum}. Processing since mismatch generally means overpaid.`
+      `[plisio/webhook] MISMATCH/ERROR on ${txn_id}: ` +
+      `expected $${source_amount}, received ${invoice_total_sum || payload.amount || 'unknown'}.`
     );
-    const parsedReceived = parseFloat(invoice_total_sum);
-    // Fallback to source_amount (the expected fiat amount) if invoice_total_sum is not provided
-    const actualReceived = (!isNaN(parsedReceived) && parsedReceived > 0) 
-      ? parsedReceived 
-      : parseFloat(source_amount);
+    
+    // Plisio sends 'amount' as the received amount in crypto or fiat.
+    const actualReceivedStr = payload.amount || invoice_total_sum || source_amount;
+    const actualReceived = parseFloat(actualReceivedStr);
 
     if (!isNaN(actualReceived) && actualReceived > 0) {
       const updatedInvoice = await prisma.plisioInvoice.update({
         where: { id: invoice.id },
-        data: { amount: actualReceived }
+        data: { amount: actualReceived, status: 'completed' }
       });
       await handleCompletedPayment(updatedInvoice, tx_url);
     } else {
-      console.error(`[plisio/webhook] MISMATCH: Could not parse actual amount received: ${invoice_total_sum}`);
+      console.error(`[plisio/webhook] MISMATCH/ERROR: Could not parse actual amount received: ${actualReceivedStr}`);
     }
   } else if (
     status === PLISIO_STATUS_EXPIRED   ||
-    status === PLISIO_STATUS_CANCELLED ||
-    status === PLISIO_STATUS_ERROR
+    status === PLISIO_STATUS_CANCELLED
   ) {
     console.log(`[plisio/webhook] Invoice ${txn_id} → ${status}`);
     await prisma.plisioInvoice.update({
