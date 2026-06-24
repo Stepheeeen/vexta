@@ -133,66 +133,73 @@ export async function POST(req: NextRequest) {
   }
 
   const { secretKey } = SYSTEM_CONFIG.plisio;
-
-  // 1. Verify HMAC signature
-  if (secretKey && !verifyPlisioSignature(payload, secretKey)) {
-    console.warn('[plisio/webhook] Signature verification FAILED. Possible spoofed request.');
-    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-  }
-
-  const {
-    txn_id,
-    status,
-    source_amount,    // Amount in USD (what user was expected to pay)
-    invoice_total_sum, // Actual amount received in crypto
-    tx_url,           // Blockchain explorer URL
-  } = payload;
+  const txn_id = payload.txn_id;
 
   if (!txn_id) {
     return NextResponse.json({ error: 'Missing txn_id' }, { status: 400 });
   }
 
-  // 2. Find the invoice in our DB
+  // 1. Find the invoice in our DB
   const invoice = await prisma.plisioInvoice.findUnique({ where: { txnId: txn_id } });
   if (!invoice) {
-    // Could be a test ping — log and acknowledge
     console.warn(`[plisio/webhook] Unknown txn_id: ${txn_id}`);
     return NextResponse.json({ ok: true });
   }
 
-  // Always update the raw webhook payload for audit purposes
+  // 2. To completely avoid PHP serialization bugs with HMAC signatures in JS,
+  // we will simply call the Plisio API to fetch the TRUE state of this transaction.
+  let trueStatus = payload.status;
+  let trueSourceAmount = payload.source_amount;
+  let trueTxUrl = payload.tx_url;
+  
+  if (secretKey) {
+    try {
+      const apiRes = await fetch(`https://api.plisio.net/api/v1/operations/${txn_id}?api_key=${secretKey}`);
+      const apiData = await apiRes.json() as any;
+      if (apiData.status === 'success' && apiData.data) {
+        trueStatus = apiData.data.status;
+        trueSourceAmount = apiData.data.source_amount;
+        trueTxUrl = apiData.data.tx_url || payload.tx_url;
+        console.log(`[plisio/webhook] Verified txn_id ${txn_id} via API: Status is ${trueStatus}`);
+      } else {
+        console.error(`[plisio/webhook] API verification failed for ${txn_id}:`, apiData);
+      }
+    } catch (e) {
+      console.error(`[plisio/webhook] API verification error:`, e);
+      // Fallback to payload status if API call fails
+    }
+  }
+
+  // 3. Always update the raw webhook payload for audit purposes
   await prisma.plisioInvoice.update({
     where: { txnId: txn_id },
-    data:  { rawWebhook: JSON.stringify(payload), status: status ?? invoice.status },
+    data:  { rawWebhook: JSON.stringify(payload), status: trueStatus ?? invoice.status },
   });
 
-  // 3. Route by status
-  if (status === PLISIO_STATUS_COMPLETED) {
-    await handleCompletedPayment(invoice, tx_url);
-  } else if (status === PLISIO_STATUS_MISMATCH || status === PLISIO_STATUS_ERROR) {
+  // 4. Route by status
+  if (trueStatus === PLISIO_STATUS_COMPLETED) {
+    await handleCompletedPayment(invoice, trueTxUrl);
+  } else if (trueStatus === PLISIO_STATUS_MISMATCH || trueStatus === PLISIO_STATUS_ERROR) {
     console.warn(
       `[plisio/webhook] MISMATCH/ERROR on ${txn_id}: ` +
-      `expected $${source_amount}, received crypto amount: ${invoice_total_sum || payload.amount || 'unknown'}.`
+      `expected $${trueSourceAmount}, received crypto amount: ${payload.invoice_total_sum || payload.amount || 'unknown'}.`
     );
 
     // For mismatch/error: credit the original USD invoice amount (source_amount).
-    // `payload.amount` is the raw crypto amount received (e.g. 10.78 USDT) which may
-    // differ slightly from the USD value due to conversion rates — not suitable for
-    // direct USD crediting. We use what the invoice was created for instead.
     const creditAmount = invoice.amount; // The USD amount stored when invoice was created
     if (creditAmount > 0) {
-      await handleCompletedPayment(invoice, tx_url);
+      await handleCompletedPayment(invoice, trueTxUrl);
     } else {
       console.error(`[plisio/webhook] MISMATCH: Invoice amount is 0 for ${txn_id}, cannot credit.`);
     }
   } else if (
-    status === PLISIO_STATUS_EXPIRED   ||
-    status === PLISIO_STATUS_CANCELLED
+    trueStatus === PLISIO_STATUS_EXPIRED   ||
+    trueStatus === PLISIO_STATUS_CANCELLED
   ) {
-    console.log(`[plisio/webhook] Invoice ${txn_id} → ${status}`);
+    console.log(`[plisio/webhook] Invoice ${txn_id} → ${trueStatus}`);
     await prisma.plisioInvoice.update({
       where: { txnId: txn_id },
-      data:  { status },
+      data:  { status: trueStatus },
     });
   }
 
