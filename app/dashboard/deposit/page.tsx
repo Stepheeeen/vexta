@@ -144,11 +144,11 @@ export default function DepositPage() {
           const txs: DepositTx[] = (statsData.recentTransactions || []).filter(
             (tx: any) =>
               tx.type === 'deposit' &&
-              tx.status === 'completed' &&
+              (tx.status === 'completed' || tx.status === 'pending') &&
               !tx.description?.includes('Investment activated')
           );
           setDeposits(txs.slice(0, 8));
-          const total = txs.reduce((sum, tx) => sum + tx.amount, 0);
+          const total = txs.reduce((sum, tx) => (tx.status === 'completed' ? sum + tx.amount : sum), 0);
           setTotalDeposited(total);
         }
       } catch (err) {

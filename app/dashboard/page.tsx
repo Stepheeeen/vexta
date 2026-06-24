@@ -494,6 +494,7 @@ export default function Dashboard() {
                     const positive = tx.amount > 0;
                     const iconBg   = isForfeited ? 'bg-amber-500/10'  : positive ? 'bg-green-500/10'  : 'bg-red-500/10';
                     const amtColor = isForfeited ? 'text-amber-600 dark:text-amber-400' : positive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
+                    const statusColor = tx.status === 'pending' ? 'text-amber-500' : tx.status === 'failed' ? 'text-red-500' : 'text-emerald-500';
                     return (
                       <div key={idx} className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-all">
                         <div className="flex items-center gap-3">
@@ -514,7 +515,7 @@ export default function Dashboard() {
                           <p className={`text-sm sm:text-base font-extrabold font-mono ${amtColor}`}>
                             {positive ? '+' : ''}${tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </p>
-                          <p className="text-[10px] font-bold text-violet-600 dark:text-violet-300 font-mono">{tx.status.toUpperCase()}</p>
+                          <p className={`text-[10px] font-bold font-mono ${statusColor}`}>{tx.status.toUpperCase()}</p>
                         </div>
                       </div>
                     );

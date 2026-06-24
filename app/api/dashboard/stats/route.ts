@@ -74,6 +74,30 @@ export async function GET(req: NextRequest) {
     take: 10,
   });
 
+  // Fetch pending Plisio deposits (not yet confirmed by the network)
+  const pendingPlisioInvoices = await prisma.plisioInvoice.findMany({
+    where: { userId, status: 'pending' },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  // Inject pending invoices as virtual transactions so the UI displays them while waiting for network confirmation
+  const virtualPendingTxns = pendingPlisioInvoices.map((inv) => ({
+    id: `plisio-pending-${inv.id}`,
+    userId: inv.userId,
+    type: 'deposit',
+    amount: inv.amount,
+    status: 'pending',
+    description: `Deposit waiting for network confirmation`,
+    reference: inv.txnId,
+    createdAt: inv.createdAt,
+    updatedAt: inv.updatedAt,
+  }));
+
+  // Merge and sort them
+  const combinedTxns = [...virtualPendingTxns, ...recentTxns].sort(
+    (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
+  ).slice(0, 10);
+
   // Dynamic available balance (Internal Wallet) — computed ONCE and reused below.
   // Passing it into getWithdrawableBalances avoids a duplicate 7-query aggregate call.
   const availableBalance = await getAvailableBalance(userId);
@@ -129,6 +153,6 @@ export async function GET(req: NextRequest) {
       maxPayout: (i as any).maxPayout || i.amount * 2,
       status: i.status,
     })),
-    recentTransactions: recentTxns,
+    recentTransactions: combinedTxns,
   });
 }
