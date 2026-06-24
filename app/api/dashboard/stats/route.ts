@@ -74,10 +74,12 @@ export async function GET(req: NextRequest) {
     take: 10,
   });
 
-  // Dynamic available balance (Internal Wallet)
+  // Dynamic available balance (Internal Wallet) — computed ONCE and reused below.
+  // Passing it into getWithdrawableBalances avoids a duplicate 7-query aggregate call.
   const availableBalance = await getAvailableBalance(userId);
-  const pools = await getWithdrawableBalances(userId);
+  const pools = await getWithdrawableBalances(userId, undefined, availableBalance);
   const p2pBalance = await getP2pBalance(userId);
+
   
   const userRecord = await prisma.user.findUnique({
     where: { id: userId },

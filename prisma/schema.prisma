@@ -29,6 +29,10 @@ model User {
 
   verificationCode        String?
   verificationCodeExpires DateTime?
+  /// OTP brute-force protection — counts consecutive wrong attempts
+  otpAttempts     Int       @default(0)
+  /// Locks OTP verification until this time after 5 failed attempts
+  otpLockedUntil  DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -109,10 +113,17 @@ model Investment {
   maxPayout   Float    @default(0)
   createdAt   DateTime @default(now())
   isVirtual   Boolean  @default(false)
+  /// Tracks whether commission propagation completed for this investment.
+  /// 'pending' = not yet run; 'completed' = done; 'skipped' = virtual investment.
+  /// Defaults to 'completed' so existing records are not retried.
+  commissionStatus String @default("completed") // pending | completed | skipped
 
   user           User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   plan           Plan                 @relation(fields: [planId], references: [id])
   dailyROIs      DailyROIEntry[]
+
+  @@index([userId, status])
+  @@index([status, activeCapital])
 }
 
 model DailyROIEntry {
@@ -182,15 +193,20 @@ model ReferralLink {
 
 model Commission {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String   @db.ObjectId// recipient
-  sourceUserId  String   @db.ObjectId// who triggered it
+  userId        String   @db.ObjectId // recipient
+  sourceUserId  String   @db.ObjectId // who triggered it
   investmentId  String   @db.ObjectId
-  level         Int      // 1-5
+  level         Int      // 1-13
   rate          Float    // e.g. 0.10
   amount        Float
   createdAt     DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([investmentId, level]) // Ensures commission retries are idempotent
+  @@index([userId])
+  @@index([sourceUserId])
+  @@index([investmentId])
 }
 
 // ─── Transactions ─────────────────────────────────────────────────────────────
@@ -210,6 +226,9 @@ model Transaction {
   isVirtual   Boolean  @default(false)
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type, status])
+  @@index([userId, createdAt])
 }
 
 // ─── Withdrawals ──────────────────────────────────────────────────────────────
@@ -229,6 +248,9 @@ model Withdrawal {
   batchRunId    String?   @db.ObjectId
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, status])
 }
 
 model Settings {

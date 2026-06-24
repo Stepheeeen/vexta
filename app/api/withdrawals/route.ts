@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getUserFromRequest } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { getAvailableBalance, getWithdrawableBalances } from '@/lib/balance';
+import { getAvailableBalance, getWithdrawableBalances, safeDecrementBalance } from '@/lib/balance';
 import { deductWithdrawalFromCapital } from '@/lib/roi-engine';
+import bcrypt from 'bcryptjs';
 
 const schema = z.object({
   amount:        z.number().positive().min(10, 'Minimum withdrawal is $10'),
@@ -80,13 +81,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Your withdrawals have been blocked by an administrator. Please contact support.' }, { status: 400 });
     }
 
-    // Prevent multiple withdrawals in the same window (max 1 per Friday)
-    // Check if the user has made a withdrawal in the last 24 hours (covers the entire 8-hour window)
-    const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    // Prevent multiple withdrawals in the same week (max 1 per Friday window)
+    // Find the START of the current Friday's 10:00 UTC window.
+    // Using current Friday window start — not a rolling 24h — so a user who withdrew
+    // at Friday 17:55 UTC is only blocked until next Friday 10:00 UTC (not 17:55).
+    const now2 = new Date();
+    const fridayWindowStart = new Date(now2);
+    fridayWindowStart.setUTCHours(10, 0, 0, 0); // This Friday at 10:00 UTC
+
     const recentWithdrawal = await prisma.withdrawal.findFirst({
       where: {
         userId: payload.userId,
-        createdAt: { gte: last24Hours }
+        createdAt: { gte: fridayWindowStart },
+        status: { not: 'rejected' }, // Don't count rejected withdrawals
       }
     });
 
@@ -105,7 +112,6 @@ export async function POST(req: NextRequest) {
       else if (type === 'all') availableInPool = pools.availablePassive + pools.availableNetwork;
       
       if (amount > availableInPool) {
-        // For gifted leaders trying to withdraw passive earnings
         if ((type === 'passive' || type === 'all') && pools.blockedPassive > 0 && amount > pools.availableNetwork) {
           return NextResponse.json({ error: 'Passive earnings withdrawal is currently restricted. Network earnings can be withdrawn normally. Contact management for approval.' }, { status: 400 });
         }
@@ -116,24 +122,65 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Your account funds are temporarily frozen. Please contact support.' }, { status: 400 });
       }
 
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      // Check OTP lockout
+      if ((userRecord as any).otpLockedUntil && new Date() < (userRecord as any).otpLockedUntil) {
+        const unlockTime = new Date((userRecord as any).otpLockedUntil).toUTCString();
+        return NextResponse.json({ error: `Too many failed attempts. OTP locked until ${unlockTime}.` }, { status: 429 });
+      }
+
+      // Generate and hash OTP — plaintext is emailed, only hash is stored
+      const plainCode = String(Math.floor(100000 + Math.random() * 900000));
+      const hashedCode = await bcrypt.hash(plainCode, 10);
+
       await prisma.user.update({
         where: { id: payload.userId },
         data: {
-          verificationCode: code,
+          verificationCode: hashedCode,
           verificationCodeExpires: new Date(Date.now() + 15 * 60 * 1000),
-        }
+          otpAttempts: 0,        // reset attempt counter on new OTP
+          otpLockedUntil: null,
+        } as any
       });
 
       const { sendWithdrawalOTPEmail } = require('@/lib/mail');
-      await sendWithdrawalOTPEmail(userRecord.email, userRecord.firstName, code, amount, network);
+      await sendWithdrawalOTPEmail(userRecord.email, userRecord.firstName, plainCode, amount, network);
 
       return NextResponse.json({ requiresOtp: true, message: 'OTP sent to email' }, { status: 200 });
     }
 
-    // Verify OTP
-    if (userRecord.verificationCode !== verificationCode || !userRecord.verificationCodeExpires || new Date() > userRecord.verificationCodeExpires) {
-      return NextResponse.json({ error: 'Invalid or expired verification code' }, { status: 400 });
+    // ── Verify OTP ─────────────────────────────────────────────────────────────
+    // Check lockout first
+    if ((userRecord as any).otpLockedUntil && new Date() < (userRecord as any).otpLockedUntil) {
+      const unlockTime = new Date((userRecord as any).otpLockedUntil).toUTCString();
+      return NextResponse.json({ error: `Too many failed attempts. OTP locked until ${unlockTime}.` }, { status: 429 });
+    }
+
+    if (!userRecord.verificationCode || !userRecord.verificationCodeExpires || new Date() > userRecord.verificationCodeExpires) {
+      return NextResponse.json({ error: 'Verification code has expired. Please request a new one.' }, { status: 400 });
+    }
+
+    // Constant-time hash comparison (bcrypt)
+    const otpValid = await bcrypt.compare(verificationCode, userRecord.verificationCode);
+
+    if (!otpValid) {
+      // Increment attempt counter
+      const newAttempts = ((userRecord as any).otpAttempts ?? 0) + 1;
+      const MAX_OTP_ATTEMPTS = 5;
+      const updateData: any = { otpAttempts: newAttempts };
+
+      if (newAttempts >= MAX_OTP_ATTEMPTS) {
+        // Lock for 30 minutes after 5 failures
+        updateData.otpLockedUntil = new Date(Date.now() + 30 * 60 * 1000);
+        updateData.verificationCode = null;
+        updateData.verificationCodeExpires = null;
+        await prisma.user.update({ where: { id: payload.userId }, data: updateData });
+        return NextResponse.json({ error: 'Too many failed attempts. OTP has been invalidated. Please request a new one after 30 minutes.' }, { status: 429 });
+      }
+
+      await prisma.user.update({ where: { id: payload.userId }, data: updateData });
+      return NextResponse.json({ 
+        error: `Invalid verification code. ${MAX_OTP_ATTEMPTS - newAttempts} attempt(s) remaining.` 
+      }, { status: 400 });
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -189,16 +236,15 @@ export async function POST(req: NextRequest) {
         networkAmount = amount;
       }
 
-      // 3. Decrement user's persisted balance by the full requested amount
-      await tx.user.update({
-        where: { id: payload.userId },
-        data: { balance: { decrement: amount } }
-      });
+      // 3. Decrement user's persisted balance — uses safe floor-clamped helper
+      //    to prevent balance from going negative due to race conditions
+      await safeDecrementBalance(payload.userId, amount, tx);
 
       // 3.5. Deduct from operational capital if it involves passive earnings
       if (passiveAmount > 0) {
         await deductWithdrawalFromCapital(payload.userId, passiveAmount, tx);
       }
+
 
       // Generate the note for the withdrawal record
       let noteStr = `Fee: $${totalFee.toFixed(2)} | Net payout: $${netAmount.toFixed(2)}`;

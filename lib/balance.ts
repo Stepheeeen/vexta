@@ -111,7 +111,13 @@ export async function getP2pBalance(userId: string, tx?: any): Promise<number> {
  *  - Admin can toggle roiBlocked to approve/block passive withdrawals
  *  - Goal-based auto-unlock still supported for goal_locked type
  */
-export async function getWithdrawableBalances(userId: string, tx?: any) {
+export async function getWithdrawableBalances(
+  userId: string,
+  tx?: any,
+  /** Optional pre-computed balance to avoid a second getAvailableBalance call.
+   *  Pass this when you have already called getAvailableBalance() in the same request. */
+  precomputedBalance?: number
+) {
   const client = tx || prisma;
   const user = await client.user.findUnique({
     where: { id: userId },
@@ -127,7 +133,10 @@ export async function getWithdrawableBalances(userId: string, tx?: any) {
     }
   });
   
-  const totalBalance = await getAvailableBalance(userId, client);
+  // Use pre-computed balance if provided — avoids duplicate 7-query aggregate on the same request
+  const totalBalance = precomputedBalance !== undefined
+    ? precomputedBalance
+    : await getAvailableBalance(userId, client);
   const p2pBalance = Math.max(0, Number((user?.p2pBalance ?? 0).toFixed(2)));
   
   if (!user) return { totalBalance, availablePassive: 0, availableNetwork: 0, blockedPassive: 0, p2pBalance: 0, fundsFrozen: false };
@@ -253,3 +262,41 @@ export async function getWithdrawableBalances(userId: string, tx?: any) {
     blockedRoi: Number(blockedPassive.toFixed(2)),
   };
 }
+
+/**
+ * Safely decrement a user's balance, clamping at zero.
+ *
+ * This prevents race conditions or edge cases from pushing `user.balance`
+ * negative in the database. Logs a warning if clamping was required (means
+ * the caller had stale balance information — worth investigating).
+ *
+ * @param userId - Target user
+ * @param amount - Amount to deduct (must be positive)
+ * @param tx     - Prisma transaction client (required when called inside $transaction)
+ */
+export async function safeDecrementBalance(userId: string, amount: number, tx: any): Promise<void> {
+  // Read current persisted balance inside the same transaction context
+  const user = await tx.user.findUnique({
+    where: { id: userId },
+    select: { balance: true },
+  });
+
+  const currentBalance = user?.balance ?? 0;
+  const safeDecrement = Math.min(amount, currentBalance);
+
+  if (safeDecrement < amount) {
+    console.warn(
+      `[safeDecrementBalance] ⚠️  Balance clamp triggered for user ${userId}. ` +
+      `Tried to deduct $${amount.toFixed(2)} but only $${currentBalance.toFixed(2)} available. ` +
+      `Deducting $${safeDecrement.toFixed(2)} instead. Investigate stale balance read.`
+    );
+  }
+
+  if (safeDecrement > 0) {
+    await tx.user.update({
+      where: { id: userId },
+      data: { balance: { decrement: safeDecrement } },
+    });
+  }
+}
+

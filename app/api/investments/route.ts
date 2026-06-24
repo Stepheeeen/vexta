@@ -95,41 +95,33 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // 4. Calculate tier bonus per spec:
-      //    Starter ($10–$999):   0% bonus
-      //    Prime   ($1,000+):   +10% bonus
-      //    Ultra   ($3,000+):   +20% bonus
+      // 4. Calculate tier bonus
       const tierBonus = (plan as any).bonus ? +(amount * (plan as any).bonus).toFixed(2) : 0;
-
-      // activeCapital = principal + instant tier bonus (generates returns from Day 1)
       const activeCapital = +(amount + tierBonus).toFixed(2);
-
-      // maxPayout = original deposited amount × 2 (hard lifetime earnings cap)
-      // All earnings (daily ROI + commissions + bonuses) count toward this limit.
       const maxPayout = +(amount * 2).toFixed(2);
-
-      // 5. Contract end date: startDate + plan.duration calendar days (approximate)
-      //    Actual enforcement is via businessDaysElapsed counter in the ROI engine.
       const startDate = new Date();
       const endDate   = addBusinessDays(startDate, plan.duration);
 
-      // 6. Create the investment record
+      // 5. Create the investment record
+      // commissionStatus = 'pending' so the retry reconciler can pick it up
+      // if the server crashes before propagateCommissions completes.
       const investment = await tx.investment.create({
         data: {
-          userId:      payload.userId,
+          userId:          payload.userId,
           planId,
           amount,
-          bonusAmount: tierBonus, // kept for backwards compat
+          bonusAmount:     tierBonus,
           tierBonus,
           activeCapital,
           maxPayout,
           startDate,
           endDate,
-          status: 'active',
+          status:          'active',
+          commissionStatus: 'pending',
         } as any,
       });
 
-      // 7. Deposit transaction record (funds moved from balance to investment)
+      // 6. Deposit transaction record
       const descParts = [`Investment activated — ${plan.name}`];
       if (tierBonus > 0) descParts.push(`(+$${tierBonus.toFixed(2)} tier bonus)`);
       if (p2pAmount > 0) descParts.push(`[P2P: $${p2pAmount.toFixed(2)}]`);
@@ -145,26 +137,19 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // 8. Deduct from Internal Wallet balance
+      // 7. Deduct balances
       if (internalAmount > 0) {
         await tx.user.update({
           where: { id: payload.userId },
-          data: {
-            balance: { decrement: internalAmount },
-          },
+          data: { balance: { decrement: internalAmount } },
         });
       }
 
-      // 9. Deduct from P2P Wallet if applicable
       if (p2pAmount > 0) {
         await tx.user.update({
           where: { id: payload.userId },
-          data: {
-            p2pBalance: { decrement: p2pAmount },
-          },
+          data: { p2pBalance: { decrement: p2pAmount } },
         });
-
-        // Record P2P usage transaction for audit trail
         await tx.transaction.create({
           data: {
             userId:      payload.userId,
@@ -177,23 +162,42 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // 10. Update user operational capital and plan rate
+      // 8. Update user operational capital
       await tx.user.update({
         where: { id: payload.userId },
         data: {
           planRate:          plan.dailyROI * 100,
-          // operationalCapital tracks the sum of all active investment activeCapitals
           operationalCapital: { increment: activeCapital },
-          // activeDeposit kept for backwards compat with existing dashboard queries
           activeDeposit:     { increment: amount },
         } as any,
       });
 
-      // 11. Propagate referral commissions on the deposited amount
-      await propagateCommissions(payload.userId, investment.id, amount, tx);
-
       return { investment, tierBonus, activeCapital, p2pAmount, internalAmount };
-    });
+
+    // NOTE: Commissions are intentionally run OUTSIDE this transaction.
+    // The commission chain (13 levels × multiple DB queries) exceeds Prisma's
+    // default 5-second interactive transaction timeout, rolling back the entire
+    // investment. By moving them outside, a slow commission chain can never
+    // undo a successfully committed investment.
+    }, { timeout: 30000 });
+
+    // 9. Fire-and-forget commission propagation AFTER the investment is committed.
+    // commissionStatus starts as 'pending'; we mark it 'completed' on success.
+    // If the server crashes here, the retry-commissions endpoint will pick it up.
+    const investmentId = result.investment.id;
+    propagateCommissions(payload.userId, investmentId, amount)
+      .then(async levels => {
+        console.log(`[investments/POST] Commissions propagated: ${levels.length} levels for investment ${investmentId}`);
+        // Mark commissionStatus as completed so the reconciler skips it
+        await prisma.investment.update({
+          where: { id: investmentId },
+          data:  { commissionStatus: 'completed' } as any,
+        }).catch(e => console.error('[investments/POST] Failed to update commissionStatus:', e));
+      })
+      .catch(async commErr => {
+        console.error('[investments/POST] Commission propagation error (non-fatal, investment committed):', commErr);
+        // commissionStatus remains 'pending' — retry-commissions endpoint will retry it
+      });
 
     return NextResponse.json(
       {
@@ -220,6 +224,9 @@ export async function POST(req: NextRequest) {
       );
     }
     console.error('[investments/POST]', err);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || 'An unexpected error occurred during activation. Please try again.' },
+      { status: 500 }
+    );
   }
 }

@@ -32,19 +32,34 @@ export async function runDailyRoiDistribution(
   if (settings.lastDailyRun) {
     const lastRun = new Date(settings.lastDailyRun);
     const today = new Date();
+    // ← Use UTC dates to avoid timezone-related double-run or skip bugs
     const isSameDay =
-      lastRun.getFullYear() === today.getFullYear() &&
-      lastRun.getMonth()    === today.getMonth()    &&
-      lastRun.getDate()     === today.getDate();
+      lastRun.getUTCFullYear() === today.getUTCFullYear() &&
+      lastRun.getUTCMonth()    === today.getUTCMonth()    &&
+      lastRun.getUTCDate()     === today.getUTCDate();
 
     if (isSameDay) {
       throw new Error('Already ran today');
     }
   }
 
-  // Atomic lock check to prevent TOCTOU race condition
+  // Dead-man switch: if isRoiRunning has been true for > 2 hours, the previous
+  // run crashed mid-way. Auto-reset the lock so today's run can proceed.
   if ((settings as any).isRoiRunning) {
-    throw new Error('ROI distribution is already running. Please wait.');
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+    const lastRunTime = settings.lastDailyRun ? new Date(settings.lastDailyRun) : null;
+    const isStale = !lastRunTime || lastRunTime < twoHoursAgo;
+
+    if (isStale) {
+      console.warn('[EarningsService] ⚠️  Dead-man switch triggered: resetting stale isRoiRunning lock (was stuck > 2 hours)');
+      await (prisma.settings as any).update({
+        where: { id: settings.id },
+        data: { isRoiRunning: false }
+      });
+      (settings as any).isRoiRunning = false; // update local reference
+    } else {
+      throw new Error('ROI distribution is already running. Please wait.');
+    }
   }
 
   // Attempt to acquire lock atomically

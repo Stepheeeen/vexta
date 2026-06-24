@@ -112,9 +112,10 @@ export function ProfitCalculator({ availableBalance, onSuccess }: ProfitCalculat
       });
       onSuccess();
     } catch (err: any) {
+      const msg = err.message || 'An unexpected error occurred. Please refresh and try again.';
       toast({
         title: 'Activation Failed',
-        description: err.message || 'An error occurred.',
+        description: msg,
         variant: 'destructive',
       });
     } finally {

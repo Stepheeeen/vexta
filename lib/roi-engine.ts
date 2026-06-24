@@ -79,10 +79,10 @@ export async function generateDailyReturns(
   bypassWeekendCheck = false
 ): Promise<{ processed: number; totalPaid: number }> {
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  today.setUTCHours(0, 0, 0, 0); // ← UTC (was local time — timezone bug fix)
 
   if (!bypassWeekendCheck) {
-    const day = today.getDay();
+    const day = today.getUTCDay(); // ← UTC day
     if (day === 0 || day === 6) {
       console.log('[ROI] Skipping — weekend.');
       return { processed: 0, totalPaid: 0 };
@@ -97,166 +97,186 @@ export async function generateDailyReturns(
     include: { plan: true },
   });
 
+  console.log(`[ROI] Processing ${activeInvestments.length} active investments in parallel chunks of 50...`);
+
   let processed = 0;
   let totalPaid = 0;
 
-  for (const inv of activeInvestments) {
-    try {
-      // Guard: skip if already processed today for this investment
-      const todayEntry = await prisma.dailyROIEntry.findFirst({
-        where: {
-          investmentId: inv.id,
-          date: { gte: today },
-        },
-      });
-      if (todayEntry) continue;
+  // ── Process in parallel chunks of 50 to stay well within Vercel 60s limit ──
+  // Each investment is independent — one failure doesn't block others.
+  const CHUNK_SIZE = 50;
+  for (let i = 0; i < activeInvestments.length; i += CHUNK_SIZE) {
+    const chunk = activeInvestments.slice(i, i + CHUNK_SIZE);
 
-      // Fetch user to check freeze / block flags
-      const user = await prisma.user.findUnique({ where: { id: inv.userId } });
-      if (!user || !user.isActive || user.fundsFrozen || user.roiBlocked) continue;
+    const results = await Promise.allSettled(
+      chunk.map(inv => processSingleInvestmentROI(inv, today))
+    );
 
-      // ── 200% Cap enforcement ───────────────────────────────────────────────
-      // maxPayout defaults to amount × 2 for legacy rows that predate the field.
-      const maxPayout = (inv as any).maxPayout > 0
-        ? (inv as any).maxPayout
-        : +(inv.amount * 2).toFixed(2);
-
-      const remainingCapacity = +(maxPayout - inv.totalEarned).toFixed(2);
-
-      if (remainingCapacity <= 0) {
-        // Package is fully paid out — mark it completed (should have been caught already)
-        await prisma.investment.update({
-          where: { id: inv.id },
-          data: { status: 'completed', activeCapital: 0 },
-        });
-        await prisma.user.update({
-          where: { id: inv.userId },
-          data: { operationalCapital: { decrement: inv.activeCapital } },
-        });
-        console.log(`[ROI] Investment ${inv.id} already at 200% cap — marking completed.`);
-        continue;
+    for (const result of results) {
+      if (result.status === 'fulfilled' && result.value) {
+        processed++;
+        totalPaid = +(totalPaid + result.value).toFixed(2);
+      } else if (result.status === 'rejected') {
+        console.error('[ROI] Chunk item failed:', result.reason);
       }
-
-      // Cap the daily profit at whatever capacity remains
-      const rawDailyProfit = calculateDailyROI(inv.activeCapital);
-      const dailyProfit = +Math.min(rawDailyProfit, remainingCapacity).toFixed(2);
-      if (dailyProfit <= 0) continue;
-
-      const newDaysElapsed = inv.businessDaysElapsed + 1;
-      const newTotalEarned = +(inv.totalEarned + dailyProfit).toFixed(2);
-
-      // Hit cap OR hit max business days → complete the investment
-      const hitCap = newTotalEarned >= maxPayout - 0.001; // float tolerance
-      const willComplete = hitCap || newDaysElapsed >= maxContractDays;
-
-      await prisma.$transaction(async (tx) => {
-        // 1. Credit user balance immediately (withdrawable)
-        await tx.user.update({
-          where: { id: inv.userId },
-          data: {
-            balance:     { increment: dailyProfit },
-            totalEarned: { increment: dailyProfit },
-          },
-        });
-
-        // 2. Update investment counters + maxPayout field (ensure it's set)
-        await tx.investment.update({
-          where: { id: inv.id },
-          data: {
-            totalEarned:         newTotalEarned,
-            businessDaysElapsed: newDaysElapsed,
-            maxPayout:           maxPayout, // persist the cap for legacy rows
-            ...(willComplete ? { status: 'completed', activeCapital: 0 } : {}),
-          },
-        });
-
-        if (willComplete) {
-          // Remove from operational capital since it's now completed
-          await tx.user.update({
-            where: { id: inv.userId },
-            data: { operationalCapital: { decrement: inv.activeCapital } },
-          });
-        }
-
-        // 3. DailyROIEntry audit log
-        await tx.dailyROIEntry.create({
-          data: {
-            investmentId: inv.id,
-            amount:       dailyProfit,
-            date:         today,
-          },
-        });
-
-        // 4. Transaction ledger record
-        const reason = hitCap ? ' (200% cap reached — contract completed)' : willComplete ? ' (Contract completed)' : '';
-        await tx.transaction.create({
-          data: {
-            userId:      inv.userId,
-            type:        'daily_roi',
-            amount:      dailyProfit,
-            status:      'completed',
-            description: `Daily arbitrage profit${reason}`,
-            reference:   inv.id,
-            isVirtual:   inv.isVirtual,
-          },
-        });
-
-        // 5. Support Account 2X Rule (unchanged)
-        if ((user as any).isSponsored && (user as any).sponsoredGiftedAmount > 0) {
-          const maxSupportReturn = (user as any).sponsoredGiftedAmount * 2;
-          const newInvTotalEarned = inv.totalEarned + dailyProfit;
-
-          if (newInvTotalEarned >= maxSupportReturn) {
-            const currentBalance = (user as any).balance + dailyProfit;
-            const wipeAmountBalance = Math.min(maxSupportReturn, currentBalance);
-
-            await tx.user.update({
-              where: { id: inv.userId },
-              data: {
-                balance: { decrement: wipeAmountBalance },
-                totalEarned: { decrement: maxSupportReturn },
-                operationalCapital: { decrement: inv.activeCapital },
-                isSponsored: false,
-                sponsoredGiftedAmount: 0,
-              }
-            });
-
-            await tx.investment.update({
-              where: { id: inv.id },
-              data: { status: 'completed', activeCapital: 0 }
-            });
-
-            await tx.transaction.create({
-              data: {
-                userId: inv.userId,
-                type: 'system_reset',
-                amount: -wipeAmountBalance,
-                status: 'completed',
-                description: `Support account completed (2X reached). Profits reset.`,
-                reference: inv.id,
-              }
-            });
-
-            console.log(`[ROI] User ${inv.userId} hit 2X support account limit. Reset applied.`);
-          }
-        }
-      });
-
-      const capMsg = hitCap ? ' [200% CAP REACHED]' : '';
-      console.log(
-        `[ROI] Day ${newDaysElapsed}/${maxContractDays} | ` +
-        `$${dailyProfit.toFixed(2)} → user:${inv.userId} | inv:${inv.id}${willComplete ? ' [COMPLETED]' : ''}${capMsg}`
-      );
-      processed++;
-      totalPaid = +(totalPaid + dailyProfit).toFixed(2);
-    } catch (err) {
-      console.error(`[ROI] Failed for investment ${inv.id}:`, err);
     }
   }
 
   console.log(`[ROI] Generated returns for ${processed} investments. Total: $${totalPaid.toFixed(2)}`);
   return { processed, totalPaid };
 }
+
+/**
+ * Process a single investment's daily ROI.
+ * Extracted so it can run concurrently in Promise.allSettled() chunks.
+ * Returns the daily profit credited, or 0 if skipped.
+ */
+async function processSingleInvestmentROI(inv: any, today: Date): Promise<number> {
+  // Guard: skip if already processed today for this investment
+  const todayEntry = await prisma.dailyROIEntry.findFirst({
+    where: {
+      investmentId: inv.id,
+      date: { gte: today },
+    },
+  });
+  if (todayEntry) return 0;
+
+  // Fetch user to check freeze / block flags
+  const user = await prisma.user.findUnique({ where: { id: inv.userId } });
+  if (!user || !user.isActive || user.fundsFrozen || user.roiBlocked) return 0;
+
+  // ── 200% Cap enforcement ───────────────────────────────────────────────
+  const maxPayout = (inv as any).maxPayout > 0
+    ? (inv as any).maxPayout
+    : +(inv.amount * 2).toFixed(2);
+
+  const remainingCapacity = +(maxPayout - inv.totalEarned).toFixed(2);
+
+  if (remainingCapacity <= 0) {
+    await prisma.investment.update({
+      where: { id: inv.id },
+      data: { status: 'completed', activeCapital: 0 },
+    });
+    await prisma.user.update({
+      where: { id: inv.userId },
+      data: { operationalCapital: { decrement: inv.activeCapital } },
+    });
+    console.log(`[ROI] Investment ${inv.id} already at 200% cap — marking completed.`);
+    return 0;
+  }
+
+  const rawDailyProfit = calculateDailyROI(inv.activeCapital);
+  const dailyProfit = +Math.min(rawDailyProfit, remainingCapacity).toFixed(2);
+  if (dailyProfit <= 0) return 0;
+
+  const newDaysElapsed = inv.businessDaysElapsed + 1;
+  const newTotalEarned = +(inv.totalEarned + dailyProfit).toFixed(2);
+
+  const hitCap = newTotalEarned >= maxPayout - 0.001;
+  const willComplete = hitCap || newDaysElapsed >= maxContractDays;
+
+  await prisma.$transaction(async (tx) => {
+    // 1. Credit user balance immediately
+    await tx.user.update({
+      where: { id: inv.userId },
+      data: {
+        balance:     { increment: dailyProfit },
+        totalEarned: { increment: dailyProfit },
+      },
+    });
+
+    // 2. Update investment counters
+    await tx.investment.update({
+      where: { id: inv.id },
+      data: {
+        totalEarned:         newTotalEarned,
+        businessDaysElapsed: newDaysElapsed,
+        maxPayout:           maxPayout,
+        ...(willComplete ? { status: 'completed', activeCapital: 0 } : {}),
+      },
+    });
+
+    if (willComplete) {
+      await tx.user.update({
+        where: { id: inv.userId },
+        data: { operationalCapital: { decrement: inv.activeCapital } },
+      });
+    }
+
+    // 3. DailyROIEntry audit log
+    await tx.dailyROIEntry.create({
+      data: {
+        investmentId: inv.id,
+        amount:       dailyProfit,
+        date:         today,
+      },
+    });
+
+    // 4. Transaction ledger
+    const reason = hitCap ? ' (200% cap reached — contract completed)' : willComplete ? ' (Contract completed)' : '';
+    await tx.transaction.create({
+      data: {
+        userId:      inv.userId,
+        type:        'daily_roi',
+        amount:      dailyProfit,
+        status:      'completed',
+        description: `Daily arbitrage profit${reason}`,
+        reference:   inv.id,
+        isVirtual:   inv.isVirtual,
+      },
+    });
+
+    // 5. Support Account 2X Rule (unchanged)
+    if ((user as any).isSponsored && (user as any).sponsoredGiftedAmount > 0) {
+      const maxSupportReturn = (user as any).sponsoredGiftedAmount * 2;
+      const newInvTotalEarned = inv.totalEarned + dailyProfit;
+
+      if (newInvTotalEarned >= maxSupportReturn) {
+        const currentBalance = (user as any).balance + dailyProfit;
+        const wipeAmountBalance = Math.min(maxSupportReturn, currentBalance);
+
+        await tx.user.update({
+          where: { id: inv.userId },
+          data: {
+            balance: { decrement: wipeAmountBalance },
+            totalEarned: { decrement: maxSupportReturn },
+            operationalCapital: { decrement: inv.activeCapital },
+            isSponsored: false,
+            sponsoredGiftedAmount: 0,
+          }
+        });
+
+        await tx.investment.update({
+          where: { id: inv.id },
+          data: { status: 'completed', activeCapital: 0 }
+        });
+
+        await tx.transaction.create({
+          data: {
+            userId: inv.userId,
+            type: 'system_reset',
+            amount: -wipeAmountBalance,
+            status: 'completed',
+            description: `Support account completed (2X reached). Profits reset.`,
+            reference: inv.id,
+          }
+        });
+
+        console.log(`[ROI] User ${inv.userId} hit 2X support account limit. Reset applied.`);
+      }
+    }
+  });
+
+  const capMsg = hitCap ? ' [200% CAP REACHED]' : '';
+  console.log(
+    `[ROI] Day ${newDaysElapsed}/${maxContractDays} | ` +
+    `$${dailyProfit.toFixed(2)} → user:${inv.userId} | inv:${inv.id}${willComplete ? ' [COMPLETED]' : ''}${capMsg}`
+  );
+
+  return dailyProfit;
+}
+
+
 
 // ─── Main Entry Point (called by cron) ───────────────────────────────────────
 
@@ -343,7 +363,7 @@ export async function deductWithdrawalFromCapital(
   if (remainingAmount > 0) {
     const activeInvestments = await tx.investment.findMany({
       where: { userId, status: 'active', activeCapital: { gt: 0 } },
-      orderBy: { createdAt: 'desc' }, // newest first, or could be any logic
+      orderBy: { createdAt: 'desc' },
     });
 
     for (const inv of activeInvestments) {
@@ -377,6 +397,20 @@ export async function deductWithdrawalFromCapital(
         remainingAmount = 0;
       }
     }
+
+    // ── Assertion: remainingAmount should be 0 after full deduction ────────────
+    // If it's still > 0, the user's withdrawal amount exceeded their total active
+    // capital — capital accounting is now inconsistent. Log for investigation.
+    if (remainingAmount > 0.01) { // 0.01 tolerance for float rounding
+      console.warn(
+        `[deductWithdrawalFromCapital] ⚠️  Under-deduction for user ${userId}: ` +
+        `$${remainingAmount.toFixed(2)} of $${amount.toFixed(2)} could not be deducted ` +
+        `from active investments (may have exceeded total active capital). ` +
+        `operationalCapital may now be out of sync. Investigate.`
+      );
+    }
   }
 }
+
+
 

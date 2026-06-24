@@ -62,8 +62,8 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // Guard: if user already has a pending invoice created in the last 30 minutes, reuse it.
-    // This prevents duplicate invoices from double-clicks or page refreshes.
+    // Fast path: reuse existing same-amount pending invoice from last 30 minutes.
+    // This handles double-clicks and page refreshes gracefully.
     const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
     const existingInvoice = await prisma.plisioInvoice.findFirst({
       where: {
@@ -83,6 +83,19 @@ export async function POST(req: NextRequest) {
         txnId:      existingInvoice.txnId,
         invoiceId:  existingInvoice.id,
       }, { status: 200 });
+    }
+
+    // Cancel ALL other pending invoices for this user before creating a new one.
+    // Prevents invoice spam — only one pending invoice can exist at a time.
+    const cancelledCount = await prisma.plisioInvoice.updateMany({
+      where: {
+        userId: payload.userId,
+        status: 'pending',
+      },
+      data: { status: 'cancelled' },
+    });
+    if (cancelledCount.count > 0) {
+      console.log(`[plisio/create-invoice] Cancelled ${cancelledCount.count} stale pending invoice(s) for user ${payload.userId} before creating new one.`);
     }
 
     // Build Plisio invoice creation request
