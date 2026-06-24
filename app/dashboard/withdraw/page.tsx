@@ -219,6 +219,9 @@ export default function WithdrawPage() {
   const [verificationCode, setVerificationCode] = useState('');
   const [pageError, setPageError] = useState<string | null>(null);
 
+  // Timezone Window State
+  const [isWindowOpen, setIsWindowOpen] = useState(true);
+
   const fetchWithdrawalData = async () => {
     try {
       setPageError(null);
@@ -251,6 +254,18 @@ export default function WithdrawPage() {
 
   useEffect(() => {
     fetchWithdrawalData();
+
+    // Check withdrawal window
+    const checkWindow = () => {
+      const now = new Date();
+      const currentDay = now.getUTCDay();
+      const currentHour = now.getUTCHours();
+      // Friday 10:00 UTC to 18:00 UTC
+      setIsWindowOpen(currentDay === 5 && currentHour >= 10 && currentHour < 18);
+    };
+    checkWindow();
+    const interval = setInterval(checkWindow, 60000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleSimulate = async () => {
@@ -432,6 +447,22 @@ export default function WithdrawPage() {
                 <h2 className="text-base font-bold text-slate-950 dark:text-white">{t('withdrawRequestTitle')}</h2>
               </div>
 
+              {!isWindowOpen && (
+                <div className="mb-6 p-4 rounded-xl border border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs flex flex-col gap-2 shadow-inner">
+                  <div className="flex items-center gap-2 font-bold text-sm">
+                    <AlertCircle className="w-5 h-5" />
+                    Withdrawal Gateway Closed
+                  </div>
+                  <p className="leading-relaxed">
+                    Withdrawals are strictly processed on <strong>Fridays</strong> only.
+                    <br />
+                    Opening: <strong>6:00 PM (Singapore Time, GMT+8)</strong>
+                    <br />
+                    Closing: <strong>2:00 AM Saturday (Singapore Time, GMT+8)</strong>
+                  </p>
+                </div>
+              )}
+
               {/* Fee Structure Banner */}
               <div className="mb-6 p-4 rounded-xl border border-violet-500/20 bg-violet-500/5 text-violet-700 dark:text-violet-300 text-xs flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
@@ -604,7 +635,7 @@ export default function WithdrawPage() {
                     placeholder="0.00"
                     className={inputClass}
                     required
-                    disabled={submitting || userSponsorship?.withdrawalsBlocked || userSponsorship?.fundsFrozen}
+                    disabled={submitting || !isWindowOpen || userSponsorship?.withdrawalsBlocked || userSponsorship?.fundsFrozen}
                   />
                 </div>
 
@@ -617,7 +648,7 @@ export default function WithdrawPage() {
                     placeholder={t('withdrawAddressPlaceholder')}
                     className={inputClass}
                     required
-                    disabled={submitting || userSponsorship?.withdrawalsBlocked || userSponsorship?.fundsFrozen}
+                    disabled={submitting || !isWindowOpen || userSponsorship?.withdrawalsBlocked || userSponsorship?.fundsFrozen}
                   />
                   <span className="block text-xs text-slate-500 dark:text-zinc-400 font-semibold font-mono mt-1.5 leading-relaxed">
                     {t('withdrawWalletHint')}
@@ -689,7 +720,7 @@ export default function WithdrawPage() {
 
               <button
                 type="submit"
-                disabled={submitting || userSponsorship?.withdrawalsBlocked || userSponsorship?.fundsFrozen}
+                disabled={submitting || !isWindowOpen || userSponsorship?.withdrawalsBlocked || userSponsorship?.fundsFrozen}
                 className="w-full py-3 text-xs font-extrabold text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-md shadow-violet-600/15"
               >
                 {submitting ? (

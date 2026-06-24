@@ -58,11 +58,42 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Check timezone window: Friday 10:00 UTC to 18:00 UTC
+    // which equals Friday 6:00 PM to Saturday 2:00 AM (Singapore Time GMT+8)
+    const now = new Date();
+    const currentDay = now.getUTCDay(); // 0 is Sunday, 5 is Friday
+    const currentHour = now.getUTCHours(); // 0-23
+    
+    const isWithdrawalWindow = currentDay === 5 && currentHour >= 10 && currentHour < 18;
+    
+    if (!isWithdrawalWindow && payload.role !== 'admin') {
+      return NextResponse.json(
+        { error: 'Withdrawals are currently closed. The withdrawal gateway is only open on Fridays from 6:00 PM to 2:00 AM Saturday (Singapore Time GMT+8).' },
+        { status: 403 }
+      );
+    }
+
     const userRecord = await prisma.user.findUnique({ where: { id: payload.userId } });
     if (!userRecord) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
     if (userRecord.withdrawalsBlocked) {
       return NextResponse.json({ error: 'Your withdrawals have been blocked by an administrator. Please contact support.' }, { status: 400 });
+    }
+
+    // Prevent multiple withdrawals in the same window (max 1 per Friday)
+    // Check if the user has made a withdrawal in the last 24 hours (covers the entire 8-hour window)
+    const last24Hours = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const recentWithdrawal = await prisma.withdrawal.findFirst({
+      where: {
+        userId: payload.userId,
+        createdAt: { gte: last24Hours }
+      }
+    });
+
+    if (recentWithdrawal && payload.role !== 'admin') {
+      return NextResponse.json({ 
+        error: 'You have already requested a withdrawal this week. Users are limited to one withdrawal per Friday.' 
+      }, { status: 400 });
     }
 
     if (!verificationCode) {
