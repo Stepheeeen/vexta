@@ -251,13 +251,16 @@ async function handleCompletedPayment(
         },
       });
 
+      // Ensure txHash is a string (Plisio sometimes returns an array of URLs)
+      const safeTxHash = Array.isArray(txHash) ? txHash.join(', ') : (txHash ?? null);
+
       // 3. Mark invoice as completed
       await tx.plisioInvoice.update({
         where:  { id: invoice.id },
         data:   {
           status:      'completed',
           activatedAt:  new Date(),
-          plisioTxHash: txHash ?? null,
+          plisioTxHash: safeTxHash,
         },
       });
     }, { timeout: 30000 });
