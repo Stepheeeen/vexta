@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
         where: { id: recipient.id },
         data: { p2pBalance: { increment: amount } },
       });
-    });
+    }, { timeout: 30000 });
 
     return NextResponse.json({
       success: true,

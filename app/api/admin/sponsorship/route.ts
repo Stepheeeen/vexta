@@ -218,7 +218,7 @@ export async function POST(req: NextRequest) {
           roiBlocked: false,
         }
       });
-    });
+    }, { timeout: 30000 });
 
     return NextResponse.json({ success: true, message: 'Sponsored account created successfully' });
   } catch (err) {
@@ -338,7 +338,7 @@ export async function PUT(req: NextRequest) {
             data: { balance: { increment: diff } }
           });
         }
-      });
+      }, { timeout: 30000 });
 
       return NextResponse.json({
         success: true,

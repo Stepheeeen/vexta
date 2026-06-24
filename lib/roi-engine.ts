@@ -265,7 +265,7 @@ async function processSingleInvestmentROI(inv: any, today: Date): Promise<number
         console.log(`[ROI] User ${inv.userId} hit 2X support account limit. Reset applied.`);
       }
     }
-  });
+  }, { timeout: 30000 });
 
   const capMsg = hitCap ? ' [200% CAP REACHED]' : '';
   console.log(

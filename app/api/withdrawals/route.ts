@@ -281,7 +281,7 @@ export async function POST(req: NextRequest) {
       });
 
       return withdrawal;
-    });
+    }, { timeout: 30000 });
 
     // Clear verification code after successful transaction
     await prisma.user.update({

@@ -260,9 +260,10 @@ async function handleCompletedPayment(
           plisioTxHash: txHash ?? null,
         },
       });
-    });
+    }, { timeout: 30000 });
 
     console.log(`[plisio/webhook] ✅ Activated $${amount.toFixed(2)} deposit for user ${userId} (txn: ${invoice.txnId})`);
+
   } catch (err) {
     console.error(`[plisio/webhook] Failed to activate invoice ${invoice.txnId}:`, err);
     throw err;

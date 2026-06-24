@@ -157,7 +157,7 @@ export async function POST(req: NextRequest) {
       } else {
         throw new Error('INVALID_ACTION');
       }
-    });
+    }, { timeout: 30000 });
 
     return NextResponse.json(result);
   } catch (err: any) {

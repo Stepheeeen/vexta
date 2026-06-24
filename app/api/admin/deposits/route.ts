@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
             activeDeposit: { increment: currentTxn.amount },
           }
         });
-      });
+      }, { timeout: 30000 });
 
       return NextResponse.json({ message: 'Deposit approved successfully' });
     }
@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
             description: currentTxn.description ? currentTxn.description.replace('Pending', 'Rejected') : 'Rejected Deposit'
           }
         });
-      });
+      }, { timeout: 30000 });
 
       return NextResponse.json({ message: 'Deposit rejected successfully' });
     }
