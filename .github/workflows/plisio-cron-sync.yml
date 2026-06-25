@@ -1,0 +1,16 @@
+name: Plisio Invoice Cron Sync
+
+on:
+  schedule:
+    # Run every 5 minutes
+    - cron: '*/5 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Plisio safety-net cron sync
+        run: |
+          curl -i -X GET \
+            "https://vexta.network/api/plisio/cron-sync?secret=2aff189883b3030652b25504e554b97f5dbf92d0e20b653354f12f107bb6fbb0&source=github_action&t=$(date +%s)"
