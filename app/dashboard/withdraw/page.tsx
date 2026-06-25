@@ -298,7 +298,7 @@ export default function WithdrawPage() {
     if (numericAmount > limit) {
       let typeLabel = t('withdrawPassive');
       if (withdrawType === 'network') typeLabel = t('withdrawNetwork');
-      if (withdrawType === 'all') typeLabel = t('withdrawAll') || 'Combined Balance';
+      else if (withdrawType === 'all') typeLabel = 'All Earnings';
       
       setError(`Insufficient ${typeLabel} balance. Maximum available: $${limit.toLocaleString()}`);
       toast({
@@ -362,6 +362,51 @@ export default function WithdrawPage() {
       toast({
         title: 'Withdrawal Failed',
         description: err.message || 'Failed to process withdrawal request',
+        variant: 'destructive',
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    setSubmitting(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      const payload: any = {
+        amount: parseFloat(amount),
+        walletAddress,
+        network,
+        type: withdrawType,
+      };
+      
+      const res = await fetch('/api/withdrawals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      
+      if (res.status === 401) {
+        window.location.href = '/login';
+        return;
+      }
+
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Failed to resend code');
+      
+      setSuccess('A new verification code has been sent to your email.');
+      toast({
+        title: 'Code Resent',
+        description: 'A new verification code has been sent to your email.',
+      });
+      setVerificationCode('');
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Failed to resend code');
+      toast({
+        title: 'Failed to resend',
+        description: err.message || 'Failed to resend code',
         variant: 'destructive',
       });
     } finally {
@@ -539,13 +584,13 @@ export default function WithdrawPage() {
                   }`}
                 >
                   <div className="flex justify-between items-start mb-2">
-                    <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 font-mono uppercase tracking-wider">{t("withdrawAll") || 'Withdraw All'}</span>
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-zinc-400 font-mono uppercase tracking-wider">ALL EARNINGS</span>
                     {withdrawType === 'all' && <CheckCircle2 className="w-4 h-4 text-violet-500" />}
                   </div>
                   <p className="text-lg font-black text-violet-600 dark:text-violet-400 font-mono">
                     ${pools ? ((pools.availablePassive ?? 0) + (pools.availableNetwork ?? 0)).toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}
                   </p>
-                  <p className="text-[9px] font-mono text-slate-400 dark:text-zinc-500 mt-1">{t('withdrawConsolidatedSub') || 'Consolidate to save fees'}</p>
+                  <p className="text-[9px] font-mono text-slate-400 dark:text-zinc-500 mt-1">Consolidate to save fees</p>
                 </button>
               </div>
 
@@ -635,7 +680,7 @@ export default function WithdrawPage() {
                     placeholder="0.00"
                     className={inputClass}
                     required
-                    disabled={submitting || !isWindowOpen || userSponsorship?.withdrawalsBlocked || userSponsorship?.fundsFrozen}
+                    disabled={submitting || userSponsorship?.withdrawalsBlocked || userSponsorship?.fundsFrozen}
                   />
                 </div>
 
@@ -648,7 +693,7 @@ export default function WithdrawPage() {
                     placeholder={t('withdrawAddressPlaceholder')}
                     className={inputClass}
                     required
-                    disabled={submitting || !isWindowOpen || userSponsorship?.withdrawalsBlocked || userSponsorship?.fundsFrozen}
+                    disabled={submitting || userSponsorship?.withdrawalsBlocked || userSponsorship?.fundsFrozen}
                   />
                   <span className="block text-xs text-slate-500 dark:text-zinc-400 font-semibold font-mono mt-1.5 leading-relaxed">
                     {t('withdrawWalletHint')}
@@ -660,12 +705,12 @@ export default function WithdrawPage() {
               {amount && parseFloat(amount) >= 10 && (
                 <div className="rounded-2xl border border-violet-500/20 bg-violet-500/5 dark:bg-violet-600/5 p-4 mb-2">
                   <p className="text-[10px] font-extrabold uppercase tracking-widest text-violet-600 dark:text-violet-400 mb-3">
-                    {t('withdrawPayoutSummaryTitle') || 'Payout Summary'}
+                    Payout Summary
                   </p>
                   <div className="space-y-2 text-xs font-mono">
                     {/* Requested Amount */}
                     <div className="flex justify-between items-center text-slate-700 dark:text-zinc-300">
-                      <span className="font-semibold">{t('withdrawReqAmountLabel') || 'Requested Amount'}</span>
+                      <span className="font-semibold">Requested Amount</span>
                       <span className="font-bold">
                         ${parseFloat(amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
@@ -686,7 +731,7 @@ export default function WithdrawPage() {
                     <div className="border-t border-violet-500/15 pt-2 mt-1">
                       <div className="flex justify-between items-center">
                         <span className="font-extrabold text-slate-900 dark:text-white uppercase tracking-wide text-[10px]">
-                          {t('withdrawNetPayoutLabel') || 'You Receive'}
+                          You Receive
                         </span>
                         <span className="font-extrabold text-emerald-600 dark:text-emerald-400 text-sm">
                           ${Math.max(0, parseFloat(amount) - ((parseFloat(amount) >= 600 ? parseFloat(amount) * 0.02 : parseFloat(amount) * 0.06) + 0.01)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -715,12 +760,25 @@ export default function WithdrawPage() {
                     disabled={submitting}
                     maxLength={6}
                   />
+                  <div className="mt-3 flex justify-between items-center">
+                    <span className="text-[10px] text-slate-500 dark:text-zinc-500 uppercase tracking-wider">
+                      Code expired?
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleResendCode}
+                      disabled={submitting}
+                      className="text-[10px] font-bold text-violet-600 dark:text-violet-400 hover:text-violet-500 transition-colors uppercase tracking-wider disabled:opacity-50"
+                    >
+                      Resend Code
+                    </button>
+                  </div>
                 </div>
               )}
 
               <button
                 type="submit"
-                disabled={submitting || !isWindowOpen || userSponsorship?.withdrawalsBlocked || userSponsorship?.fundsFrozen}
+                disabled={submitting || userSponsorship?.withdrawalsBlocked || userSponsorship?.fundsFrozen}
                 className="w-full py-3 text-xs font-extrabold text-white bg-violet-600 hover:bg-violet-700 rounded-xl transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-md shadow-violet-600/15"
               >
                 {submitting ? (

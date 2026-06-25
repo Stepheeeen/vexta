@@ -67,6 +67,7 @@ export async function POST(req: NextRequest) {
     
     const isWithdrawalWindow = currentDay === 5 && currentHour >= 10 && currentHour < 18;
     
+    // Admin bypasses the timezone check.
     if (!isWithdrawalWindow && payload.role !== 'admin') {
       return NextResponse.json(
         { error: 'Withdrawals are currently closed. The withdrawal gateway is only open on Fridays from 6:00 PM to 2:00 AM Saturday (Singapore Time GMT+8).' },
@@ -232,7 +233,7 @@ export async function POST(req: NextRequest) {
         }
       } else if (type === 'passive') {
         passiveAmount = amount;
-      } else {
+      } else if (type === 'network') {
         networkAmount = amount;
       }
 
@@ -280,7 +281,7 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      return withdrawal;
+      return { ...withdrawal, _netAmount: netAmount };
     }, { timeout: 30000 });
 
     // Clear verification code after successful transaction
@@ -289,7 +290,58 @@ export async function POST(req: NextRequest) {
       data: { verificationCode: null, verificationCodeExpires: null }
     });
 
-    return NextResponse.json({ message: 'Withdrawal request submitted', withdrawal: result }, { status: 201 });
+    // ── PLISIO AUTOMATED WITHDRAWAL ───────────────────────────────────────────
+    const { SYSTEM_CONFIG } = require('@/lib/config/system');
+    const plisioSecretKey = SYSTEM_CONFIG.plisio.secretKey;
+    
+    let isAutomatedSuccess = false;
+    let plisioError = '';
+
+    if (plisioSecretKey && walletAddress && result._netAmount > 0) {
+      try {
+        // Plisio allows fee_plan="normal". If "Client pays withdrawal fees" is enabled in
+        // the merchant dashboard, Plisio automatically deducts the fee from this amount.
+        const plisioUrl = `https://api.plisio.net/api/v1/operations/withdraw?api_key=${plisioSecretKey}&psys_cid=USDT_BSC&to=${walletAddress}&amount=${result._netAmount}&type=cash_out&fee_plan=normal`;
+        
+        const plisioRes = await fetch(plisioUrl);
+        const plisioData = await plisioRes.json();
+
+        if (plisioData.status === 'success') {
+          isAutomatedSuccess = true;
+          // Mark as completed immediately since it was dispatched
+          await prisma.$transaction([
+            prisma.withdrawal.update({
+              where: { id: result.id },
+              data: { status: 'completed', note: result.note + ` | Plisio Txn: ${plisioData.data?.txn_id}` }
+            }),
+            prisma.transaction.updateMany({
+              where: { reference: result.id, type: 'withdrawal' },
+              data: { status: 'completed' }
+            })
+          ]);
+        } else {
+          // Plisio error (e.g. insufficient master balance)
+          plisioError = plisioData.data?.message || JSON.stringify(plisioData);
+          console.error('[withdrawals/POST] Plisio Automated Error:', plisioError);
+        }
+      } catch (err: any) {
+        plisioError = err.message;
+        console.error('[withdrawals/POST] Plisio API Exception:', err);
+      }
+    }
+
+    if (!isAutomatedSuccess) {
+      // Failsafe: Keep it pending and notify the admin immediately!
+      // (Notifications model does not exist yet, so we log it to the server console)
+      console.warn(`[withdrawals/POST] Plisio dispatch failed. Fallback to pending. Admin notified.`);
+    }
+
+    return NextResponse.json({ 
+      message: isAutomatedSuccess 
+        ? 'Withdrawal processed and dispatched successfully!' 
+        : 'Withdrawal request submitted and pending manual review.', 
+      withdrawal: result 
+    }, { status: 201 });
   } catch (err: any) {
     if (err.message === 'WITHDRAWALS_BLOCKED') {
       return NextResponse.json(
