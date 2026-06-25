@@ -27,14 +27,18 @@ import { SYSTEM_CONFIG } from '@/lib/config/system';
  *   We validate this before doing any work.
  */
 export async function GET(req: NextRequest) {
-  // ── Security: validate Vercel Cron secret ─────────────────────────────────
+  // ── Security: validate secret via Header or Query Parameter ───────────────
   const authHeader = req.headers.get('authorization');
+  const querySecret = req.nextUrl.searchParams.get('secret');
+  
   const cronSecret = process.env.CRON_SECRET;
   const staticSecret = "2aff189883b3030652b25504e554b97f5dbf92d0e20b653354f12f107bb6fbb0";
 
   const isAuthorized = 
     (cronSecret && authHeader === `Bearer ${cronSecret}`) ||
-    (authHeader === `Bearer ${staticSecret}`);
+    (authHeader === `Bearer ${staticSecret}`) ||
+    (querySecret === staticSecret) ||
+    (cronSecret && querySecret === cronSecret);
 
   if (!isAuthorized) {
     console.warn('[plisio/cron-sync] Unauthorized request');
