@@ -61,7 +61,6 @@ export async function GET(req: NextRequest) {
     where: {
       status:    'pending',
       createdAt: { lte: cutoff },
-      activatedAt: null, // Not yet credited
     },
     orderBy: { createdAt: 'asc' },
   });
