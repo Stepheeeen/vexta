@@ -170,7 +170,8 @@ export async function POST(req: NextRequest) {
       });
 
       // 2. Create the virtual investment
-      const tierBonus = plan.bonus ? +(sponsoredGiftedAmount * plan.bonus).toFixed(2) : 0;
+      // Complimentary (gifted) accounts do NOT receive the tier bonus (10% or 20%), only paid accounts do!
+      const tierBonus = 0;
       const activeCapital = +(sponsoredGiftedAmount + tierBonus).toFixed(2);
       const maxPayout = +(sponsoredGiftedAmount * 2).toFixed(2);
 
