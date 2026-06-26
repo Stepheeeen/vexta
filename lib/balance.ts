@@ -130,6 +130,8 @@ export async function getWithdrawableBalances(
       sponsoredWithdrawalPercentage: true,
       roiBlocked: true,
       fundsFrozen: true,
+      withdrawalUnlockType: true,
+      withdrawalUnlockAmount: true,
     }
   });
   
@@ -142,7 +144,17 @@ export async function getWithdrawableBalances(
   if (!user) return { totalBalance, availablePassive: 0, availableNetwork: 0, blockedPassive: 0, p2pBalance: 0, fundsFrozen: false };
   
   if (user.fundsFrozen) {
-    return { totalBalance, availablePassive: 0, availableNetwork: 0, blockedPassive: 0, p2pBalance, fundsFrozen: true };
+    return {
+      totalBalance,
+      availablePassive: 0,
+      availableNetwork: 0,
+      blockedPassive: 0,
+      p2pBalance,
+      fundsFrozen: true,
+      availableRoi: 0,
+      availableCommission: 0,
+      blockedRoi: 0,
+    };
   }
 
   // Dynamically calculate and sync direct sales for sponsored accounts
@@ -230,21 +242,45 @@ export async function getWithdrawableBalances(
   // Simplified: if roiBlocked → block ALL passive earnings
   // Network earnings are ALWAYS available (earned through own work)
   let blockedPassive = 0;
+  let standardBlockedPassive = 0;
   if (user.isSponsored) {
     let isFullyBlocked = user.roiBlocked;
+    let goalMet = false;
+
     if (user.sponsoredType === 'goal_locked') {
-      const goalMet = sponsoredDirectSales >= user.sponsoredGoalAmount;
+      goalMet = sponsoredDirectSales >= user.sponsoredGoalAmount;
       if (!goalMet) isFullyBlocked = true;
+    } else if (user.sponsoredType === 'free') {
+      const hasWithdrawnThreshold = totalRoiWithdrawn >= 12;
+      const hasReferredThreshold = sponsoredDirectSales >= 10;
+      if (hasWithdrawnThreshold && !hasReferredThreshold) {
+        isFullyBlocked = true;
+      }
     }
     
     if (isFullyBlocked) {
-      blockedPassive = rawAvailablePassive;
+      standardBlockedPassive = rawAvailablePassive;
+    } else if (user.sponsoredType === 'goal_locked' && goalMet) {
+      // If goal met, do not apply any withdrawal percentage limits
+      standardBlockedPassive = 0;
     } else {
       // Goal met or not fully blocked. Apply percentage restriction.
       const allowedPercentage = user.sponsoredWithdrawalPercentage ?? 100;
       const blockedPercentage = Math.max(0, 100 - allowedPercentage);
-      blockedPassive = rawAvailablePassive * (blockedPercentage / 100);
+      standardBlockedPassive = rawAvailablePassive * (blockedPercentage / 100);
     }
+  }
+
+  // Apply custom withdrawal overrides
+  const unlockType = (user as any).withdrawalUnlockType ?? 'none';
+  const unlockAmount = (user as any).withdrawalUnlockAmount ?? 0;
+
+  if (unlockType === 'permanent' || unlockType === 'full') {
+    blockedPassive = 0;
+  } else if (unlockType === 'amount') {
+    blockedPassive = Math.max(0, standardBlockedPassive - unlockAmount);
+  } else {
+    blockedPassive = standardBlockedPassive;
   }
 
   const availablePassive = Math.max(0, Math.min(totalBalance - blockedPassive, rawAvailablePassive - blockedPassive));

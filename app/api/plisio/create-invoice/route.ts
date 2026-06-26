@@ -61,6 +61,14 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // Check deposit gateway status
+  if (settings && !settings.depositGatewayOpen && payload.role !== 'admin') {
+    return NextResponse.json(
+      { error: 'The deposit gateway is temporarily closed. Please try again later.' },
+      { status: 503 }
+    );
+  }
+
   try {
     // Fast path: reuse existing same-amount pending invoice from last 30 minutes.
     // This handles double-clicks and page refreshes gracefully.

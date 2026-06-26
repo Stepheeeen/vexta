@@ -196,7 +196,7 @@ async function processSingleInvestmentROI(inv: any, today: Date): Promise<number
   const newTotalEarned = +(inv.totalEarned + dailyProfit).toFixed(2);
 
   const hitCap = newTotalEarned >= maxPayout - 0.001;
-  const willComplete = hitCap || newDaysElapsed >= maxContractDays;
+  const willComplete = hitCap || newDaysElapsed >= (inv.duration || maxContractDays);
 
   await prisma.$transaction(async (tx) => {
     // 1. Credit user balance immediately
@@ -292,7 +292,7 @@ async function processSingleInvestmentROI(inv: any, today: Date): Promise<number
 
   const capMsg = hitCap ? ' [200% CAP REACHED]' : '';
   console.log(
-    `[ROI] Day ${newDaysElapsed}/${maxContractDays} | ` +
+    `[ROI] Day ${newDaysElapsed}/${inv.duration || maxContractDays} | ` +
     `$${dailyProfit.toFixed(2)} → user:${inv.userId} | inv:${inv.id}${willComplete ? ' [COMPLETED]' : ''}${capMsg}`
   );
 

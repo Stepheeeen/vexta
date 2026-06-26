@@ -15,6 +15,13 @@ async function getOrCreateSettings() {
         tradingFee: 2.0,
         withdrawalFee: 6.0,
         liquidityBonus: 0,
+        depositGatewayOpen: true,
+        depositPromosActive: true,
+        withdrawalGatewayState: 'auto',
+        promoCampaignActive: true,
+        promoDuration: 40,
+        promoDailyROI: 1.0,
+        promoNoBonus: true,
       },
     });
   }
@@ -58,6 +65,15 @@ export async function POST(req: NextRequest) {
 
     // Liquidity volume bonus
     if (body.liquidityBonus !== undefined) dataToUpdate.liquidityBonus = Number(body.liquidityBonus);
+
+    // Deposit gateway & Promotional campaign settings
+    if (typeof body.depositGatewayOpen === 'boolean') dataToUpdate.depositGatewayOpen = body.depositGatewayOpen;
+    if (typeof body.depositPromosActive === 'boolean') dataToUpdate.depositPromosActive = body.depositPromosActive;
+    if (body.withdrawalGatewayState !== undefined) dataToUpdate.withdrawalGatewayState = String(body.withdrawalGatewayState);
+    if (typeof body.promoCampaignActive === 'boolean') dataToUpdate.promoCampaignActive = body.promoCampaignActive;
+    if (body.promoDuration !== undefined) dataToUpdate.promoDuration = Number(body.promoDuration);
+    if (body.promoDailyROI !== undefined) dataToUpdate.promoDailyROI = Number(body.promoDailyROI);
+    if (typeof body.promoNoBonus === 'boolean') dataToUpdate.promoNoBonus = body.promoNoBonus;
 
     const updated = await prisma.settings.update({
       where: { id: settings.id },

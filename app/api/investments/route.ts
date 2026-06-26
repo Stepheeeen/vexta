@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
 
     const result = await prisma.$transaction(async (tx) => {
       // 1. Lock user document (optimistic concurrency on MongoDB)
-      await tx.user.update({
+      const user = await tx.user.update({
         where: { id: payload.userId },
         data:  { updatedAt: new Date() },
       });
@@ -96,7 +96,10 @@ export async function POST(req: NextRequest) {
       }
 
       // 4. Calculate tier bonus
-      const tierBonus = (plan as any).bonus ? +(amount * (plan as any).bonus).toFixed(2) : 0;
+      const settings = await tx.settings.findFirst();
+      const depositPromosActive = settings?.depositPromosActive ?? true;
+      const isUserSponsored = user.isSponsored;
+      const tierBonus = (!isUserSponsored && depositPromosActive && (plan as any).bonus) ? +(amount * (plan as any).bonus).toFixed(2) : 0;
       const activeCapital = +(amount + tierBonus).toFixed(2);
       const maxPayout = +(amount * 2).toFixed(2);
       const startDate = new Date();

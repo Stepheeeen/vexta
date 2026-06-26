@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getUserFromRequest } from '@/lib/auth';
+import { addBusinessDays } from '@/lib/roi-engine';
 
 // GET /api/admin/sponsorship
 export async function GET(req: NextRequest) {
@@ -158,9 +159,16 @@ export async function POST(req: NextRequest) {
       ? eligiblePlans.reduce((prev, curr) => (curr.minDeposit > prev.minDeposit ? curr : prev))
       : plans[0]; // fallback to first plan
 
+    const settings = await prisma.settings.findFirst();
+    const promoCampaignActive = settings?.promoCampaignActive ?? true;
+    const promoDuration = settings?.promoDuration ?? 40;
+    const promoNoBonus = settings?.promoNoBonus ?? true;
+
+    const duration = promoCampaignActive ? promoDuration : plan.duration;
+    const noBonus = promoCampaignActive ? promoNoBonus : false;
+
     const startDate = new Date();
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + plan.duration);
+    const endDate = addBusinessDays(startDate, duration);
 
     await prisma.$transaction(async (tx) => {
       // 1. Lock user document
@@ -169,8 +177,7 @@ export async function POST(req: NextRequest) {
         data: { updatedAt: new Date() }
       });
 
-      // 2. Create the virtual investment
-      // Complimentary (gifted) accounts do NOT receive the tier bonus (10% or 20%), only paid accounts do!
+      // 2. Create the virtual investment (Corporate promotional accounts always have 0 tier bonus)
       const tierBonus = 0;
       const activeCapital = +(sponsoredGiftedAmount + tierBonus).toFixed(2);
       const maxPayout = +(sponsoredGiftedAmount * 2).toFixed(2);
@@ -187,7 +194,8 @@ export async function POST(req: NextRequest) {
           startDate,
           endDate,
           status: 'active',
-          isVirtual: true // Mark as virtual
+          isVirtual: true, // Mark as virtual
+          duration,
         } as any
       });
 

@@ -44,6 +44,7 @@ export default function AdminSponsorship() {
   const { toast } = useToast();
   
   const [leaders, setLeaders] = useState<Leader[]>([]);
+  const [leaderSearch, setLeaderSearch] = useState('');
   const [pendingWithdrawals, setPendingWithdrawals] = useState<PendingWithdrawal[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -264,6 +265,11 @@ export default function AdminSponsorship() {
   const totalNetworkVolume = leaders.reduce((sum, l) => sum + l.networkSales, 0);
   const totalWithdrawn = leaders.reduce((sum, l) => sum + l.totalRoiWithdrawn + l.totalCommissionWithdrawn, 0);
 
+  const filteredLeaders = leaders.filter(l => 
+    l.name.toLowerCase().includes(leaderSearch.toLowerCase()) || 
+    l.email.toLowerCase().includes(leaderSearch.toLowerCase())
+  );
+
   return (
     <AdminLayout>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
@@ -374,15 +380,28 @@ export default function AdminSponsorship() {
 
       {/* Leaders Table */}
       <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 shadow-sm">
-        <h2 className="text-base font-bold text-slate-900 dark:text-white mb-6">{t("adminActiveSponsoredLeaders") || "Active Sponsored Leaders"}</h2>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">{t("adminActiveSponsoredLeaders") || "Active Sponsored Leaders"}</h2>
+          
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search leaders by name/email..."
+              value={leaderSearch}
+              onChange={(e) => setLeaderSearch(e.target.value)}
+              className="w-full pl-9 bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-violet-500/50"
+            />
+          </div>
+        </div>
         
         {loading ? (
           <div className="py-12 flex items-center justify-center">
             <Loader2 className="w-8 h-8 animate-spin text-violet-600 dark:text-violet-400" />
           </div>
-        ) : leaders.length === 0 ? (
+        ) : filteredLeaders.length === 0 ? (
           <div className="py-12 text-center text-slate-500 dark:text-zinc-400 font-mono text-xs font-bold">
-            {t("adminNoSponsoredAccounts") || "No sponsored accounts found."}
+            {leaderSearch ? "No sponsored accounts match your search." : (t("adminNoSponsoredAccounts") || "No sponsored accounts found.")}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -399,7 +418,7 @@ export default function AdminSponsorship() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                {leaders.map((l) => {
+                {filteredLeaders.map((l) => {
                   const hasGoal = l.type === 'goal_locked';
                   const goalMet = l.directSales >= l.goalAmount;
                   const progressPct = hasGoal 

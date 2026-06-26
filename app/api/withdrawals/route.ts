@@ -65,12 +65,26 @@ export async function POST(req: NextRequest) {
     const currentDay = now.getUTCDay(); // 0 is Sunday, 5 is Friday
     const currentHour = now.getUTCHours(); // 0-23
     
-    const isWithdrawalWindow = currentDay === 5 && currentHour >= 10 && currentHour < 18;
+    const standardWindow = currentDay === 5 && currentHour >= 10 && currentHour < 18;
+
+    // Check manual override setting
+    let isWithdrawalWindow = false;
+    const withdrawalState = settings?.withdrawalGatewayState ?? 'auto';
+    if (withdrawalState === 'open') {
+      isWithdrawalWindow = true;
+    } else if (withdrawalState === 'closed') {
+      isWithdrawalWindow = false;
+    } else {
+      isWithdrawalWindow = standardWindow;
+    }
     
     // Admin bypasses the timezone check.
     if (!isWithdrawalWindow && payload.role !== 'admin') {
+      const closeMsg = withdrawalState === 'closed'
+        ? 'Withdrawals have been manually closed by management.'
+        : 'Withdrawals are currently closed. The withdrawal gateway is only open on Fridays from 6:00 PM to 2:00 AM Saturday (Singapore Time GMT+8).';
       return NextResponse.json(
-        { error: 'Withdrawals are currently closed. The withdrawal gateway is only open on Fridays from 6:00 PM to 2:00 AM Saturday (Singapore Time GMT+8).' },
+        { error: closeMsg },
         { status: 403 }
       );
     }
@@ -237,8 +251,7 @@ export async function POST(req: NextRequest) {
         networkAmount = amount;
       }
 
-      // 3. Decrement user's persisted balance — uses safe floor-clamped helper
-      //    to prevent balance from going negative due to race conditions
+      // 3. Persist the balance deduction
       await safeDecrementBalance(payload.userId, amount, tx);
 
       // 3.5. Deduct from operational capital if it involves passive earnings
@@ -246,6 +259,23 @@ export async function POST(req: NextRequest) {
         await deductWithdrawalFromCapital(payload.userId, passiveAmount, tx);
       }
 
+      // 3.6. Reset/consume temporary withdrawal unlock if any
+      const unlockType = (user as any).withdrawalUnlockType ?? 'none';
+      if (unlockType === 'full') {
+        await tx.user.update({
+          where: { id: payload.userId },
+          data: { withdrawalUnlockType: 'none', withdrawalUnlockAmount: 0 }
+        });
+      } else if (unlockType === 'amount' && passiveAmount > 0) {
+        const newUnlockedAmount = Math.max(0, ((user as any).withdrawalUnlockAmount ?? 0) - passiveAmount);
+        await tx.user.update({
+          where: { id: payload.userId },
+          data: {
+            withdrawalUnlockAmount: newUnlockedAmount,
+            withdrawalUnlockType: newUnlockedAmount <= 0.01 ? 'none' : 'amount'
+          }
+        });
+      }
 
       // Generate the note for the withdrawal record
       let noteStr = `Fee: $${totalFee.toFixed(2)} | Net payout: $${netAmount.toFixed(2)}`;

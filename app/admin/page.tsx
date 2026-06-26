@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { AdminLayout } from '@/components/admin-layout';
-import { Users, DollarSign, AlertTriangle, TrendingUp, Loader2, Wallet } from 'lucide-react';
+import { Users, DollarSign, AlertTriangle, TrendingUp, Loader2, Wallet, Search, Play, RefreshCw } from 'lucide-react';
 import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
 
@@ -45,6 +46,7 @@ interface Deposit {
 export default function AdminDashboard() {
   const { t } = useTranslation();
   const { toast } = useToast();
+  const router = useRouter();
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentUsers, setRecentUsers] = useState<User[]>([]);
   const [pendingWithdrawals, setPendingWithdrawals] = useState<Withdrawal[]>([]);
@@ -54,6 +56,70 @@ export default function AdminDashboard() {
   const [userSegments, setUserSegments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [searchEmail, setSearchEmail] = useState('');
+  const [executingRoi, setExecutingRoi] = useState(false);
+  const [resettingLock, setResettingLock] = useState(false);
+  const [bypassWeekend, setBypassWeekend] = useState(false);
+
+  const handleQuickSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchEmail.trim()) {
+      router.push(`/admin/users?search=${encodeURIComponent(searchEmail.trim())}`);
+    }
+  };
+
+  const handleRunDailyRoi = async () => {
+    if (!confirm("Are you sure you want to trigger the daily profit distribution manually for all users?")) return;
+    setExecutingRoi(true);
+    try {
+      const res = await fetch('/api/admin/run-daily-roi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bypassWeekendCheck: bypassWeekend })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Payout execution failed');
+      toast({
+        title: "Success",
+        description: `Manual ROI payout executed successfully! Paid ${data.usersPaid} investments, total distributed: $${data.totalDistributed.toFixed(2)} USDT.`
+      });
+      fetchDashboardData();
+    } catch (err: any) {
+      toast({
+        title: "Payout Error",
+        description: err.message || "Failed to execute profit distribution",
+        variant: 'destructive'
+      });
+    } finally {
+      setExecutingRoi(false);
+    }
+  };
+
+  const handleResetRoiLock = async () => {
+    if (!confirm("Are you sure you want to reset the daily profit distribution running lock? Only use this if a previous run crashed and is stuck.")) return;
+    setResettingLock(true);
+    try {
+      const res = await fetch('/api/admin/reset-roi-lock', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Reset failed');
+      toast({
+        title: "Lock Reset",
+        description: data.message || "ROI running lock has been reset successfully."
+      });
+    } catch (err: any) {
+      toast({
+        title: "Reset Error",
+        description: err.message || "Failed to reset lock",
+        variant: 'destructive'
+      });
+    } finally {
+      setResettingLock(false);
+    }
+  };
 
   const getStatusLabel = (status: string) => {
     const s = status.toLowerCase();
@@ -143,9 +209,29 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{t('adminDashboardTitle')}</h1>
-        <p className="text-slate-500 dark:text-gray-400">{t('adminDashboardSub')}</p>
+      <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{t('adminDashboardTitle')}</h1>
+          <p className="text-slate-500 dark:text-gray-400">{t('adminDashboardSub')}</p>
+        </div>
+        <form onSubmit={handleQuickSearch} className="flex gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Quick find user by email..."
+              value={searchEmail}
+              onChange={(e) => setSearchEmail(e.target.value)}
+              className="w-full pl-9 bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-violet-500/50"
+            />
+          </div>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-violet-600 hover:bg-violet-750 text-white text-xs font-bold rounded-xl shadow-md transition cursor-pointer"
+          >
+            Find User
+          </button>
+        </form>
       </div>
 
       {/* System Metrics */}
@@ -169,6 +255,47 @@ export default function AdminDashboard() {
             </div>
           );
         })}
+      </div>
+
+      {/* System Operations Controls */}
+      <div className="bg-white dark:bg-[#0A0F14]/60 border border-slate-200 dark:border-white/5 rounded-2xl p-6 mb-8 shadow-sm">
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+          Arbitrage & ROI Distribution Operations
+        </h3>
+        <p className="text-xs text-slate-500 dark:text-gray-400 mb-6">
+          Manually execute the daily 1% ROI distribution to all active investments, or reset the running lock if the cron is stuck.
+        </p>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+          <button
+            onClick={handleRunDailyRoi}
+            disabled={executingRoi}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white font-bold rounded-xl transition cursor-pointer text-sm"
+          >
+            {executingRoi ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+            Execute Daily Payout
+          </button>
+          <button
+            onClick={handleResetRoiLock}
+            disabled={resettingLock}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-slate-200 dark:border-white/10 bg-slate-55 dark:bg-white/2 hover:bg-slate-100 dark:hover:bg-white/5 disabled:opacity-50 text-slate-800 dark:text-zinc-200 font-bold rounded-xl transition cursor-pointer text-sm"
+          >
+            {resettingLock ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+            Reset ROI Lock
+          </button>
+        </div>
+        <div className="mt-4 flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="bypass-weekend"
+            checked={bypassWeekend}
+            onChange={(e) => setBypassWeekend(e.target.checked)}
+            className="rounded border-slate-350 dark:border-white/10 text-violet-600 focus:ring-violet-500"
+          />
+          <label htmlFor="bypass-weekend" className="text-xs text-slate-500 dark:text-gray-400 cursor-pointer select-none">
+            Bypass Weekend Check (Allow Saturday/Sunday payout)
+          </label>
+        </div>
       </div>
 
       {/* Recent Users & System Health */}

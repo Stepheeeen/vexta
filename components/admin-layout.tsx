@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutGrid, Users, CreditCard, BarChart3, Settings, LogOut, Bell, X, Check, ArrowDownRight, AlertTriangle, FileText, Sun, Moon, Zap } from 'lucide-react';
+import { LayoutGrid, Users, CreditCard, BarChart3, Settings, LogOut, Bell, X, Check, ArrowDownRight, ArrowUpRight, AlertTriangle, FileText, Sun, Moon, Zap } from 'lucide-react';
 import { BackgroundPattern } from '@/components/background-pattern';
 import { VextaLogo } from '@/components/vexta-logo';
 import { SYSTEM_CONFIG } from '@/lib/config/system';
@@ -117,6 +117,61 @@ const adminTranslations = {
     settings: 'Paramètres',
     resources: 'Ressources',
     sponsorship: 'Parrainage',
+  },
+  zh: {
+    dashboard: '仪表板',
+    users: '用户管理',
+    deposits: '存款管理',
+    transactions: '交易管理',
+    withdrawals: '提款管理',
+    analytics: '平台分析',
+    settings: '平台设置',
+    resources: '资源管理',
+    sponsorship: '赞助管理',
+  },
+  ar: {
+    dashboard: 'لوحة التحكم',
+    users: 'إدارة المستخدم',
+    deposits: 'إدارة الودائع',
+    transactions: 'إدارة المعاملات',
+    withdrawals: 'إدارة السحب',
+    analytics: 'تحليلات المنصة',
+    settings: 'إعدادات المنصة',
+    resources: 'إدارة الموارد',
+    sponsorship: 'إدارة الرعاية',
+  },
+  ru: {
+    dashboard: 'Панель',
+    users: 'Пользователи',
+    deposits: 'Депозиты',
+    transactions: 'Транзакции',
+    withdrawals: 'Выводы',
+    analytics: 'Аналитика',
+    settings: 'Настройки',
+    resources: 'Ресурсы',
+    sponsorship: 'Спонсорство',
+  },
+  hi: {
+    dashboard: 'डैशबोर्ड',
+    users: 'उपयोगकर्ता',
+    deposits: 'जма राशि',
+    transactions: 'लेन-देन',
+    withdrawals: 'निकासी',
+    analytics: 'विश्लेषिकी',
+    settings: 'सेटिंग्स',
+    resources: 'संसाधन',
+    sponsorship: 'प्रायोजन',
+  },
+  de: {
+    dashboard: 'Dashboard',
+    users: 'Benutzer',
+    deposits: 'Einzahlungen',
+    transactions: 'Transaktionen',
+    withdrawals: 'Auszahlungen',
+    analytics: 'Analysen',
+    settings: 'Einstellungen',
+    resources: 'Ressourcen',
+    sponsorship: 'Sponsoring',
   }
 };
 
@@ -162,7 +217,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { href: '/admin',             icon: LayoutGrid,     labelKey: 'dashboard',   exact: true },
     { href: '/admin/users',        icon: Users,          labelKey: 'users' },
     { href: '/admin/deposits',     icon: ArrowDownRight, labelKey: 'deposits' },
-    { href: '/admin/withdrawals',  icon: BarChart3,      labelKey: 'withdrawals' },
+    { href: '/admin/withdrawals',  icon: ArrowUpRight,   labelKey: 'withdrawals' },
     { href: '/admin/analytics',    icon: BarChart3,      labelKey: 'analytics' },
   ];
 
@@ -436,7 +491,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                 className={`w-full flex flex-col items-center justify-center py-2.5 rounded-xl transition-all duration-200 group relative ${
                   active
                     ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20'
-                    : 'text-slate-400 hover:text-slate-900 dark:text-gray-500 dark:hover:text-white'
+                    : 'text-slate-400 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white'
                 }`}
                 title={getAdminLabel(labelKey)}
               >
@@ -638,7 +693,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
               key={href}
               href={href}
               className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[52px] ${
-                active ? 'text-violet-600 dark:text-violet-400' : 'text-slate-500 dark:text-gray-600 hover:text-gray-300'
+                active ? 'text-violet-600 dark:text-violet-400' : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <Icon className={`w-5 h-5 transition-all ${active ? 'scale-110' : ''}`} />

@@ -44,7 +44,7 @@ export function Navbar() {
 
   const isLightHeader = mounted && resolvedTheme === 'light' && (pathname !== '/' || scrolled);
 
-  const navLinks = [
+  const navLinks: { label: string; href: string; external?: boolean }[] = [
     { label: t('navHowItWorks'), href: '/#how-it-works' },
     { label: t('navPlans'),      href: '/#plans' },
     { label: t('navWhyUs'),      href: '/#why-us' },
