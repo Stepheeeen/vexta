@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { propagateCommissions } from '@/lib/referral-engine';
+import { logAdminAction } from '@/lib/audit-logger';
+import { sendCronReportEmail } from '@/lib/mail';
 
 /**
  * POST /api/admin/retry-commissions
@@ -16,10 +18,16 @@ import { propagateCommissions } from '@/lib/referral-engine';
  * Auth: Admin only or CRON_SECRET header.
  */
 export async function POST(req: NextRequest) {
-  // Accept admin JWT or cron secret
+  // Accept admin JWT or cron secret (Header or Query param)
   const cronSecret = process.env.CRON_SECRET;
   const cronHeader = req.headers.get('x-cron-key');
-  const isCronCall = cronSecret && cronHeader === cronSecret;
+  const authHeader = req.headers.get('authorization');
+  const querySecret = req.nextUrl.searchParams.get('secret');
+
+  const isCronCall = 
+    (cronSecret && cronHeader === cronSecret) ||
+    (cronSecret && authHeader === `Bearer ${cronSecret}`) ||
+    (cronSecret && querySecret === cronSecret);
 
   if (!isCronCall) {
     const payload = getUserFromRequest(req);
@@ -74,6 +82,22 @@ export async function POST(req: NextRequest) {
     const successCount = results.filter(r => r.status === 'retried').length;
     const failedCount  = results.filter(r => r.status === 'failed').length;
 
+    const reportMsg = `Retry Commissions executed.\nFound: ${stuckInvestments.length} stuck investments.\nSuccessfully retried: ${successCount}.\nFailed: ${failedCount}.`;
+
+    // Log to Admin Audit Logs
+    const firstAdmin = await prisma.user.findFirst({ where: { role: 'admin' } });
+    if (firstAdmin) {
+      await logAdminAction(firstAdmin.id, null, 'CRON_RETRY_COMMISSIONS_SUCCESS', reportMsg);
+    }
+
+    // Send Email Report
+    await sendCronReportEmail(
+      'stepheeeen@icloud.com',
+      'Retry Commissions',
+      'SUCCESS',
+      reportMsg
+    );
+
     return NextResponse.json({
       success:      true,
       found:        stuckInvestments.length,
@@ -83,6 +107,26 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: any) {
     console.error('[admin/retry-commissions]', err);
-    return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 });
+
+    const errMsg = err.message || 'Unknown error occurred.';
+    const errStack = err.stack || 'No callstack available.';
+
+    // Log to Admin Audit Logs
+    const firstAdmin = await prisma.user.findFirst({ where: { role: 'admin' } });
+    if (firstAdmin) {
+      await logAdminAction(firstAdmin.id, null, 'CRON_RETRY_COMMISSIONS_FAILURE', `Retry Commissions failed: ${errMsg}`);
+    }
+
+    // Send Email Notification with Logs
+    await sendCronReportEmail(
+      'stepheeeen@icloud.com',
+      'Retry Commissions',
+      'FAILURE',
+      `Retry Commissions failed to run: ${errMsg}`,
+      errStack
+    );
+
+    return NextResponse.json({ error: errMsg }, { status: 500 });
   }
 }
+

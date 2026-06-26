@@ -215,3 +215,73 @@ export async function sendBatchPayoutOTPEmail(
     return false;
   }
 }
+
+/**
+ * Sends an email notification report for a cron job execution (success or failure).
+ * Includes clean formatted HTML and highlights log information on failure.
+ */
+export async function sendCronReportEmail(
+  email: string,
+  cronName: string,
+  status: 'SUCCESS' | 'FAILURE',
+  report: string,
+  logs?: string
+): Promise<boolean> {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey || apiKey === 're_123456789' || apiKey.startsWith('your_')) {
+    console.log(`\n==================================================`);
+    console.log(`📬  [EMAIL SIMULATION - CRON REPORT] To: ${email}`);
+    console.log(`📋  Cron: ${cronName} | Status: ${status}`);
+    console.log(`📝  Report: ${report}`);
+    if (logs) console.log(`🛑  Logs/Errors: ${logs}`);
+    console.log(`==================================================\n`);
+    return true;
+  }
+
+  try {
+    const fromEmail = process.env.RESEND_FROM_EMAIL || `${SYSTEM_CONFIG.brand.name} Cron <cron@resend.dev>`;
+    const statusColor = status === 'SUCCESS' ? '#10B981' : '#EF4444';
+    const subject = `${status === 'SUCCESS' ? '✅' : '❌'} Cron Job ${cronName} - ${status} (${SYSTEM_CONFIG.brand.name})`;
+    
+    const { error } = await resend.emails.send({
+      from: fromEmail,
+      to: email,
+      subject: subject,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 12px; background-color: #0d1420; color: #ffffff;">
+          <h2 style="color: ${statusColor}; font-weight: 700; margin-bottom: 4px;">Cron Job: ${cronName}</h2>
+          <div style="display: inline-block; background: ${statusColor}22; color: ${statusColor}; padding: 4px 12px; border-radius: 9999px; font-size: 14px; font-weight: bold; margin-bottom: 20px;">
+            ${status}
+          </div>
+          
+          <div style="background: #1a2436; border: 1px solid rgba(229, 231, 235, 0.1); border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+            <h3 style="margin-top: 0; color: #9ca3af; font-size: 14px;">Execution Report</h3>
+            <p style="margin: 0; font-size: 16px; line-height: 1.5; color: #e5e7eb; white-space: pre-wrap;">${report}</p>
+          </div>
+          
+          ${logs ? `
+            <div style="background: #1f2937; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; padding: 16px;">
+              <h3 style="margin-top: 0; color: #ef4444; font-size: 14px;">Error Details & Logs</h3>
+              <pre style="margin: 0; font-family: monospace; font-size: 12px; line-height: 1.4; color: #f9fafb; white-space: pre-wrap; overflow-x: auto;">${logs}</pre>
+            </div>
+          ` : ''}
+          
+          <p style="color: #808A9D; font-size: 12px; margin-top: 30px; border-top: 1px solid rgba(229, 231, 235, 0.1); padding-top: 20px;">
+            This is an automated system notification from the ${SYSTEM_CONFIG.brand.name} network engine.
+          </p>
+        </div>
+      `,
+    });
+
+    if (error) {
+      console.error('[Resend Cron Report Error]', error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('[Resend Cron Report Exception]', err);
+    return false;
+  }
+}
+

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/auth';
 import { runDailyRoiDistribution } from '@/server/services/earnings.service';
+import { prisma } from '@/lib/prisma';
+import { logAdminAction } from '@/lib/audit-logger';
+import { sendCronReportEmail } from '@/lib/mail';
 
 /**
  * POST /api/admin/run-daily-roi
@@ -16,10 +19,16 @@ import { runDailyRoiDistribution } from '@/server/services/earnings.service';
  */
 export async function POST(req: NextRequest) {
   try {
-    // ─── Auth: accept admin JWT or cron secret header ─────────────────────
+    // ─── Auth: accept admin JWT or cron secret (Header or Query param) ────
     const cronSecret = process.env.CRON_SECRET;
     const cronHeader = req.headers.get('x-cron-key');
-    const isCronCall = cronSecret && cronHeader === cronSecret;
+    const authHeader = req.headers.get('authorization');
+    const querySecret = req.nextUrl.searchParams.get('secret');
+
+    const isCronCall = 
+      (cronSecret && cronHeader === cronSecret) ||
+      (cronSecret && authHeader === `Bearer ${cronSecret}`) ||
+      (cronSecret && querySecret === cronSecret);
 
     if (!isCronCall) {
       const userPayload = getUserFromRequest(req);
@@ -33,6 +42,22 @@ export async function POST(req: NextRequest) {
 
     const result = await runDailyRoiDistribution(bypassWeekendCheck);
 
+    const reportMsg = `Daily ROI payout executed successfully.\nProcessed ${result.usersPaid} active investments.\nTotal Distributed: $${result.totalDistributed.toFixed(2)}`;
+
+    // Log to Admin Audit Logs
+    const firstAdmin = await prisma.user.findFirst({ where: { role: 'admin' } });
+    if (firstAdmin) {
+      await logAdminAction(firstAdmin.id, null, 'CRON_DAILY_ROI_SUCCESS', reportMsg);
+    }
+
+    // Send Email Report
+    await sendCronReportEmail(
+      'stepheeeen@icloud.com',
+      'Daily ROI Payout',
+      'SUCCESS',
+      reportMsg
+    );
+
     return NextResponse.json({
       success:         true,
       usersPaid:       result.usersPaid,
@@ -40,9 +65,29 @@ export async function POST(req: NextRequest) {
     });
   } catch (err: any) {
     console.error('[admin/run-daily-roi]', err);
+
+    const errMsg = err.message || 'Unknown error occurred.';
+    const errStack = err.stack || 'No callstack available.';
+
+    // Log to Admin Audit Logs
+    const firstAdmin = await prisma.user.findFirst({ where: { role: 'admin' } });
+    if (firstAdmin) {
+      await logAdminAction(firstAdmin.id, null, 'CRON_DAILY_ROI_FAILURE', `Daily ROI failed: ${errMsg}`);
+    }
+
+    // Send Email Notification with Logs
+    await sendCronReportEmail(
+      'stepheeeen@icloud.com',
+      'Daily ROI Payout',
+      'FAILURE',
+      `Daily ROI payout failed to run: ${errMsg}`,
+      errStack
+    );
+
     return NextResponse.json(
-      { error: err.message || 'Internal server error' },
+      { error: errMsg },
       { status: err.message === 'Already ran today' ? 400 : 500 }
     );
   }
 }
+

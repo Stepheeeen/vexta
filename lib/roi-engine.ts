@@ -97,27 +97,49 @@ export async function generateDailyReturns(
     include: { plan: true },
   });
 
-  console.log(`[ROI] Processing ${activeInvestments.length} active investments in parallel chunks of 50...`);
+  // ── Group active investments by userId to prevent write conflicts ──
+  const groups: Record<string, typeof activeInvestments> = {};
+  for (const inv of activeInvestments) {
+    if (!groups[inv.userId]) {
+      groups[inv.userId] = [];
+    }
+    groups[inv.userId].push(inv);
+  }
+
+  const userIds = Object.keys(groups);
+  console.log(`[ROI] Processing ${activeInvestments.length} active investments across ${userIds.length} distinct users...`);
 
   let processed = 0;
   let totalPaid = 0;
 
-  // ── Process in parallel chunks of 50 to stay well within Vercel 60s limit ──
-  // Each investment is independent — one failure doesn't block others.
+  // Process distinct users in parallel chunks of 50
   const CHUNK_SIZE = 50;
-  for (let i = 0; i < activeInvestments.length; i += CHUNK_SIZE) {
-    const chunk = activeInvestments.slice(i, i + CHUNK_SIZE);
+  for (let i = 0; i < userIds.length; i += CHUNK_SIZE) {
+    const chunkUserIds = userIds.slice(i, i + CHUNK_SIZE);
 
     const results = await Promise.allSettled(
-      chunk.map(inv => processSingleInvestmentROI(inv, today))
+      chunkUserIds.map(async (uid) => {
+        let userPaidAmount = 0;
+        let userPaidCount = 0;
+        const userInvs = groups[uid];
+        // Process this user's investments sequentially to avoid write conflicts
+        for (const inv of userInvs) {
+          const paid = await processSingleInvestmentROI(inv, today);
+          if (paid > 0) {
+            userPaidCount++;
+            userPaidAmount = +(userPaidAmount + paid).toFixed(2);
+          }
+        }
+        return { count: userPaidCount, amount: userPaidAmount };
+      })
     );
 
     for (const result of results) {
       if (result.status === 'fulfilled' && result.value) {
-        processed++;
-        totalPaid = +(totalPaid + result.value).toFixed(2);
+        processed += result.value.count;
+        totalPaid = +(totalPaid + result.value.amount).toFixed(2);
       } else if (result.status === 'rejected') {
-        console.error('[ROI] Chunk item failed:', result.reason);
+        console.error('[ROI] User chunk failed:', result.reason);
       }
     }
   }
@@ -125,6 +147,7 @@ export async function generateDailyReturns(
   console.log(`[ROI] Generated returns for ${processed} investments. Total: $${totalPaid.toFixed(2)}`);
   return { processed, totalPaid };
 }
+
 
 /**
  * Process a single investment's daily ROI.
