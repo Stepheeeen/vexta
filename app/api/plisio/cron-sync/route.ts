@@ -33,12 +33,9 @@ export async function GET(req: NextRequest) {
   const querySecret = req.nextUrl.searchParams.get('secret');
   
   const cronSecret = process.env.CRON_SECRET;
-  const staticSecret = "2aff189883b3030652b25504e554b97f5dbf92d0e20b653354f12f107bb6fbb0";
 
   const isAuthorized = 
     (cronSecret && authHeader === `Bearer ${cronSecret}`) ||
-    (authHeader === `Bearer ${staticSecret}`) ||
-    (querySecret === staticSecret) ||
     (cronSecret && querySecret === cronSecret);
 
   if (!isAuthorized) {
