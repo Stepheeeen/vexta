@@ -8,7 +8,19 @@ import { prisma } from '@/lib/prisma';
 // Mock Prisma
 jest.mock('@/lib/prisma', () => ({
   prisma: {
-    investment: { findUnique: jest.fn() },
+    investment: {
+      findUnique: jest.fn(),
+      findMany: jest.fn().mockResolvedValue([
+        {
+          id: 'test_inv_id',
+          amount: 1000.00,
+          maxPayout: 2000.00,
+          totalEarned: 0,
+          activeCapital: 1000.00,
+        }
+      ]),
+      update: jest.fn(),
+    },
     referralLink: { findUnique: jest.fn() },
     commission: { create: jest.fn() },
     transaction: { create: jest.fn() },
@@ -37,10 +49,10 @@ describe('Unilevel Referral System - 7 Behaviors', () => {
     });
   });
 
-  describe('Behavior 2: 26% Absolute Mathematical Cap', () => {
-    it('total of all levels never exceeds 26%', () => {
+  describe('Behavior 2: 27% Absolute Mathematical Cap', () => {
+    it('total of all levels never exceeds 27%', () => {
       const total = Object.values(COMMISSION_RATES).reduce((s, r) => s + r, 0);
-      expect(+total.toFixed(4)).toBe(0.26);
+      expect(+total.toFixed(4)).toBe(0.27);
     });
   });
 

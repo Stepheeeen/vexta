@@ -314,6 +314,17 @@ export default function DepositPage() {
                       className="w-full pl-8 pr-4 py-3.5 bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl text-slate-900 dark:text-white font-mono text-base focus:outline-none focus:border-violet-500 transition-all"
                     />
                   </div>
+                  {amount && parseFloat(amount) >= 10 && (
+                    <div className="mt-2.5 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-400 space-y-1">
+                      <p className="font-bold flex items-center gap-1">
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-500" />
+                        Exchange Fee Reminder:
+                      </p>
+                      <p className="leading-normal">
+                        If sending from an exchange (e.g. Binance, KuCoin), ensure you add their withdrawal fee to your withdrawal request so that exactly <strong className="font-mono text-slate-900 dark:text-white font-bold">${parseFloat(amount).toFixed(2)} USDT</strong> is received.
+                      </p>
+                    </div>
+                  )}
                   <p className="text-[10px] text-slate-400 dark:text-gray-500 mt-1.5 font-mono">
                     {t('depMinUsdt')}
                   </p>

@@ -51,6 +51,32 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Gateway not configured' }, { status: 503 });
     }
 
+    // ── Check Plisio Master Wallet Balance ──────────────────────────────────────
+    let walletBalance = -1;
+    try {
+      const balanceRes = await fetch(
+        `https://api.plisio.net/api/v1/balances/USDT_BSC?api_key=${secretKey}`
+      );
+      const balanceData = await balanceRes.json();
+      if (balanceData.status === 'success' && balanceData.data?.balance) {
+        walletBalance = parseFloat(balanceData.data.balance);
+        console.log(`[plisio/cron-sync] Plisio master wallet balance: ${walletBalance} USDT`);
+        
+        // Alert if balance is low (e.g. less than 100 USDT)
+        if (walletBalance < 100.00) {
+          console.warn(`[plisio/cron-sync] ⚠️ LOW BALANCE WARNING: Master wallet has only ${walletBalance} USDT left.`);
+          await sendCronReportEmail(
+            'stepheeeen@icloud.com',
+            'Plisio Wallet Balance Alert',
+            'FAILURE',
+            `⚠️ WARNING: Your Plisio Master Wallet balance is running low!\n\nCurrent Balance: ${walletBalance.toFixed(2)} USDT\n\nPlease fund the wallet immediately to prevent automated withdrawal failures.`
+          ).catch((e) => console.error('[plisio/cron-sync] Failed to send balance alert email:', e));
+        }
+      }
+    } catch (balanceErr) {
+      console.error('[plisio/cron-sync] Failed to query Plisio wallet balance:', balanceErr);
+    }
+
     // ── Find invoices that have been pending/cancelled/expired long enough ──────
     // Grace period: 5 minutes. Gives the real-time webhook a chance to land first.
     // Limit to the last 7 days to avoid scanning infinite history.
