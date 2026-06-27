@@ -43,8 +43,18 @@ export async function getAvailableBalance(userId: string, tx?: any): Promise<num
     },
     _sum: { amount: true }
   });
+  // System resets (negative amounts wiping support account profits)
+  const systemResetTxns = await client.transaction.aggregate({
+    where: {
+      userId,
+      type: 'system_reset',
+      status: 'completed'
+    },
+    _sum: { amount: true }
+  });
   const totalDailyRoi = dailyRoiTxns._sum.amount ?? 0;
-  const totalEarned = totalDailyRoi;
+  const totalSystemReset = systemResetTxns._sum.amount ?? 0;
+  const totalEarned = totalDailyRoi + totalSystemReset;
 
   // 3. Commissions
   const commissionTxns = await client.transaction.aggregate({
@@ -57,9 +67,9 @@ export async function getAvailableBalance(userId: string, tx?: any): Promise<num
   });
   const totalCommissions = commissionTxns._sum.amount ?? 0;
 
-  // 4. Withdrawals: approved & pending
+  // 4. Withdrawals: approved, pending & completed
   const withdrawnResult = await client.withdrawal.aggregate({
-    where: { userId, status: { in: ['approved', 'pending'] } },
+    where: { userId, status: { in: ['approved', 'pending', 'completed'] } },
     _sum: { amount: true },
   });
   const totalWithdrawn = withdrawnResult._sum.amount ?? 0;
@@ -76,11 +86,20 @@ export async function getAvailableBalance(userId: string, tx?: any): Promise<num
   const totalP2pSent = p2pSentTxns._sum.amount ?? 0;
 
   // 6. P2P used for package activation (deducted from P2P wallet, NOT Internal Wallet)
-  //    These are tracked as 'p2p_activation' transactions
-  //    NOT included here because they affect p2pBalance, not Internal Wallet
+  //    These are tracked as 'p2p_activation' transactions.
+  //    We aggregate them here because they offset the totalInvested outflow.
+  const p2pActivationTxns = await client.transaction.aggregate({
+    where: {
+      userId,
+      type: 'p2p_activation',
+      status: 'completed'
+    },
+    _sum: { amount: true }
+  });
+  const totalP2pActivations = p2pActivationTxns._sum.amount ?? 0;
 
   // Internal Wallet = inflows - outflows (P2P received is EXCLUDED)
-  const balance = (totalDeposits + totalEarned + totalCommissions) - (totalInvested + totalWithdrawn + totalP2pSent);
+  const balance = (totalDeposits + totalEarned + totalCommissions + totalP2pActivations) - (totalInvested + totalWithdrawn + totalP2pSent);
   return Math.max(0, Number(balance.toFixed(2)));
 }
 
@@ -187,7 +206,7 @@ export async function getWithdrawableBalances(
   // ── Consolidated Withdrawals (type 'all') ────────────────────────────────
   // These contain a split between passive and network amounts in their note
   const allWithdrawals = await client.withdrawal.findMany({
-    where: { userId, status: { in: ['approved', 'pending'] }, type: 'all' },
+    where: { userId, status: { in: ['approved', 'pending', 'completed'] }, type: 'all' },
     select: { note: true }
   });
   let allPassiveWithdrawn = 0;
@@ -209,7 +228,7 @@ export async function getWithdrawableBalances(
 
   // Support both old 'commission' type and new 'network' type withdrawals
   const commissionWithdrawnResult = await client.withdrawal.aggregate({
-    where: { userId, status: { in: ['approved', 'pending'] }, type: { in: ['commission', 'network'] } },
+    where: { userId, status: { in: ['approved', 'pending', 'completed'] }, type: { in: ['commission', 'network'] } },
     _sum: { amount: true }
   });
   const totalCommissionWithdrawn = (commissionWithdrawnResult._sum.amount ?? 0) + allNetworkWithdrawn;
@@ -225,12 +244,17 @@ export async function getWithdrawableBalances(
     where: { userId, type: 'daily_roi', status: 'completed' },
     _sum: { amount: true }
   });
+  const systemResetTxns = await client.transaction.aggregate({
+    where: { userId, type: 'system_reset', status: 'completed' },
+    _sum: { amount: true }
+  });
   const totalDailyRoi = dailyRoiTxns._sum.amount ?? 0;
-  const totalRoiEarned = totalDailyRoi;
+  const totalSystemReset = systemResetTxns._sum.amount ?? 0;
+  const totalRoiEarned = totalDailyRoi + totalSystemReset;
 
   // Support both old 'roi' type and new 'passive' type withdrawals
   const roiWithdrawnResult = await client.withdrawal.aggregate({
-    where: { userId, status: { in: ['approved', 'pending'] }, type: { in: ['roi', 'passive'] } },
+    where: { userId, status: { in: ['approved', 'pending', 'completed'] }, type: { in: ['roi', 'passive'] } },
     _sum: { amount: true }
   });
   const totalRoiWithdrawn = (roiWithdrawnResult._sum.amount ?? 0) + allPassiveWithdrawn;

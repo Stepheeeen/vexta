@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { getUserFromRequest } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getAvailableBalance, getWithdrawableBalances, safeDecrementBalance } from '@/lib/balance';
-import { deductWithdrawalFromCapital } from '@/lib/roi-engine';
 import bcrypt from 'bcryptjs';
 
 const schema = z.object({
@@ -254,10 +253,7 @@ export async function POST(req: NextRequest) {
       // 3. Persist the balance deduction
       await safeDecrementBalance(payload.userId, amount, tx);
 
-      // 3.5. Deduct from operational capital if it involves passive earnings
-      if (passiveAmount > 0) {
-        await deductWithdrawalFromCapital(payload.userId, passiveAmount, tx);
-      }
+
 
       // 3.6. Reset/consume temporary withdrawal unlock if any
       const unlockType = (user as any).withdrawalUnlockType ?? 'none';

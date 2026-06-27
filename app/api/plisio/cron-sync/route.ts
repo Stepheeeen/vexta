@@ -51,25 +51,28 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Gateway not configured' }, { status: 503 });
     }
 
-    // ── Find invoices that have been pending long enough ───────────────────────
+    // ── Find invoices that have been pending/cancelled/expired long enough ──────
     // Grace period: 5 minutes. Gives the real-time webhook a chance to land first.
+    // Limit to the last 7 days to avoid scanning infinite history.
     const gracePeriodMs = 5 * 60 * 1000;
     const cutoff = new Date(Date.now() - gracePeriodMs);
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
     const stalePendingInvoices = await prisma.plisioInvoice.findMany({
       where: {
-        status:    'pending',
-        createdAt: { lte: cutoff },
+        status:    { in: ['pending', 'cancelled', 'expired'] },
+        activatedAt: null,
+        createdAt: { gte: sevenDaysAgo, lte: cutoff },
       },
       orderBy: { createdAt: 'asc' },
     });
 
     if (stalePendingInvoices.length === 0) {
-      console.log('[plisio/cron-sync] No stale pending invoices. All clear ✅');
+      console.log('[plisio/cron-sync] No stale pending/cancelled/expired invoices. All clear ✅');
       return NextResponse.json({ ok: true, processed: 0 });
     }
 
-    console.log(`[plisio/cron-sync] Found ${stalePendingInvoices.length} stale pending invoice(s). Verifying with Plisio API...`);
+    console.log(`[plisio/cron-sync] Found ${stalePendingInvoices.length} stale pending/cancelled/expired invoice(s). Verifying with Plisio API...`);
 
     const results = { credited: 0, closed: 0, stillPending: 0, errors: 0 };
 
@@ -87,24 +90,29 @@ export async function GET(req: NextRequest) {
           continue;
         }
 
-        const { status: plisioStatus, tx_url: txUrl } = apiData.data;
+        const { status: plisioStatus, actual_sum: plisioActualSum, tx_url: txUrl } = apiData.data;
 
         console.log(`[plisio/cron-sync] Invoice ${invoice.txnId} — Plisio status: ${plisioStatus}`);
 
         if (plisioStatus === 'completed' || plisioStatus === 'mismatch') {
           // ── Payment confirmed: credit the user ────────────────────────────
-          await handleCompletedPayment(invoice, txUrl);
+          const creditAmount = plisioActualSum ? parseFloat(plisioActualSum) : invoice.amount;
+          await handleCompletedPayment(invoice, creditAmount, txUrl);
           results.credited++;
-          console.log(`[plisio/cron-sync] ✅ Auto-recovered $${invoice.amount} for user ${invoice.userId} (${invoice.txnId})`);
+          console.log(`[plisio/cron-sync] ✅ Auto-recovered $${creditAmount} for user ${invoice.userId} (${invoice.txnId})`);
 
         } else if (['expired', 'cancelled', 'error'].includes(plisioStatus)) {
-          // ── Terminal failure: close the invoice ───────────────────────────
-          await prisma.plisioInvoice.update({
-            where: { id: invoice.id },
-            data:  { status: plisioStatus },
-          });
-          results.closed++;
-          console.log(`[plisio/cron-sync] ❌ Closed invoice ${invoice.txnId} with status: ${plisioStatus}`);
+          // ── Terminal failure: close the invoice in our DB (if status changed) ──
+          if (invoice.status !== plisioStatus) {
+            await prisma.plisioInvoice.update({
+              where: { id: invoice.id },
+              data:  { status: plisioStatus },
+            });
+            results.closed++;
+            console.log(`[plisio/cron-sync] ❌ Closed invoice ${invoice.txnId} with status: ${plisioStatus}`);
+          } else {
+            results.stillPending++;
+          }
 
         } else {
           // ── Still pending/new — leave it for the next cycle ───────────────
@@ -180,6 +188,7 @@ export async function GET(req: NextRequest) {
  */
 async function handleCompletedPayment(
   invoice: { id: string; txnId: string; userId: string; amount: number; activatedAt: Date | null },
+  creditAmount: number,
   txHash?: string | string[]
 ): Promise<void> {
   // Early idempotency guard (pre-transaction check)
@@ -188,7 +197,7 @@ async function handleCompletedPayment(
     return;
   }
 
-  const { amount, userId } = invoice;
+  const { userId } = invoice;
 
   await prisma.$transaction(async (tx) => {
     // Re-check inside the transaction to prevent race conditions
@@ -202,8 +211,8 @@ async function handleCompletedPayment(
     await tx.user.update({
       where: { id: userId },
       data: {
-        balance:       { increment: amount },
-        activeDeposit: { increment: amount },
+        balance:       { increment: creditAmount },
+        activeDeposit: { increment: creditAmount },
       },
     });
 
@@ -213,7 +222,7 @@ async function handleCompletedPayment(
       data: {
         userId,
         type:        'deposit',
-        amount,
+        amount:      creditAmount,
         status:      'completed',
         description: 'USDT BEP-20 deposit via Plisio (auto-recovered)',
         reference:   invoice.txnId,
@@ -228,6 +237,7 @@ async function handleCompletedPayment(
         status:       'completed',
         activatedAt:  new Date(),
         plisioTxHash: safeTxHash,
+        amount:       creditAmount,
       },
     });
   }, { timeout: 30000, maxWait: 15000 });

@@ -164,10 +164,6 @@ async function processSingleInvestmentROI(inv: any, today: Date): Promise<number
   });
   if (todayEntry) return 0;
 
-  // Fetch user to check freeze / block flags
-  const user = await prisma.user.findUnique({ where: { id: inv.userId } });
-  if (!user || !user.isActive || user.fundsFrozen || user.roiBlocked) return 0;
-
   // ── 200% Cap enforcement ───────────────────────────────────────────────
   const maxPayout = (inv as any).maxPayout > 0
     ? (inv as any).maxPayout
@@ -198,97 +194,112 @@ async function processSingleInvestmentROI(inv: any, today: Date): Promise<number
   const hitCap = newTotalEarned >= maxPayout - 0.001;
   const willComplete = hitCap || newDaysElapsed >= (inv.duration || maxContractDays);
 
-  await prisma.$transaction(async (tx) => {
-    // 1. Credit user balance immediately
-    await tx.user.update({
-      where: { id: inv.userId },
-      data: {
-        balance:     { increment: dailyProfit },
-        totalEarned: { increment: dailyProfit },
-      },
-    });
+  try {
+    await prisma.$transaction(async (tx) => {
+      // Fetch fresh user to check freeze / block flags and retrieve current fresh balance
+      const freshUser = await tx.user.findUnique({ where: { id: inv.userId } });
+      if (!freshUser || !freshUser.isActive || freshUser.fundsFrozen || freshUser.roiBlocked) {
+        throw new Error('USER_INELIGIBLE');
+      }
 
-    // 2. Update investment counters
-    await tx.investment.update({
-      where: { id: inv.id },
-      data: {
-        totalEarned:         newTotalEarned,
-        businessDaysElapsed: newDaysElapsed,
-        maxPayout:           maxPayout,
-        ...(willComplete ? { status: 'completed', activeCapital: 0 } : {}),
-      },
-    });
-
-    if (willComplete) {
+      // 1. Credit user balance immediately
       await tx.user.update({
         where: { id: inv.userId },
-        data: { operationalCapital: { decrement: inv.activeCapital } },
+        data: {
+          balance:     { increment: dailyProfit },
+          totalEarned: { increment: dailyProfit },
+        },
       });
-    }
 
-    // 3. DailyROIEntry audit log
-    await tx.dailyROIEntry.create({
-      data: {
-        investmentId: inv.id,
-        amount:       dailyProfit,
-        date:         today,
-      },
-    });
+      // 2. Update investment counters
+      await tx.investment.update({
+        where: { id: inv.id },
+        data: {
+          totalEarned:         newTotalEarned,
+          businessDaysElapsed: newDaysElapsed,
+          maxPayout:           maxPayout,
+          ...(willComplete ? { status: 'completed', activeCapital: 0 } : {}),
+        },
+      });
 
-    // 4. Transaction ledger
-    const reason = hitCap ? ' (200% cap reached — contract completed)' : willComplete ? ' (Contract completed)' : '';
-    await tx.transaction.create({
-      data: {
-        userId:      inv.userId,
-        type:        'daily_roi',
-        amount:      dailyProfit,
-        status:      'completed',
-        description: `Daily arbitrage profit${reason}`,
-        reference:   inv.id,
-        isVirtual:   inv.isVirtual,
-      },
-    });
-
-    // 5. Support Account 2X Rule (unchanged)
-    if ((user as any).isSponsored && (user as any).sponsoredGiftedAmount > 0) {
-      const maxSupportReturn = (user as any).sponsoredGiftedAmount * 2;
-      const newInvTotalEarned = inv.totalEarned + dailyProfit;
-
-      if (newInvTotalEarned >= maxSupportReturn) {
-        const currentBalance = (user as any).balance + dailyProfit;
-        const wipeAmountBalance = Math.min(maxSupportReturn, currentBalance);
-
+      if (willComplete) {
         await tx.user.update({
           where: { id: inv.userId },
-          data: {
-            balance: { decrement: wipeAmountBalance },
-            totalEarned: { decrement: maxSupportReturn },
-            operationalCapital: { decrement: inv.activeCapital },
-            isSponsored: false,
-            sponsoredGiftedAmount: 0,
-          }
+          data: { operationalCapital: { decrement: inv.activeCapital } },
         });
-
-        await tx.investment.update({
-          where: { id: inv.id },
-          data: { status: 'completed', activeCapital: 0 }
-        });
-
-        await tx.transaction.create({
-          data: {
-            userId: inv.userId,
-            type: 'system_reset',
-            amount: -wipeAmountBalance,
-            status: 'completed',
-            description: `Support account completed (2X reached). Profits reset.`,
-            reference: inv.id,
-          }
-        });
-
-        console.log(`[ROI] User ${inv.userId} hit 2X support account limit. Reset applied.`);
       }
+
+      // 3. DailyROIEntry audit log
+      await tx.dailyROIEntry.create({
+        data: {
+          investmentId: inv.id,
+          amount:       dailyProfit,
+          date:         today,
+        },
+      });
+
+      // 4. Transaction ledger
+      const reason = hitCap ? ' (200% cap reached — contract completed)' : willComplete ? ' (Contract completed)' : '';
+      await tx.transaction.create({
+        data: {
+          userId:      inv.userId,
+          type:        'daily_roi',
+          amount:      dailyProfit,
+          status:      'completed',
+          description: `Daily arbitrage profit${reason}`,
+          reference:   inv.id,
+          isVirtual:   inv.isVirtual,
+        },
+      });
+
+      // 5. Support Account 2X Rule
+      if (freshUser.isSponsored && freshUser.sponsoredGiftedAmount > 0) {
+        const maxSupportReturn = freshUser.sponsoredGiftedAmount * 2;
+        const newInvTotalEarned = inv.totalEarned + dailyProfit;
+
+        if (newInvTotalEarned >= maxSupportReturn) {
+          // Since we already incremented the user balance by dailyProfit,
+          // the actual current balance in the DB is freshUser.balance + dailyProfit.
+          const currentBalance = freshUser.balance + dailyProfit;
+          const wipeAmountBalance = Math.min(maxSupportReturn, currentBalance);
+
+          await tx.user.update({
+            where: { id: inv.userId },
+            data: {
+              balance: { decrement: wipeAmountBalance },
+              totalEarned: { decrement: maxSupportReturn },
+              operationalCapital: { decrement: inv.activeCapital },
+              isSponsored: false,
+              sponsoredGiftedAmount: 0,
+            }
+          });
+
+          await tx.investment.update({
+            where: { id: inv.id },
+            data: { status: 'completed', activeCapital: 0 }
+          });
+
+          await tx.transaction.create({
+            data: {
+              userId: inv.userId,
+              type: 'system_reset',
+              amount: -wipeAmountBalance,
+              status: 'completed',
+              description: `Support account completed (2X reached). Profits reset.`,
+              reference: inv.id,
+            }
+          });
+
+          console.log(`[ROI] User ${inv.userId} hit 2X support account limit. Reset applied.`);
+        }
+      }
+    }, { timeout: 30000 });
+  } catch (err: any) {
+    if (err.message === 'USER_INELIGIBLE') {
+      return 0;
     }
-  }, { timeout: 30000 });
+    throw err;
+  }
 
   const capMsg = hitCap ? ' [200% CAP REACHED]' : '';
   console.log(
@@ -370,70 +381,5 @@ export async function upsertPlans() {
     await prisma.plan.delete({ where: { id: p.id } });
   }
 }
-
-// ─── Withdrawal Logic ─────────────────────────────────────────────────────────
-
-/**
- * Deducts a withdrawn amount from a user's operational capital.
- */
-export async function deductWithdrawalFromCapital(
-  userId: string,
-  amount: number,
-  tx: any // PrismaTransaction
-) {
-  let remainingAmount = amount;
-
-  if (remainingAmount > 0) {
-    const activeInvestments = await tx.investment.findMany({
-      where: { userId, status: 'active', activeCapital: { gt: 0 } },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    for (const inv of activeInvestments) {
-      if (remainingAmount <= 0) break;
-
-      if (inv.activeCapital <= remainingAmount) {
-        // Consume the entire active capital of this investment
-        await tx.investment.update({
-          where: { id: inv.id },
-          data: { activeCapital: 0, status: 'completed' } // effectively dead
-        });
-
-        await tx.user.update({
-          where: { id: userId },
-          data: { operationalCapital: { decrement: inv.activeCapital } }
-        });
-
-        remainingAmount = +(remainingAmount - inv.activeCapital).toFixed(2);
-      } else {
-        // Consume partial active capital
-        await tx.investment.update({
-          where: { id: inv.id },
-          data: { activeCapital: +(inv.activeCapital - remainingAmount).toFixed(2) }
-        });
-
-        await tx.user.update({
-          where: { id: userId },
-          data: { operationalCapital: { decrement: remainingAmount } }
-        });
-
-        remainingAmount = 0;
-      }
-    }
-
-    // ── Assertion: remainingAmount should be 0 after full deduction ────────────
-    // If it's still > 0, the user's withdrawal amount exceeded their total active
-    // capital — capital accounting is now inconsistent. Log for investigation.
-    if (remainingAmount > 0.01) { // 0.01 tolerance for float rounding
-      console.warn(
-        `[deductWithdrawalFromCapital] ⚠️  Under-deduction for user ${userId}: ` +
-        `$${remainingAmount.toFixed(2)} of $${amount.toFixed(2)} could not be deducted ` +
-        `from active investments (may have exceeded total active capital). ` +
-        `operationalCapital may now be out of sync. Investigate.`
-      );
-    }
-  }
-}
-
 
 

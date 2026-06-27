@@ -17,7 +17,7 @@ export async function runDailyRoiDistribution(
 
   // Guard: check day-of-week (Monday–Friday only)
   if (!bypassWeekendCheck) {
-    const dayOfWeek = new Date().getDay(); // 0 = Sunday, 6 = Saturday
+    const dayOfWeek = new Date().getUTCDay(); // 0 = Sunday, 6 = Saturday (UTC basis)
     if (dayOfWeek === 0 || dayOfWeek === 6) {
       throw new Error('ROI distribution only runs Monday through Friday');
     }

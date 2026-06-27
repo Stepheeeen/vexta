@@ -106,26 +106,38 @@ async function handleGenerate(adminId: string): Promise<NextResponse> {
     return NextResponse.json({ error: 'No pending withdrawals to export' }, { status: 400 });
   }
 
-  const totalAmount = pendingWithdrawals.reduce((sum, w) => sum + w.amount, 0);
+  let totalGrossAmount = 0;
+  let totalNetAmount = 0;
 
   // Build Plisio mass-payment CSV
   // Plisio format: address,amount,currency (one row per payout)
   const csvLines = [
     'address,amount,currency', // header
-    ...pendingWithdrawals.map(w =>
-      `${w.walletAddress},${w.amount.toFixed(2)},USDT`
-    ),
+    ...pendingWithdrawals.map(w => {
+      const amount = w.amount;
+      const feePercentage = amount >= 600 ? 0.02 : 0.06;
+      const percentageFee = amount * feePercentage;
+      const MAINTENANCE_FEE = 0.01;
+      const totalFee = Number((percentageFee + MAINTENANCE_FEE).toFixed(2));
+      const netAmount = Number((amount - totalFee).toFixed(2));
+
+      totalGrossAmount += amount;
+      totalNetAmount += netAmount;
+
+      return `${w.walletAddress},${netAmount.toFixed(2)},USDT`;
+    }),
   ];
   const csvData = csvLines.join('\n');
 
   // Persist the batch run
   const batchRun = await prisma.batchPayoutRun.create({
     data: {
-      totalAmount:       +totalAmount.toFixed(2),
+      totalAmount:       +totalNetAmount.toFixed(2), // Net payout amount
       withdrawalCount:   pendingWithdrawals.length,
       csvData,
       status:            'generated',
       executedByAdminId: adminId,
+      notes:             `Gross requested: $${totalGrossAmount.toFixed(2)} | Net payout: $${totalNetAmount.toFixed(2)}`,
     },
   });
 
@@ -186,15 +198,42 @@ async function handleExecute(runId: string, otpCode: string, adminId: string): P
     return NextResponse.json({ error: 'Batch run already executed' }, { status: 409 });
   }
 
+  // Fetch all pending withdrawals that will be approved
+  const pendingWithdrawalsToApprove = await prisma.withdrawal.findMany({
+    where: { 
+      status: 'pending',
+      user: { withdrawalsBlocked: false }
+    },
+    select: { id: true, amount: true }
+  });
+  const pendingIds = pendingWithdrawalsToApprove.map(w => w.id);
+
   // Mark all pending withdrawals as approved and link to this batch run
   const updateResult = await prisma.withdrawal.updateMany({
-    where: { status: 'pending' },
+    where: { id: { in: pendingIds } },
     data: {
       status:      'approved',
       processedAt: now,
       batchRunId:  runId,
     },
   });
+
+  // Update corresponding transaction statuses to completed and deduct the fee in description
+  for (const w of pendingWithdrawalsToApprove) {
+    const feePercentage = w.amount >= 600 ? 0.02 : 0.06;
+    const percentageFee = w.amount * feePercentage;
+    const MAINTENANCE_FEE = 0.01;
+    const totalFee = Number((percentageFee + MAINTENANCE_FEE).toFixed(2));
+    const netAmount = Number((w.amount - totalFee).toFixed(2));
+
+    await prisma.transaction.updateMany({
+      where: { reference: w.id, type: 'withdrawal' },
+      data: {
+        status: 'completed',
+        description: `Withdrawal processed (Net: $${netAmount.toFixed(2)}, Fee: $${totalFee.toFixed(2)})`
+      }
+    });
+  }
 
   // Update batch run status
   await prisma.batchPayoutRun.update({

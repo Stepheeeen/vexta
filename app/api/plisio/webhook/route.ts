@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
   // 2. To completely avoid PHP serialization bugs with HMAC signatures in JS,
   // we will simply call the Plisio API to fetch the TRUE state of this transaction.
   let trueStatus = payload.status;
-  let trueSourceAmount = payload.source_amount;
+  let trueActualSum = payload.actual_sum ? parseFloat(payload.actual_sum) : undefined;
   let trueTxUrl = payload.tx_url;
   
   if (secretKey) {
@@ -158,9 +158,9 @@ export async function POST(req: NextRequest) {
       const apiData = await apiRes.json() as any;
       if (apiData.status === 'success' && apiData.data) {
         trueStatus = apiData.data.status;
-        trueSourceAmount = apiData.data.source_amount;
+        trueActualSum = apiData.data.actual_sum ? parseFloat(apiData.data.actual_sum) : trueActualSum;
         trueTxUrl = apiData.data.tx_url || payload.tx_url;
-        console.log(`[plisio/webhook] Verified txn_id ${txn_id} via API: Status is ${trueStatus}`);
+        console.log(`[plisio/webhook] Verified txn_id ${txn_id} via API: Status is ${trueStatus}, Actual Sum is ${trueActualSum}`);
       } else {
         console.error(`[plisio/webhook] API verification failed for ${txn_id}:`, apiData);
       }
@@ -178,19 +178,19 @@ export async function POST(req: NextRequest) {
 
   // 4. Route by status
   if (trueStatus === PLISIO_STATUS_COMPLETED) {
-    await handleCompletedPayment(invoice, trueTxUrl);
+    const creditAmount = trueActualSum && trueActualSum > 0 ? trueActualSum : invoice.amount;
+    await handleCompletedPayment(invoice, creditAmount, trueTxUrl);
   } else if (trueStatus === PLISIO_STATUS_MISMATCH || trueStatus === PLISIO_STATUS_ERROR) {
+    const creditAmount = trueActualSum && trueActualSum > 0 ? trueActualSum : invoice.amount;
     console.warn(
       `[plisio/webhook] MISMATCH/ERROR on ${txn_id}: ` +
-      `expected $${trueSourceAmount}, received crypto amount: ${payload.invoice_total_sum || payload.amount || 'unknown'}.`
+      `expected $${invoice.amount}, received crypto USD value: ${creditAmount}.`
     );
 
-    // For mismatch/error: credit the original USD invoice amount (source_amount).
-    const creditAmount = invoice.amount; // The USD amount stored when invoice was created
     if (creditAmount > 0) {
-      await handleCompletedPayment(invoice, trueTxUrl);
+      await handleCompletedPayment(invoice, creditAmount, trueTxUrl);
     } else {
-      console.error(`[plisio/webhook] MISMATCH: Invoice amount is 0 for ${txn_id}, cannot credit.`);
+      console.error(`[plisio/webhook] MISMATCH: Credit amount is 0 for ${txn_id}, cannot credit.`);
     }
   } else if (
     trueStatus === PLISIO_STATUS_EXPIRED   ||
@@ -213,6 +213,7 @@ export async function POST(req: NextRequest) {
  */
 async function handleCompletedPayment(
   invoice: { id: string; txnId: string; userId: string; amount: number; activatedAt: Date | null },
+  creditAmount: number,
   txHash?: string
 ): Promise<void> {
   // Idempotency guard: skip if already processed
@@ -221,7 +222,7 @@ async function handleCompletedPayment(
     return;
   }
 
-  const { amount, userId } = invoice;
+  const { userId } = invoice;
 
   try {
     await prisma.$transaction(async (tx) => {
@@ -233,8 +234,8 @@ async function handleCompletedPayment(
       await tx.user.update({
         where: { id: userId },
         data: {
-          balance:      { increment: amount },
-          activeDeposit: { increment: amount }, // kept for dashboard compat
+          balance:      { increment: creditAmount },
+          activeDeposit: { increment: creditAmount }, // kept for dashboard compat
         },
       });
 
@@ -243,7 +244,7 @@ async function handleCompletedPayment(
         data: {
           userId,
           type:        'deposit',
-          amount,
+          amount:      creditAmount,
           status:      'completed',
           description: `USDT BEP-20 deposit via Plisio`,
           reference:   invoice.txnId,
@@ -261,11 +262,12 @@ async function handleCompletedPayment(
           status:      'completed',
           activatedAt:  new Date(),
           plisioTxHash: safeTxHash,
+          amount:       creditAmount, // Update invoice record amount to match actual sum paid
         },
       });
     }, { timeout: 30000 });
 
-    console.log(`[plisio/webhook] ✅ Activated $${amount.toFixed(2)} deposit for user ${userId} (txn: ${invoice.txnId})`);
+    console.log(`[plisio/webhook] ✅ Activated $${creditAmount.toFixed(2)} deposit for user ${userId} (txn: ${invoice.txnId})`);
 
   } catch (err) {
     console.error(`[plisio/webhook] Failed to activate invoice ${invoice.txnId}:`, err);
