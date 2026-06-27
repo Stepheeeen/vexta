@@ -23,16 +23,22 @@ export async function GET(req: NextRequest) {
       }
     });
 
-    const transactions = rawTransactions.map(tx => ({
-      id: tx.id,
-      user: `${tx.user.firstName} ${tx.user.lastName}`,
-      email: tx.user.email,
-      type: tx.type.charAt(0).toUpperCase() + tx.type.slice(1),
-      amount: `${tx.amount >= 0 ? '+' : ''}$${tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      status: tx.status.charAt(0).toUpperCase() + tx.status.slice(1),
-      date: tx.createdAt.toISOString().split('T')[0],
-      description: tx.description ?? 'No details provided'
-    }));
+    const transactions = rawTransactions.map(tx => {
+      let rawType = tx.type;
+      if (tx.type === 'deposit' && tx.isVirtual) {
+        rawType = 'gifted_deposit';
+      }
+      return {
+        id: tx.id,
+        user: `${tx.user.firstName} ${tx.user.lastName}`,
+        email: tx.user.email,
+        type: rawType,
+        amount: `${tx.amount >= 0 ? '+' : ''}$${tx.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        status: tx.status.charAt(0).toUpperCase() + tx.status.slice(1),
+        date: tx.createdAt.toISOString().split('T')[0],
+        description: tx.description ?? 'No details provided'
+      };
+    });
 
     return NextResponse.json({ transactions });
   } catch (err) {

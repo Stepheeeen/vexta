@@ -49,6 +49,10 @@ export default function AdminTransactions() {
     if (tp === 'withdrawal') return t('adminTxTypeWithdrawal') || 'Withdrawal';
     if (tp === 'roi') return t('adminTxTypeRoi') || 'ROI';
     if (tp === 'commission') return t('adminTxTypeCommission') || 'Commission';
+    if (tp === 'p2p_sent') return t('adminTxTypeP2pSent') || 'P2P Sent';
+    if (tp === 'p2p_received') return t('adminTxTypeP2pReceived') || 'P2P Received';
+    if (tp === 'p2p_activation') return t('adminTxTypeP2pActivation') || 'P2P Activation';
+    if (tp === 'gifted_deposit') return t('adminTxTypeGiftedDeposit') || 'Gifted Deposit';
     return type;
   };
 
@@ -100,10 +104,14 @@ export default function AdminTransactions() {
             className="px-4 py-2 bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl text-slate-700 dark:text-gray-300 focus:outline-none focus:border-violet-500 text-sm"
           >
             <option value="All Types">{t('adminTransactionsAllTypes') || 'All Types'}</option>
-            <option value="Deposit">{t('adminTxTypeDeposit') || 'Deposit'}</option>
-            <option value="Withdrawal">{t('adminTxTypeWithdrawal') || 'Withdrawal'}</option>
-            <option value="Roi">{t('adminTxTypeRoi') || 'ROI'}</option>
-            <option value="Commission">{t('adminTxTypeCommission') || 'Commission'}</option>
+            <option value="deposit">{t('adminTxTypeDeposit') || 'Deposit'}</option>
+            <option value="withdrawal">{t('adminTxTypeWithdrawal') || 'Withdrawal'}</option>
+            <option value="roi">{t('adminTxTypeRoi') || 'ROI'}</option>
+            <option value="commission">{t('adminTxTypeCommission') || 'Commission'}</option>
+            <option value="p2p_sent">{t('adminTxTypeP2pSent') || 'P2P Sent'}</option>
+            <option value="p2p_received">{t('adminTxTypeP2pReceived') || 'P2P Received'}</option>
+            <option value="p2p_activation">{t('adminTxTypeP2pActivation') || 'P2P Activation'}</option>
+            <option value="gifted_deposit">{t('adminTxTypeGiftedDeposit') || 'Gifted Deposit'}</option>
           </select>
           <select
             value={statusFilter}

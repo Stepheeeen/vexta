@@ -8,15 +8,40 @@ import Link from 'next/link';
 
 interface ProfitCalculatorProps {
   availableBalance: number;
+  p2pBalance?: number;
   onSuccess: () => void;
 }
 
-export function ProfitCalculator({ availableBalance, onSuccess }: ProfitCalculatorProps) {
+export function ProfitCalculator({ availableBalance, p2pBalance = 0, onSuccess }: ProfitCalculatorProps) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [calcAmount, setCalcAmount] = useState(1000);
   const [plans, setPlans] = useState<any[]>([]);
   const [activating, setActivating] = useState(false);
+  const [useP2p, setUseP2p] = useState(false);
+  const [p2pUsedAmount, setP2pUsedAmount] = useState(0);
+
+  const maxP2pAllowed = +(calcAmount * 0.50).toFixed(2);
+  const maxP2pSpendable = Math.min(p2pBalance, maxP2pAllowed);
+
+  useEffect(() => {
+    if (useP2p) {
+      if (p2pUsedAmount > maxP2pSpendable) {
+        setP2pUsedAmount(maxP2pSpendable);
+      }
+    } else {
+      setP2pUsedAmount(0);
+    }
+  }, [useP2p, calcAmount, p2pBalance, maxP2pSpendable, p2pUsedAmount]);
+
+  const handleToggleP2p = (checked: boolean) => {
+    setUseP2p(checked);
+    if (checked) {
+      setP2pUsedAmount(maxP2pSpendable);
+    } else {
+      setP2pUsedAmount(0);
+    }
+  };
 
   useEffect(() => {
     fetch('/api/plans')
@@ -87,10 +112,20 @@ export function ProfitCalculator({ availableBalance, onSuccess }: ProfitCalculat
       return;
     }
 
-    if (amountNum > availableBalance) {
+    const internalNeeded = +(amountNum - p2pUsedAmount).toFixed(2);
+    if (internalNeeded > availableBalance) {
       toast({
         title: 'Insufficient Balance',
-        description: `Your available balance is $${availableBalance.toFixed(2)}.`,
+        description: `Your available Internal Wallet balance is $${availableBalance.toFixed(2)} USDT, but you need $${internalNeeded.toFixed(2)} USDT.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (p2pUsedAmount > p2pBalance) {
+      toast({
+        title: 'Insufficient P2P Balance',
+        description: `Your P2P Wallet balance is $${p2pBalance.toFixed(2)} USDT.`,
         variant: 'destructive',
       });
       return;
@@ -101,7 +136,7 @@ export function ProfitCalculator({ availableBalance, onSuccess }: ProfitCalculat
       const res = await fetch('/api/investments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ planId: realPlan.id, amount: amountNum }),
+        body: JSON.stringify({ planId: realPlan.id, amount: amountNum, p2pAmount: p2pUsedAmount }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Failed to activate investment');
@@ -187,6 +222,64 @@ export function ProfitCalculator({ availableBalance, onSuccess }: ProfitCalculat
           </div>
         </div>
 
+        {/* P2P Funding Option */}
+        {p2pBalance > 0 && (
+          <div className="bg-slate-50/50 dark:bg-white/2 border border-slate-200/50 dark:border-white/5 rounded-xl p-3.5 space-y-2.5 transition-all">
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={useP2p}
+                  onChange={(e) => handleToggleP2p(e.target.checked)}
+                  className="rounded border-slate-350 dark:border-white/15 text-violet-600 focus:ring-violet-500 cursor-pointer w-4 h-4"
+                />
+                <span className="text-xs font-extrabold font-mono text-slate-700 dark:text-zinc-300 uppercase tracking-wider">
+                  {t('p2pUseForActivation') || 'Use P2P Balance'} (${p2pBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDT)
+                </span>
+              </label>
+            </div>
+
+            {useP2p && (
+              <div className="space-y-2.5 pt-2 border-t border-slate-200/50 dark:border-white/5">
+                <div className="flex justify-between items-center text-xs font-mono">
+                  <span className="text-slate-500 dark:text-zinc-400 font-semibold">{t('p2pFromWallet') || 'From P2P Wallet'}:</span>
+                  <div className="flex items-center font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded px-2 py-0.5">
+                    <span className="text-slate-400 mr-0.5">$</span>
+                    <input
+                      type="number"
+                      value={p2pUsedAmount || ''}
+                      onChange={(e) => {
+                        const val = e.target.value === '' ? 0 : Number(e.target.value);
+                        if (val > maxP2pSpendable) {
+                          setP2pUsedAmount(maxP2pSpendable);
+                        } else if (val < 0) {
+                          setP2pUsedAmount(0);
+                        } else {
+                          setP2pUsedAmount(val);
+                        }
+                      }}
+                      className="w-16 bg-transparent text-right font-black focus:outline-none"
+                    />
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={maxP2pSpendable}
+                  step={1}
+                  value={p2pUsedAmount}
+                  onChange={(e) => setP2pUsedAmount(Number(e.target.value))}
+                  className="w-full h-1 bg-slate-200 dark:bg-white/10 rounded-full appearance-none cursor-pointer accent-violet-600"
+                />
+                <div className="flex justify-between text-[10px] text-slate-500 dark:text-zinc-400 font-bold font-mono">
+                  <span>$0</span>
+                  <span className="text-amber-500">Max Spendable (50%): ${maxP2pSpendable.toFixed(2)}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Results */}
         <div className="bg-slate-50 dark:bg-white/3 rounded-2xl p-4 space-y-2.5 border border-slate-200 dark:border-white/5">
           {calc ? (
@@ -203,6 +296,36 @@ export function ProfitCalculator({ availableBalance, onSuccess }: ProfitCalculat
                   <span className={`font-bold font-mono ${color || 'text-slate-900 dark:text-white'}`}>{value}</span>
                 </div>
               ))}
+
+              {/* Dynamic 50/50 Split Progress Bar */}
+              {useP2p && p2pUsedAmount > 0 && (
+                <div className="space-y-2 border-t border-slate-200 dark:border-white/5 pt-2.5">
+                  <div className="flex justify-between text-xs font-mono">
+                    <span className="text-slate-600 dark:text-zinc-400 font-semibold">{t('p2p50Rule') || 'Max 50% from P2P Wallet'}</span>
+                    <span className="text-slate-900 dark:text-white font-bold">Composition</span>
+                  </div>
+                  <div className="flex h-3 w-full bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden text-[9px] font-mono text-white text-center font-bold">
+                    <div
+                      className="bg-amber-500 flex items-center justify-center transition-all duration-300"
+                      style={{ width: `${(p2pUsedAmount / calcAmount) * 100}%` }}
+                      title={`P2P Wallet: $${p2pUsedAmount.toFixed(2)}`}
+                    >
+                      {((p2pUsedAmount / calcAmount) * 100) >= 15 ? 'P2P' : ''}
+                    </div>
+                    <div
+                      className="bg-violet-600 flex items-center justify-center transition-all duration-300 flex-1"
+                      title={`Internal Wallet: $${(calcAmount - p2pUsedAmount).toFixed(2)}`}
+                    >
+                      {((calcAmount - p2pUsedAmount) / calcAmount * 100) >= 15 ? 'Internal' : ''}
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-[10px] text-slate-500 font-mono">
+                    <span>P2P: ${p2pUsedAmount.toFixed(2)} ({(p2pUsedAmount / calcAmount * 100).toFixed(0)}%)</span>
+                    <span>Internal: ${(calcAmount - p2pUsedAmount).toFixed(2)} ({((calcAmount - p2pUsedAmount) / calcAmount * 100).toFixed(0)}%)</span>
+                  </div>
+                </div>
+              )}
+
               <div className="border-t border-slate-200 dark:border-white/5 pt-3">
                 <div className="flex justify-between items-center">
                   <div className="flex flex-col">
@@ -222,11 +345,11 @@ export function ProfitCalculator({ availableBalance, onSuccess }: ProfitCalculat
           )}
         </div>
 
-        {availableBalance >= calcAmount && calcAmount >= 10 ? (
+        {availableBalance >= (calcAmount - p2pUsedAmount) && calcAmount >= 10 ? (
           <button
             onClick={handleActivate}
             disabled={activating}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white text-xs font-bold shadow-lg shadow-violet-600/20 transition-all hover:scale-[1.01] flex items-center justify-center gap-2"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white text-xs font-bold shadow-lg shadow-violet-600/20 transition-all hover:scale-[1.01] flex items-center justify-center gap-2 cursor-pointer"
           >
             {activating ? (
               <>
@@ -242,10 +365,10 @@ export function ProfitCalculator({ availableBalance, onSuccess }: ProfitCalculat
           </button>
         ) : (
           <Link
-            href={`/dashboard/deposit?amount=${calcAmount}`}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white text-xs font-bold shadow-lg shadow-violet-600/20 transition-all hover:scale-[1.01] flex items-center justify-center gap-2"
+            href={`/dashboard/deposit?amount=${calcAmount - p2pUsedAmount}`}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-700 hover:to-blue-700 text-white text-xs font-bold shadow-lg shadow-violet-600/20 transition-all hover:scale-[1.01] flex items-center justify-center gap-2 cursor-pointer"
           >
-            <>{t('depDepositPrefix') || 'Deposit'} ${calcAmount.toLocaleString()} {t('depDepositSuffix') || 'Now'}</>
+            <>{t('depDepositPrefix') || 'Deposit'} ${(calcAmount - p2pUsedAmount).toLocaleString()} {t('depDepositSuffix') || 'Now'}</>
             <ChevronRight className="w-4 h-4" />
           </Link>
         )}

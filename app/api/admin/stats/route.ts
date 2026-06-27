@@ -26,6 +26,24 @@ export async function GET(req: NextRequest) {
     });
     const totalVolume = deposits.reduce((sum, tx) => sum + tx.amount, 0);
 
+    const giftedDeposits = await prisma.transaction.findMany({
+      where: { type: 'deposit', status: 'completed', isVirtual: true },
+      select: { amount: true }
+    });
+    const totalGiftedAmount = giftedDeposits.reduce((sum, tx) => sum + tx.amount, 0);
+
+    const p2pSent = await prisma.transaction.findMany({
+      where: { type: 'p2p_sent', status: 'completed' },
+      select: { amount: true }
+    });
+    const totalP2pTransfers = p2pSent.reduce((sum, tx) => sum + tx.amount, 0);
+
+    const p2pActivations = await prisma.transaction.findMany({
+      where: { type: 'p2p_activation', status: 'completed' },
+      select: { amount: true }
+    });
+    const totalP2pActivations = p2pActivations.reduce((sum, tx) => sum + tx.amount, 0);
+
     const approvedWithdrawals = await prisma.withdrawal.findMany({
       where: { status: 'approved' },
       select: { amount: true, type: true }
@@ -238,7 +256,10 @@ export async function GET(req: NextRequest) {
         totalUnilevelProfit,
         pendingWithdrawalsCount,
         pendingDepositsCount,
-        platformROI: avgDailyROI
+        platformROI: avgDailyROI,
+        totalGiftedAmount,
+        totalP2pTransfers,
+        totalP2pActivations
       },
       recentUsers,
       pendingWithdrawals,

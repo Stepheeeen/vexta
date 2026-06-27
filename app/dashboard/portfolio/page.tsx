@@ -16,6 +16,7 @@ interface StatsData {
     totalEarned: number;
     totalCommissions: number;
     availableBalance: number;
+    p2pBalance: number;
     activeInvestments: number;
     directReferrals: number;
   };
@@ -149,6 +150,7 @@ export default function PortfolioPage() {
                     <DialogContent className="sm:max-w-md bg-transparent border-none shadow-none p-0">
                       <ProfitCalculator 
                         availableBalance={data?.stats.availableBalance || 0} 
+                        p2pBalance={data?.stats.p2pBalance || 0} 
                         onSuccess={() => {
                           setIsActivationModalOpen(false);
                           fetchData();

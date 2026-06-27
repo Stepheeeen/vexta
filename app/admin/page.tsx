@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { AdminLayout } from '@/components/admin-layout';
-import { Users, DollarSign, AlertTriangle, TrendingUp, Loader2, Wallet, Search, Play, RefreshCw } from 'lucide-react';
+import { Users, DollarSign, AlertTriangle, TrendingUp, Loader2, Wallet, Search, Play, RefreshCw, Gift, ArrowLeftRight, Zap } from 'lucide-react';
 import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
 
@@ -15,6 +15,9 @@ interface Stats {
   pendingWithdrawalsCount: number;
   pendingDepositsCount: number;
   platformROI: number;
+  totalGiftedAmount: number;
+  totalP2pTransfers: number;
+  totalP2pActivations: number;
 }
 
 interface User {
@@ -205,6 +208,9 @@ export default function AdminDashboard() {
     { label: t('adminMetricPendingDeps'), value: stats?.pendingDepositsCount?.toString() || '0', icon: AlertTriangle, change: t('adminMetricPendingDepsSub') },
     { label: t('adminMetricPendingWiths'), value: stats?.pendingWithdrawalsCount.toString() || '0', icon: AlertTriangle, change: t('adminMetricPendingWithsSub') },
     { label: t('adminMetricRoiAvg'), value: `${((stats?.platformROI ?? 0) * 100).toFixed(1)}%` || '0.0%', icon: TrendingUp, change: t('adminMetricRoiAvgSub') },
+    { label: t('adminMetricGifted') || 'Total Gifted Capital', value: `$${(stats?.totalGiftedAmount ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` || '$0.00', icon: Gift, change: t('adminMetricGiftedSub') || 'Sponsored deposits' },
+    { label: t('adminMetricP2pVol') || 'P2P Transfer Volume', value: `$${(stats?.totalP2pTransfers ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` || '$0.00', icon: ArrowLeftRight, change: t('adminMetricP2pVolSub') || 'Platform transfers' },
+    { label: t('adminMetricP2pAct') || 'P2P Activations', value: `$${(stats?.totalP2pActivations ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` || '$0.00', icon: Zap, change: t('adminMetricP2pActSub') || 'Used for activation' },
   ];
 
   return (
@@ -235,7 +241,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* System Metrics */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-9 gap-4 mb-8">
         {systemStats.map((stat) => {
           const Icon = stat.icon;
           return (

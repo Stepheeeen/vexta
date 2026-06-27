@@ -360,6 +360,7 @@ export default function Dashboard() {
             <div className="lg:col-span-2">
               <ProfitCalculator 
                 availableBalance={data?.stats.availableBalance ?? 0}
+                p2pBalance={data?.stats.p2pBalance ?? 0}
                 onSuccess={fetchDashboardData}
               />
             </div>
