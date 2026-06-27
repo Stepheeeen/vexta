@@ -186,7 +186,7 @@ export async function GET(req: NextRequest) {
     const allUsers = await prisma.user.findMany({ select: { id: true, country: true } });
     const userCountryMap = new Map<string, number>();
     allUsers.forEach(u => {
-      const c = u.country || 'Unknown';
+      const c = (u.country && u.country.trim()) ? u.country.trim() : 'Other';
       userCountryMap.set(c, (userCountryMap.get(c) || 0) + 1);
     });
     
@@ -194,7 +194,11 @@ export async function GET(req: NextRequest) {
       country,
       count,
       percentage: totalUsers > 0 ? (count / totalUsers) * 100 : 0
-    })).sort((a, b) => b.count - a.count);
+    })).sort((a, b) => {
+      if (a.country === 'Other') return 1;
+      if (b.country === 'Other') return -1;
+      return b.count - a.count;
+    });
 
     // 8. Deposits by country
     const completedDeposits = await prisma.transaction.findMany({
@@ -205,7 +209,7 @@ export async function GET(req: NextRequest) {
     const depositMap = new Map<string, number>();
     let totalDepositsAmount = 0;
     completedDeposits.forEach(d => {
-      const c = d.user?.country || 'Unknown';
+      const c = (d.user?.country && d.user.country.trim()) ? d.user.country.trim() : 'Other';
       depositMap.set(c, (depositMap.get(c) || 0) + d.amount);
       totalDepositsAmount += d.amount;
     });
@@ -214,7 +218,11 @@ export async function GET(req: NextRequest) {
       country,
       amount,
       percentage: totalDepositsAmount > 0 ? (amount / totalDepositsAmount) * 100 : 0
-    })).sort((a, b) => b.amount - a.amount);
+    })).sort((a, b) => {
+      if (a.country === 'Other') return 1;
+      if (b.country === 'Other') return -1;
+      return b.amount - a.amount;
+    });
 
     // 9. User Segments by Deposit Amount
     const userSegments = [
