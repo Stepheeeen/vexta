@@ -325,13 +325,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                     <div className="flex bg-slate-100 dark:bg-white/5 p-0.5 rounded-lg border border-slate-200/50 dark:border-white/5">
                       <button
                         onClick={() => setTheme('light')}
-                        className={`p-1.5 rounded-md transition-all ${(mounted && resolvedTheme === 'light') ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 dark:text-gray-500'}`}
+                        className={`p-1.5 rounded-md transition-all ${(mounted && resolvedTheme === 'light') ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 dark:text-gray-400'}`}
                       >
                         <Sun className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => setTheme('dark')}
-                        className={`p-1.5 rounded-md transition-all ${(mounted && resolvedTheme === 'dark') ? 'bg-[#09090f] text-violet-400 shadow-sm' : 'text-slate-400 dark:text-gray-500'}`}
+                        className={`p-1.5 rounded-md transition-all ${(mounted && resolvedTheme === 'dark') ? 'bg-[#09090f] text-violet-400 shadow-sm' : 'text-slate-400 dark:text-gray-400'}`}
                       >
                         <Moon className="w-3.5 h-3.5" />
                       </button>
@@ -401,7 +401,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
                 className={`w-full flex flex-col items-center justify-center py-2.5 rounded-xl transition-all duration-200 group relative ${
                   active
                     ? 'bg-violet-500/10 text-violet-600 dark:text-violet-400 border border-violet-500/20'
-                    : 'text-slate-400 hover:text-slate-900 dark:text-gray-500 dark:hover:text-white'
+                    : 'text-slate-400 hover:text-slate-900 dark:text-gray-400 dark:hover:text-white'
                 }`}
                 title={t(labelKey)}
               >
@@ -606,7 +606,7 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
               key={href}
               href={href}
               className={`flex flex-col items-center gap-1 px-3 py-2 rounded-xl transition-all duration-200 min-w-[52px] ${
-                active ? 'text-violet-600 dark:text-violet-400' : 'text-slate-500 dark:text-gray-600 hover:text-gray-300'
+                active ? 'text-violet-600 dark:text-violet-400' : 'text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <Icon className={`w-5 h-5 transition-all ${active ? 'scale-110' : ''}`} />

@@ -249,7 +249,7 @@ export default function AdminDashboard() {
                   <Icon className="w-4.5 h-4.5" />
                 </div>
               </div>
-              <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono truncate">
+              <p className="text-[10px] text-slate-400 dark:text-gray-400 font-mono truncate">
                 {stat.change}
               </p>
             </div>

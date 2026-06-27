@@ -356,7 +356,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                       </div>
                     ))
                   ) : (
-                    <p className="text-xs text-slate-400 dark:text-gray-500 font-mono py-8 text-center">{t('noActiveAlerts') || 'No active alerts.'}</p>
+                    <p className="text-xs text-slate-400 dark:text-gray-400 font-mono py-8 text-center">{t('noActiveAlerts') || 'No active alerts.'}</p>
                   )}
                 </div>
               </div>
@@ -415,13 +415,13 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                     <div className="flex bg-slate-100 dark:bg-white/5 p-0.5 rounded-lg border border-slate-200/50 dark:border-white/5">
                       <button
                         onClick={() => setTheme('light')}
-                        className={`p-1.5 rounded-md transition-all ${(mounted && resolvedTheme === 'light') ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 dark:text-gray-500'}`}
+                        className={`p-1.5 rounded-md transition-all ${(mounted && resolvedTheme === 'light') ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 dark:text-gray-400'}`}
                       >
                         <Sun className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => setTheme('dark')}
-                        className={`p-1.5 rounded-md transition-all ${(mounted && resolvedTheme === 'dark') ? 'bg-[#09090f] text-violet-400 shadow-sm' : 'text-slate-400 dark:text-gray-500'}`}
+                        className={`p-1.5 rounded-md transition-all ${(mounted && resolvedTheme === 'dark') ? 'bg-[#09090f] text-violet-400 shadow-sm' : 'text-slate-400 dark:text-gray-400'}`}
                       >
                         <Moon className="w-3.5 h-3.5" />
                       </button>
@@ -541,7 +541,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
                     </div>
                   ))
                 ) : (
-                  <p className="text-[10px] text-slate-400 dark:text-gray-500 font-mono py-6 text-center">{t('noActiveAlerts') || 'No active alerts.'}</p>
+                  <p className="text-[10px] text-slate-400 dark:text-gray-400 font-mono py-6 text-center">{t('noActiveAlerts') || 'No active alerts.'}</p>
                 )}
               </div>
             </div>
@@ -626,13 +626,13 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
               <div className="flex bg-slate-100 dark:bg-white/5 p-0.5 rounded-xl border border-slate-200/50 dark:border-white/5">
                 <button
                   onClick={() => setTheme('light')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${(mounted && resolvedTheme === 'light') ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 dark:text-gray-500'}`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${(mounted && resolvedTheme === 'light') ? 'bg-white text-violet-600 shadow-sm' : 'text-slate-400 dark:text-gray-400'}`}
                 >
                   <Sun className="w-3.5 h-3.5 inline mr-1" /> Light
                 </button>
                 <button
                   onClick={() => setTheme('dark')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${(mounted && resolvedTheme === 'dark') ? 'bg-[#09090f] text-violet-400 shadow-sm' : 'text-slate-400 dark:text-gray-500'}`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${(mounted && resolvedTheme === 'dark') ? 'bg-[#09090f] text-violet-400 shadow-sm' : 'text-slate-400 dark:text-gray-400'}`}
                 >
                   <Moon className="w-3.5 h-3.5 inline mr-1" /> Dark
                 </button>
