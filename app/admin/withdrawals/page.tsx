@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { AdminLayout } from '@/components/admin-layout';
-import { CheckCircle2, Clock, AlertCircle, Loader2 } from 'lucide-react';
+import { CheckCircle2, Clock, AlertCircle, Loader2, Copy, Check } from 'lucide-react';
 import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
 
@@ -13,6 +13,7 @@ interface Withdrawal {
   amount: string;
   method: string;
   account: string;
+  walletAddress: string;
   date: string;
   status: string;
 }
@@ -29,6 +30,19 @@ export default function AdminWithdrawals() {
   const [metrics, setMetrics] = useState<Metrics>({ pending: 0, todayProcessed: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopy = (address: string, id: string) => {
+    navigator.clipboard.writeText(address);
+    setCopiedId(id);
+    toast({
+      title: t('depCopiedBtn') || 'Copied!',
+      description: 'Address copied to clipboard.',
+    });
+    setTimeout(() => {
+      setCopiedId(null);
+    }, 2000);
+  };
 
   const fetchWithdrawals = async () => {
     try {
@@ -166,8 +180,25 @@ export default function AdminWithdrawals() {
                       </td>
                       <td className="px-6 py-4 text-right text-emerald-600 dark:text-emerald-400 font-bold">{withdrawal.amount}</td>
                       <td className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 text-sm">{withdrawal.method}</td>
-                      <td className="px-6 py-4 text-slate-500 dark:text-gray-400 font-mono text-xs max-w-[150px] truncate" title={withdrawal.account}>
-                        {withdrawal.account}
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-slate-500 dark:text-gray-400 font-mono text-xs max-w-[180px] truncate" title={withdrawal.walletAddress}>
+                            {withdrawal.account}
+                          </span>
+                          {withdrawal.walletAddress && (
+                            <button
+                              onClick={() => handleCopy(withdrawal.walletAddress, withdrawal.id)}
+                              className="p-1 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 dark:text-gray-400 rounded-md transition-colors"
+                              title="Copy Wallet Address"
+                            >
+                              {copiedId === withdrawal.id ? (
+                                <Check className="w-3.5 h-3.5 text-emerald-500" />
+                              ) : (
+                                <Copy className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 text-sm">{withdrawal.date}</td>
                       <td className="px-6 py-4 text-center">

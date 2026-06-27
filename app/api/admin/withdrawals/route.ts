@@ -30,6 +30,7 @@ export async function GET(req: NextRequest) {
       amount: `$${w.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       method: 'Crypto Wallet',
       account: `${w.network}: ${w.walletAddress.slice(0, 6)}...${w.walletAddress.slice(-4)}`,
+      walletAddress: w.walletAddress,
       date: w.createdAt.toISOString().split('T')[0],
       status: w.status === 'pending' ? 'Pending' : w.status === 'approved' ? 'Completed' : 'Rejected'
     }));
