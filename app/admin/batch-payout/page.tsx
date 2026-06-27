@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { AdminLayout } from '@/components/admin-layout';
 import {
   FileDown, Play, ShieldCheck, AlertTriangle, Clock, CheckCircle2,
-  Loader2, RefreshCw, Download, Send, Eye, EyeOff, History
+  Loader2, RefreshCw, Download, Send, Eye, EyeOff, History, Copy, Check
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -57,6 +57,17 @@ export default function BatchPayoutPage() {
   const [loading, setLoading]         = useState(false);
   const [sendingOtp, setSendingOtp]   = useState(false);
   const [previewLoading, setPreviewLoading] = useState(true);
+  const [copiedId, setCopiedId]       = useState<string | null>(null);
+
+  const handleCopy = (address: string, id: string) => {
+    navigator.clipboard.writeText(address);
+    setCopiedId(id);
+    toast({
+      title: 'Copied!',
+      description: 'Address copied to clipboard.',
+    });
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   // ─── Load preview data ───────────────────────────────────────────────────
 
@@ -252,8 +263,25 @@ export default function BatchPayoutPage() {
                             <p className="font-semibold text-slate-900 dark:text-white text-xs">{w.userName}</p>
                             <p className="text-slate-400 dark:text-zinc-500 text-[10px]">{w.email}</p>
                           </td>
-                          <td className="px-4 py-3 font-mono text-[10px] text-slate-400 dark:text-zinc-400 max-w-[120px] truncate" title={w.walletAddress}>
-                            {w.walletAddress}
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-[10px] text-slate-400 dark:text-zinc-400 max-w-[120px] truncate" title={w.walletAddress}>
+                                {w.walletAddress}
+                              </span>
+                              {w.walletAddress && (
+                                <button
+                                  onClick={() => handleCopy(w.walletAddress, w.id)}
+                                  className="p-1 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 dark:text-gray-400 rounded-md transition-colors cursor-pointer shrink-0"
+                                  title="Copy Wallet Address"
+                                >
+                                  {copiedId === w.id ? (
+                                    <Check className="w-3 h-3 text-emerald-500" />
+                                  ) : (
+                                    <Copy className="w-3 h-3" />
+                                  )}
+                                </button>
+                              )}
+                            </div>
                           </td>
                           <td className="px-4 py-3 text-right font-bold text-emerald-600 dark:text-emerald-400 font-mono text-xs">
                             ${w.amount.toFixed(2)}

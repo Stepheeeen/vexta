@@ -186,7 +186,8 @@ export async function GET(req: NextRequest) {
     const allUsers = await prisma.user.findMany({ select: { id: true, country: true } });
     const userCountryMap = new Map<string, number>();
     allUsers.forEach(u => {
-      const c = (u.country && u.country.trim()) ? u.country.trim() : 'Other';
+      const rawC = u.country?.trim() || '';
+      const c = (!rawC || rawC.toLowerCase() === 'unknown') ? 'Other' : rawC;
       userCountryMap.set(c, (userCountryMap.get(c) || 0) + 1);
     });
     
@@ -209,7 +210,8 @@ export async function GET(req: NextRequest) {
     const depositMap = new Map<string, number>();
     let totalDepositsAmount = 0;
     completedDeposits.forEach(d => {
-      const c = (d.user?.country && d.user.country.trim()) ? d.user.country.trim() : 'Other';
+      const rawC = d.user?.country?.trim() || '';
+      const c = (!rawC || rawC.toLowerCase() === 'unknown') ? 'Other' : rawC;
       depositMap.set(c, (depositMap.get(c) || 0) + d.amount);
       totalDepositsAmount += d.amount;
     });

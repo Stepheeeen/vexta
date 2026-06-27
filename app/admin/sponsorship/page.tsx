@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { 
   Zap, Users, DollarSign, Award, ShieldAlert, 
   Lock, Unlock, ArrowDownRight, Edit2, 
-  Loader2, Plus, Search, Check, RefreshCw 
+  Loader2, Plus, Search, Check, RefreshCw, Copy
 } from 'lucide-react';
 
 interface Leader {
@@ -48,6 +48,17 @@ export default function AdminSponsorship() {
   const [pendingWithdrawals, setPendingWithdrawals] = useState<PendingWithdrawal[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const handleCopy = (address: string, id: string) => {
+    navigator.clipboard.writeText(address);
+    setCopiedId(id);
+    toast({
+      title: 'Copied!',
+      description: 'Address copied to clipboard.',
+    });
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   // Gifting modal states
   const [showGiftModal, setShowGiftModal] = useState(false);
@@ -352,8 +363,25 @@ export default function AdminSponsorship() {
                       </span>
                     </td>
                     <td className="py-3.5 font-mono">
-                      <p className="font-semibold">{item.network}</p>
-                      <p className="text-[10px] text-slate-400 truncate max-w-[180px]">{item.walletAddress}</p>
+                      <p className="font-semibold text-xs">{item.network}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="text-[10px] text-slate-400 truncate max-w-[140px]" title={item.walletAddress}>
+                          {item.walletAddress}
+                        </span>
+                        {item.walletAddress && (
+                          <button
+                            onClick={() => handleCopy(item.walletAddress, item.id)}
+                            className="p-0.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-white rounded transition-colors cursor-pointer shrink-0"
+                            title="Copy Wallet Address"
+                          >
+                            {copiedId === item.id ? (
+                              <Check className="w-3 h-3 text-emerald-500" />
+                            ) : (
+                              <Copy className="w-3 h-3" />
+                            )}
+                          </button>
+                        )}
+                      </div>
                     </td>
                     <td className="py-3.5 font-bold font-mono text-slate-900 dark:text-white">
                       ${item.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
