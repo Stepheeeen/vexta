@@ -143,13 +143,13 @@ async function handleGenerate(adminId: string): Promise<NextResponse> {
 
   console.log(
     `[BatchPayout] Admin ${adminId} generated batch run ${batchRun.id}: ` +
-    `${pendingWithdrawals.length} withdrawals, $${totalAmount.toFixed(2)} USDT`
+    `${pendingWithdrawals.length} withdrawals, $${totalNetAmount.toFixed(2)} USDT`
   );
 
   return NextResponse.json({
     message:        'Batch report generated',
     runId:          batchRun.id,
-    totalAmount:    +totalAmount.toFixed(2),
+    totalAmount:    +totalNetAmount.toFixed(2),
     withdrawalCount: pendingWithdrawals.length,
     csvData,
     withdrawals:    pendingWithdrawals.map(w => ({
