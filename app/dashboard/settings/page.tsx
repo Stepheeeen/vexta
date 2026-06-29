@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
+import { safeSetItem, safeRemoveItem } from '@/lib/storage';
 
 
 const inputClass =
@@ -293,8 +294,8 @@ export default function SettingsPage() {
                     <button
                       type="button"
                       onClick={() => {
-                        localStorage.setItem('vexta_tour_replay_trigger', 'true');
-                        localStorage.removeItem('vexta_tour_completed');
+                        safeSetItem('vexta_tour_replay_trigger', 'true');
+                        safeRemoveItem('vexta_tour_completed');
                         router.push('/dashboard');
                       }}
                       className="text-[10px] font-mono text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/10 px-3 py-1.5 rounded-lg transition-all flex-shrink-0"

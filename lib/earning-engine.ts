@@ -95,10 +95,13 @@ export async function applyEarningToInvestments(
     });
 
     if (willComplete) {
-      // Also decrement operationalCapital on the user since this investment is now dead
+      // Also decrement operationalCapital and activeDeposit on the user since this investment is now dead
       await client.user.update({
         where: { id: userId },
-        data: { operationalCapital: { decrement: inv.activeCapital } },
+        data: {
+          operationalCapital: { decrement: inv.activeCapital },
+          activeDeposit: { decrement: inv.amount },
+        },
       });
     }
 

@@ -54,12 +54,18 @@ async function main() {
     if (hitCap) {
       await prisma.user.update({
         where: { id: inv.userId },
-        data: { operationalCapital: { decrement: capital } },
+        data: {
+          operationalCapital: { decrement: capital },
+          activeDeposit: { decrement: inv.amount },
+        },
       });
     } else if (inv.activeCapital === 0) {
       await prisma.user.update({
         where: { id: inv.userId },
-        data: { operationalCapital: { increment: capital } },
+        data: {
+          operationalCapital: { increment: capital },
+          activeDeposit: { increment: inv.amount },
+        },
       });
     }
     await prisma.dailyROIEntry.create({

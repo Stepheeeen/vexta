@@ -235,7 +235,6 @@ async function handleCompletedPayment(
         where: { id: userId },
         data: {
           balance:      { increment: creditAmount },
-          activeDeposit: { increment: creditAmount }, // kept for dashboard compat
         },
       });
 

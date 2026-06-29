@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { landingTranslations } from './landing-translations';
 import { adminTranslations } from './admin-translations';
+import { safeGetItem, safeSetItem } from '@/lib/storage';
 
 export type Language = 'en' | 'es' | 'vi' | 'th' | 'pt' | 'ko' | 'fr' | 'zh' | 'ar' | 'ru' | 'hi' | 'de';
 
@@ -5171,7 +5172,7 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
   const [language, setLanguageState] = useState<Language>('en');
 
   useEffect(() => {
-    const saved = localStorage.getItem('vexta_lang') as Language | null;
+    const saved = safeGetItem('vexta_lang') as Language | null;
     if (saved && Object.keys(translations).includes(saved)) {
       setLanguageState(saved);
     } else {
@@ -5192,14 +5193,14 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
       const params = new URLSearchParams(window.location.search);
       const ref = params.get('ref') || params.get('code');
       if (ref) {
-        localStorage.setItem('vexta_referred_by', ref);
+        safeSetItem('vexta_referred_by', ref);
       }
     }
   }, []);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem('vexta_lang', lang);
+    safeSetItem('vexta_lang', lang);
   };
 
   const t = (key: string): string => {

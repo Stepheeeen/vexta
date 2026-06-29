@@ -117,12 +117,11 @@ export async function POST(req: NextRequest) {
           }
         });
 
-        // 4. Update user balance & activeDeposit
+        // 4. Update user balance
         await tx.user.update({
           where: { id: currentTxn.userId },
           data: {
             balance: { increment: currentTxn.amount },
-            activeDeposit: { increment: currentTxn.amount },
           }
         });
       }, { timeout: 30000 });

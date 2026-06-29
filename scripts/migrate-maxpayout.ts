@@ -42,10 +42,13 @@ async function main() {
     });
 
     if (alreadyExceeded) {
-      // Decrement operationalCapital for user since this package is now expired
+      // Decrement operationalCapital and activeDeposit for user since this package is now expired
       await prisma.user.update({
         where: { id: inv.userId },
-        data: { operationalCapital: { decrement: inv.activeCapital } },
+        data: {
+          operationalCapital: { decrement: inv.activeCapital },
+          activeDeposit: { decrement: inv.amount },
+        },
       });
       console.log(
         `[MIGRATE] Investment ${inv.id} — maxPayout $${maxPayout}, ` +

@@ -178,7 +178,10 @@ async function processSingleInvestmentROI(inv: any, today: Date): Promise<number
     });
     await prisma.user.update({
       where: { id: inv.userId },
-      data: { operationalCapital: { decrement: inv.activeCapital } },
+      data: {
+        operationalCapital: { decrement: inv.activeCapital },
+        activeDeposit: { decrement: inv.amount },
+      },
     });
     console.log(`[ROI] Investment ${inv.id} already at 200% cap — marking completed.`);
     return 0;
@@ -225,7 +228,10 @@ async function processSingleInvestmentROI(inv: any, today: Date): Promise<number
       if (willComplete) {
         await tx.user.update({
           where: { id: inv.userId },
-          data: { operationalCapital: { decrement: inv.activeCapital } },
+          data: {
+            operationalCapital: { decrement: inv.activeCapital },
+            activeDeposit: { decrement: inv.amount },
+          },
         });
       }
 
@@ -269,6 +275,7 @@ async function processSingleInvestmentROI(inv: any, today: Date): Promise<number
               balance: { decrement: wipeAmountBalance },
               totalEarned: { decrement: maxSupportReturn },
               operationalCapital: { decrement: inv.activeCapital },
+              activeDeposit: { decrement: inv.amount },
               isSponsored: false,
               sponsoredGiftedAmount: 0,
             }

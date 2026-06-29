@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from '@/components/translation-provider';
+import { safeGetItem, safeSetItem, safeRemoveItem } from '@/lib/storage';
 import { ArrowRight, ArrowLeft, X } from 'lucide-react';
 
 interface TourStep {
@@ -74,15 +75,15 @@ export function WelcomeTour() {
 
   useEffect(() => {
     // Check local storage or check event triggers
-    const completed = localStorage.getItem('vexta_tour_completed');
-    const triggerReplay = localStorage.getItem('vexta_tour_replay_trigger');
+    const completed = safeGetItem('vexta_tour_completed');
+    const triggerReplay = safeGetItem('vexta_tour_replay_trigger');
     
     if (completed !== 'true' || triggerReplay === 'true') {
       // Add a slight delay for dashboard loading transitions
       const timer = setTimeout(() => {
         setIsOpen(true);
         setCurrentStep(0);
-        localStorage.removeItem('vexta_tour_replay_trigger');
+        safeRemoveItem('vexta_tour_replay_trigger');
       }, 1000);
       return () => clearTimeout(timer);
     }
@@ -142,7 +143,7 @@ export function WelcomeTour() {
 
   const handleClose = () => {
     setIsOpen(false);
-    localStorage.setItem('vexta_tour_completed', 'true');
+    safeSetItem('vexta_tour_completed', 'true');
   };
 
   // Coordinates calculation for masks

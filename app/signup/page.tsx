@@ -9,6 +9,7 @@ import { useTranslation } from '@/components/translation-provider';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { useRouter } from 'next/navigation';
 import { countries } from '@/lib/countries';
+import { safeGetItem } from '@/lib/storage';
 
 export default function SignUp() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function SignUp() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      const ref = params.get('ref') || params.get('code') || localStorage.getItem('vexta_referred_by');
+      const ref = params.get('ref') || params.get('code') || safeGetItem('vexta_referred_by');
       if (ref) {
         setFormData(prev => ({ ...prev, referralCode: ref }));
       }
