@@ -17,7 +17,7 @@ import { sendCronReportEmail } from '@/lib/mail';
  *
  * Auth: Requires either a valid admin JWT token OR the CRON_SECRET header.
  */
-export async function POST(req: NextRequest) {
+async function handleRun(req: NextRequest) {
   try {
     // ─── Auth: accept admin JWT or cron secret (Header or Query param) ────
     const cronSecret = process.env.CRON_SECRET;
@@ -37,8 +37,13 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const body = await req.json().catch(() => ({}));
-    const bypassWeekendCheck = body.bypassWeekendCheck === true;
+    let bypassWeekendCheck = false;
+    if (req.method === 'POST') {
+      const body = await req.json().catch(() => ({}));
+      bypassWeekendCheck = body.bypassWeekendCheck === true;
+    } else {
+      bypassWeekendCheck = req.nextUrl.searchParams.get('bypassWeekendCheck') === 'true';
+    }
 
     const result = await runDailyRoiDistribution(bypassWeekendCheck);
 
@@ -89,5 +94,13 @@ export async function POST(req: NextRequest) {
       { status: err.message === 'Already ran today' ? 400 : 500 }
     );
   }
+}
+
+export async function GET(req: NextRequest) {
+  return handleRun(req);
+}
+
+export async function POST(req: NextRequest) {
+  return handleRun(req);
 }
 

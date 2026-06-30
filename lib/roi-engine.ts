@@ -149,6 +149,30 @@ export async function generateDailyReturns(
 }
 
 
+/** Helper to execute an operation with retries on WriteConflict (P2034) */
+async function executeWithRetry<T>(
+  fn: () => Promise<T>,
+  retries = 5,
+  delay = 100
+): Promise<T> {
+  try {
+    return await fn();
+  } catch (error: any) {
+    const isWriteConflict =
+      error.code === 'P2034' ||
+      error.message?.includes('WriteConflict') ||
+      error.message?.includes('writeConflict') ||
+      error.message?.includes('Write conflict');
+
+    if (isWriteConflict && retries > 0) {
+      console.warn(`[ROI] WriteConflict encountered. Retrying in ${delay}ms... (${retries} retries left)`);
+      await new Promise((resolve) => setTimeout(resolve, delay + Math.random() * 100));
+      return executeWithRetry(fn, retries - 1, delay * 2);
+    }
+    throw error;
+  }
+}
+
 /**
  * Process a single investment's daily ROI.
  * Extracted so it can run concurrently in Promise.allSettled() chunks.
@@ -198,109 +222,111 @@ async function processSingleInvestmentROI(inv: any, today: Date): Promise<number
   const willComplete = hitCap || newDaysElapsed >= (inv.duration || maxContractDays);
 
   try {
-    await prisma.$transaction(async (tx) => {
-      // Fetch fresh user to check freeze / block flags and retrieve current fresh balance
-      const freshUser = await tx.user.findUnique({ where: { id: inv.userId } });
-      if (!freshUser || !freshUser.isActive || freshUser.fundsFrozen || freshUser.roiBlocked) {
-        throw new Error('USER_INELIGIBLE');
-      }
+    await executeWithRetry(async () => {
+      await prisma.$transaction(async (tx) => {
+        // Fetch fresh user to check freeze / block flags and retrieve current fresh balance
+        const freshUser = await tx.user.findUnique({ where: { id: inv.userId } });
+        if (!freshUser || !freshUser.isActive || freshUser.fundsFrozen || freshUser.roiBlocked) {
+          throw new Error('USER_INELIGIBLE');
+        }
 
-      // 1. Credit user balance immediately
-      await tx.user.update({
-        where: { id: inv.userId },
-        data: {
-          balance:     { increment: dailyProfit },
-          totalEarned: { increment: dailyProfit },
-        },
-      });
-
-      // 2. Update investment counters
-      await tx.investment.update({
-        where: { id: inv.id },
-        data: {
-          totalEarned:         newTotalEarned,
-          businessDaysElapsed: newDaysElapsed,
-          maxPayout:           maxPayout,
-          ...(willComplete ? { status: 'completed', activeCapital: 0 } : {}),
-        },
-      });
-
-      if (willComplete) {
+        // 1. Credit user balance immediately
         await tx.user.update({
           where: { id: inv.userId },
           data: {
-            operationalCapital: { decrement: inv.activeCapital },
-            activeDeposit: { decrement: inv.amount },
+            balance:     { increment: dailyProfit },
+            totalEarned: { increment: dailyProfit },
           },
         });
-      }
 
-      // 3. DailyROIEntry audit log
-      await tx.dailyROIEntry.create({
-        data: {
-          investmentId: inv.id,
-          amount:       dailyProfit,
-          date:         today,
-        },
-      });
+        // 2. Update investment counters
+        await tx.investment.update({
+          where: { id: inv.id },
+          data: {
+            totalEarned:         newTotalEarned,
+            businessDaysElapsed: newDaysElapsed,
+            maxPayout:           maxPayout,
+            ...(willComplete ? { status: 'completed', activeCapital: 0 } : {}),
+          },
+        });
 
-      // 4. Transaction ledger
-      const reason = hitCap ? ' (200% cap reached — contract completed)' : willComplete ? ' (Contract completed)' : '';
-      await tx.transaction.create({
-        data: {
-          userId:      inv.userId,
-          type:        'daily_roi',
-          amount:      dailyProfit,
-          status:      'completed',
-          description: `Daily arbitrage profit${reason}`,
-          reference:   inv.id,
-          isVirtual:   inv.isVirtual,
-        },
-      });
-
-      // 5. Support Account 2X Rule
-      if (freshUser.isSponsored && freshUser.sponsoredGiftedAmount > 0) {
-        const maxSupportReturn = freshUser.sponsoredGiftedAmount * 2;
-        const newInvTotalEarned = inv.totalEarned + dailyProfit;
-
-        if (newInvTotalEarned >= maxSupportReturn) {
-          // Since we already incremented the user balance by dailyProfit,
-          // the actual current balance in the DB is freshUser.balance + dailyProfit.
-          const currentBalance = freshUser.balance + dailyProfit;
-          const wipeAmountBalance = Math.min(maxSupportReturn, currentBalance);
-
+        if (willComplete) {
           await tx.user.update({
             where: { id: inv.userId },
             data: {
-              balance: { decrement: wipeAmountBalance },
-              totalEarned: { decrement: maxSupportReturn },
               operationalCapital: { decrement: inv.activeCapital },
               activeDeposit: { decrement: inv.amount },
-              isSponsored: false,
-              sponsoredGiftedAmount: 0,
-            }
+            },
           });
-
-          await tx.investment.update({
-            where: { id: inv.id },
-            data: { status: 'completed', activeCapital: 0 }
-          });
-
-          await tx.transaction.create({
-            data: {
-              userId: inv.userId,
-              type: 'system_reset',
-              amount: -wipeAmountBalance,
-              status: 'completed',
-              description: `Support account completed (2X reached). Profits reset.`,
-              reference: inv.id,
-            }
-          });
-
-          console.log(`[ROI] User ${inv.userId} hit 2X support account limit. Reset applied.`);
         }
-      }
-    }, { timeout: 30000 });
+
+        // 3. DailyROIEntry audit log
+        await tx.dailyROIEntry.create({
+          data: {
+            investmentId: inv.id,
+            amount:       dailyProfit,
+            date:         today,
+          },
+        });
+
+        // 4. Transaction ledger
+        const reason = hitCap ? ' (200% cap reached — contract completed)' : willComplete ? ' (Contract completed)' : '';
+        await tx.transaction.create({
+          data: {
+            userId:      inv.userId,
+            type:        'daily_roi',
+            amount:      dailyProfit,
+            status:      'completed',
+            description: `Daily arbitrage profit${reason}`,
+            reference:   inv.id,
+            isVirtual:   inv.isVirtual,
+          },
+        });
+
+        // 5. Support Account 2X Rule
+        if (freshUser.isSponsored && freshUser.sponsoredGiftedAmount > 0) {
+          const maxSupportReturn = freshUser.sponsoredGiftedAmount * 2;
+          const newInvTotalEarned = inv.totalEarned + dailyProfit;
+
+          if (newInvTotalEarned >= maxSupportReturn) {
+            // Since we already incremented the user balance by dailyProfit,
+            // the actual current balance in the DB is freshUser.balance + dailyProfit.
+            const currentBalance = freshUser.balance + dailyProfit;
+            const wipeAmountBalance = Math.min(maxSupportReturn, currentBalance);
+
+            await tx.user.update({
+              where: { id: inv.userId },
+              data: {
+                balance: { decrement: wipeAmountBalance },
+                totalEarned: { decrement: maxSupportReturn },
+                operationalCapital: { decrement: inv.activeCapital },
+                activeDeposit: { decrement: inv.amount },
+                isSponsored: false,
+                sponsoredGiftedAmount: 0,
+              }
+            });
+
+            await tx.investment.update({
+              where: { id: inv.id },
+              data: { status: 'completed', activeCapital: 0 }
+            });
+
+            await tx.transaction.create({
+              data: {
+                userId: inv.userId,
+                type: 'system_reset',
+                amount: -wipeAmountBalance,
+                status: 'completed',
+                description: `Support account completed (2X reached). Profits reset.`,
+                reference: inv.id,
+              }
+            });
+
+            console.log(`[ROI] User ${inv.userId} hit 2X support account limit. Reset applied.`);
+          }
+        }
+      }, { timeout: 30000 });
+    });
   } catch (err: any) {
     if (err.message === 'USER_INELIGIBLE') {
       return 0;
