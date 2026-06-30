@@ -24,6 +24,16 @@ interface ReferralData {
     level: number;
     createdAt: string;
   }>;
+  tree?: Array<{
+    level: number;
+    users: Array<{
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      joinedAt: string;
+    }>;
+  }>;
 }
 
 export default function ReferralsPage() {
@@ -214,33 +224,73 @@ export default function ReferralsPage() {
             </div>
           </div>
 
-          {/* Recent referrals */}
-          <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none">
-            <h2 className="text-sm font-semibold text-slate-950 dark:text-white mb-5">{t('referralsRecentComm')}</h2>
-            <div className="space-y-3">
-              {data && data.recentCommissions.length > 0 ? (
-                data.recentCommissions.map((commission, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-all">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center text-[10px] font-bold text-violet-500 dark:text-violet-400">
-                        L{commission.level}
+          {/* Bottom Grid: Direct Referrals & Recent Commissions */}
+          <div className="grid md:grid-cols-2 gap-5 mb-5">
+            {/* Direct Referrals List */}
+            <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none">
+              <h2 className="text-sm font-semibold text-slate-950 dark:text-white mb-5">{t('referredUsers')}</h2>
+              <div className="space-y-3">
+                {data && data.tree && (data.tree.find((t) => t.level === 1)?.users || []).length > 0 ? (
+                  (data.tree.find((t) => t.level === 1)?.users || []).map((referredUser, idx) => {
+                    const initials = `${referredUser.firstName?.charAt(0) || ''}${referredUser.lastName?.charAt(0) || ''}`.toUpperCase();
+                    return (
+                      <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-all">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-xs font-bold text-violet-500 dark:text-violet-400">
+                            {initials || '?'}
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-900 dark:text-white">{referredUser.firstName} {referredUser.lastName}</p>
+                            <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">
+                              {referredUser.email}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[10px] text-slate-500 dark:text-gray-400 font-mono">
+                            {new Date(referredUser.joinedAt).toLocaleDateString()}
+                          </p>
+                          <span className="text-[8px] font-extrabold font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                            {t('dashActive') || 'Active'}
+                          </span>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-xs font-medium text-slate-900 dark:text-white">{t('referralsCommReceived')}</p>
-                        <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">
-                          {new Date(commission.createdAt).toLocaleDateString()} · L{commission.level} {t('referralsNetworkMember')}
-                        </p>
+                    );
+                  })
+                ) : (
+                  <p className="text-xs text-slate-400 dark:text-gray-500 font-mono py-8 text-center">{t('noReferrals')}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Recent Commissions */}
+            <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-xl border border-slate-200/60 dark:border-white/5 rounded-2xl p-6 shadow-sm dark:shadow-none">
+              <h2 className="text-sm font-semibold text-slate-950 dark:text-white mb-5">{t('referralsRecentComm')}</h2>
+              <div className="space-y-3">
+                {data && data.recentCommissions.length > 0 ? (
+                  data.recentCommissions.map((commission, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/2 rounded-xl border border-slate-200/50 dark:border-white/5 hover:border-slate-300 dark:hover:border-white/10 transition-all">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center text-[10px] font-bold text-violet-500 dark:text-violet-400">
+                          L{commission.level}
+                        </div>
+                        <div>
+                          <p className="text-xs font-medium text-slate-900 dark:text-white">{t('referralsCommReceived')}</p>
+                          <p className="text-[10px] text-slate-500 dark:text-gray-500 font-mono">
+                            {new Date(commission.createdAt).toLocaleDateString()} · L{commission.level} {t('referralsNetworkMember')}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-green-600 dark:text-green-400 font-mono">+${commission.amount.toFixed(2)}</span>
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-gray-500" />
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold text-green-600 dark:text-green-400 font-mono">+${commission.amount.toFixed(2)}</span>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-gray-500" />
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-xs text-slate-400 dark:text-gray-500 font-mono py-8 text-center">{t('referralsNoComm')}</p>
-              )}
+                  ))
+                ) : (
+                  <p className="text-xs text-slate-400 dark:text-gray-500 font-mono py-8 text-center">{t('referralsNoComm')}</p>
+                )}
+              </div>
             </div>
           </div>
         </>

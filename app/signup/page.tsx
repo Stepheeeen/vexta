@@ -9,7 +9,7 @@ import { useTranslation } from '@/components/translation-provider';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { useRouter } from 'next/navigation';
 import { countries } from '@/lib/countries';
-import { safeGetItem } from '@/lib/storage';
+import { safeGetItem, safeRemoveItem } from '@/lib/storage';
 
 export default function SignUp() {
   const router = useRouter();
@@ -195,6 +195,7 @@ export default function SignUp() {
           if (!res.ok) {
             throw new Error(data.error || 'Registration failed');
           }
+          safeRemoveItem('vexta_referred_by');
           window.location.href = '/verify';
         } catch (err: any) {
           setSubmitError(err.message || 'An error occurred during registration.');

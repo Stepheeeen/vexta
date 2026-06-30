@@ -18,18 +18,18 @@ import { sendCronReportEmail } from '@/lib/mail';
  * Auth: Requires either a valid admin JWT token OR the CRON_SECRET header.
  */
 async function handleRun(req: NextRequest) {
+  // ─── Auth: accept admin JWT or cron secret (Header or Query param) ────
+  const cronSecret = process.env.CRON_SECRET;
+  const cronHeader = req.headers.get('x-cron-key');
+  const authHeader = req.headers.get('authorization');
+  const querySecret = req.nextUrl.searchParams.get('secret');
+
+  const isCronCall = 
+    (cronSecret && cronHeader === cronSecret) ||
+    (cronSecret && authHeader === `Bearer ${cronSecret}`) ||
+    (cronSecret && querySecret === cronSecret);
+
   try {
-    // ─── Auth: accept admin JWT or cron secret (Header or Query param) ────
-    const cronSecret = process.env.CRON_SECRET;
-    const cronHeader = req.headers.get('x-cron-key');
-    const authHeader = req.headers.get('authorization');
-    const querySecret = req.nextUrl.searchParams.get('secret');
-
-    const isCronCall = 
-      (cronSecret && cronHeader === cronSecret) ||
-      (cronSecret && authHeader === `Bearer ${cronSecret}`) ||
-      (cronSecret && querySecret === cronSecret);
-
     if (!isCronCall) {
       const userPayload = getUserFromRequest(req);
       if (!userPayload || userPayload.role !== 'admin') {
@@ -74,6 +74,23 @@ async function handleRun(req: NextRequest) {
     const errMsg = err.message || 'Unknown error occurred.';
     const errStack = err.stack || 'No callstack available.';
 
+    // Graceful skip if already run today
+    if (err.message === 'Already ran today') {
+      if (isCronCall) {
+        return NextResponse.json({
+          success:         true,
+          message:         'Already ran today',
+          usersPaid:       0,
+          totalDistributed: 0,
+        });
+      } else {
+        return NextResponse.json(
+          { error: errMsg },
+          { status: 400 }
+        );
+      }
+    }
+
     // Log to Admin Audit Logs
     const firstAdmin = await prisma.user.findFirst({ where: { role: 'admin' } });
     if (firstAdmin) {
@@ -91,7 +108,7 @@ async function handleRun(req: NextRequest) {
 
     return NextResponse.json(
       { error: errMsg },
-      { status: err.message === 'Already ran today' ? 400 : 500 }
+      { status: 500 }
     );
   }
 }
