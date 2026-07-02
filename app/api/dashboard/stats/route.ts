@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getUserFromRequest } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getAvailableBalance, getWithdrawableBalances, getP2pBalance } from '@/lib/balance';
+import { SYSTEM_CONFIG } from '@/lib/config/system';
 
 export async function GET(req: NextRequest) {
   const payload = getUserFromRequest(req);
@@ -67,17 +68,54 @@ export async function GET(req: NextRequest) {
     currentLevelIds = links.map((l) => l.referredId);
   }
 
+  // Fetch pending Plisio deposits (not yet confirmed by the network)
+  let pendingPlisioInvoices = await prisma.plisioInvoice.findMany({
+    where: { userId, status: 'pending' },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  // ── Real-Time Plisio Fast-Track Sync ───────────────────────────────────────
+  const { secretKey } = SYSTEM_CONFIG.plisio;
+  if (secretKey && pendingPlisioInvoices.length > 0) {
+    let hasUpdated = false;
+    for (const invoice of pendingPlisioInvoices) {
+      try {
+        const apiRes = await fetch(`https://api.plisio.net/api/v1/operations/${invoice.txnId}?api_key=${secretKey}`);
+        const apiData = await apiRes.json() as any;
+        if (apiData.status === 'success' && apiData.data) {
+          const { status: plisioStatus, actual_sum: plisioActualSum, tx_url: txUrl } = apiData.data;
+          
+          if (plisioStatus === 'completed' || plisioStatus === 'mismatch') {
+            const creditAmount = plisioActualSum ? parseFloat(plisioActualSum) : invoice.amount;
+            await handleCompletedPayment(invoice, creditAmount, txUrl);
+            hasUpdated = true;
+          } else if (['expired', 'cancelled', 'error'].includes(plisioStatus)) {
+            await prisma.plisioInvoice.update({
+              where: { id: invoice.id },
+              data: { status: plisioStatus }
+            });
+            hasUpdated = true;
+          }
+        }
+      } catch (e) {
+        console.error(`[stats/pending-sync] Error checking invoice ${invoice.txnId}:`, e);
+      }
+    }
+
+    if (hasUpdated) {
+      // Re-fetch pending invoices since some have been activated/closed
+      pendingPlisioInvoices = await prisma.plisioInvoice.findMany({
+        where: { userId, status: 'pending' },
+        orderBy: { createdAt: 'desc' },
+      });
+    }
+  }
+
   // Recent transactions
   const recentTxns = await prisma.transaction.findMany({
     where: { userId },
     orderBy: { createdAt: 'desc' },
     take: 10,
-  });
-
-  // Fetch pending Plisio deposits (not yet confirmed by the network)
-  const pendingPlisioInvoices = await prisma.plisioInvoice.findMany({
-    where: { userId, status: 'pending' },
-    orderBy: { createdAt: 'desc' },
   });
 
   // Inject pending invoices as virtual transactions so the UI displays them while waiting for network confirmation
@@ -155,4 +193,60 @@ export async function GET(req: NextRequest) {
     })),
     recentTransactions: combinedTxns,
   });
+}
+
+/**
+ * Credits a user for a completed Plisio invoice during inline sync.
+ * Idempotent: safe to call multiple times — re-checks activatedAt inside the transaction.
+ */
+async function handleCompletedPayment(
+  invoice: { id: string; txnId: string; userId: string; amount: number; activatedAt: Date | null },
+  creditAmount: number,
+  txHash?: string | string[]
+): Promise<void> {
+  if (invoice.activatedAt) return;
+  const { userId } = invoice;
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const fresh = await tx.plisioInvoice.findUnique({ where: { id: invoice.id } });
+      if (fresh?.activatedAt) return;
+
+      // 1. Credit the user's balance
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          balance: { increment: creditAmount },
+        },
+      });
+
+      // 2. Create deposit transaction record
+      const safeTxHash = Array.isArray(txHash) ? txHash.join(', ') : (txHash ?? null);
+      await tx.transaction.create({
+        data: {
+          userId,
+          type:        'deposit',
+          amount:      creditAmount,
+          status:      'completed',
+          description: `USDT BEP-20 deposit via Plisio (fast-tracked)`,
+          reference:   invoice.txnId,
+          metadata:    JSON.stringify({ txnId: invoice.txnId, txHash: safeTxHash, network: 'BEP20', source: 'dashboard_sync' }),
+        },
+      });
+
+      // 3. Mark the invoice as activated
+      await tx.plisioInvoice.update({
+        where: { id: invoice.id },
+        data:  {
+          status:       'completed',
+          activatedAt:  new Date(),
+          plisioTxHash: safeTxHash,
+          amount:       creditAmount,
+        },
+      });
+    }, { timeout: 30000 });
+  } catch (err) {
+    console.error(`[stats/handleCompletedPayment] Failed to activate invoice ${invoice.txnId}:`, err);
+    throw err;
+  }
 }
