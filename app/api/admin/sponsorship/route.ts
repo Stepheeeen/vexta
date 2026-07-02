@@ -112,6 +112,7 @@ export async function GET(req: NextRequest) {
         totalRoiWithdrawn,
         totalCommissionWithdrawn,
         roiBlocked: u.roiBlocked,
+        withdrawalsBlocked: u.withdrawalsBlocked,
         fundsFrozen: u.fundsFrozen,
         sponsoredWithdrawalPercentage: u.sponsoredWithdrawalPercentage,
         joined: u.createdAt.toISOString().split('T')[0]
@@ -244,7 +245,17 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { userId, action, withdrawalId, newAmount, newPercentage } = await req.json();
+    const body = await req.json();
+    const { 
+      userId, 
+      action, 
+      withdrawalId, 
+      newAmount, 
+      newPercentage,
+      sponsoredType,
+      sponsoredGoalAmount,
+      sponsoredWithdrawalPercentage
+    } = body;
 
     if (!userId || !action) {
       return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
@@ -254,14 +265,57 @@ export async function PUT(req: NextRequest) {
       const user = await prisma.user.findUnique({ where: { id: userId } });
       if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
+      const newRoiBlocked = !user.roiBlocked;
       const updated = await prisma.user.update({
         where: { id: userId },
-        data: { roiBlocked: !user.roiBlocked }
+        data: { 
+          roiBlocked: newRoiBlocked,
+          withdrawalUnlockType: newRoiBlocked ? 'none' : 'full',
+          withdrawalUnlockAmount: 0
+        }
       });
 
       return NextResponse.json({
         success: true,
         message: `ROI withdrawals ${updated.roiBlocked ? 'blocked' : 'unblocked'} successfully`
+      });
+    }
+
+    if (action === 'toggle_withdrawals_block') {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+
+      const updated = await prisma.user.update({
+        where: { id: userId },
+        data: { withdrawalsBlocked: !user.withdrawalsBlocked }
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: `Withdrawals ${updated.withdrawalsBlocked ? 'blocked' : 'unblocked'} successfully`
+      });
+    }
+
+    if (action === 'update_sponsored_settings') {
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+
+      if (!sponsoredType || sponsoredGoalAmount == null || sponsoredWithdrawalPercentage == null) {
+        return NextResponse.json({ error: 'Missing sponsored parameters' }, { status: 400 });
+      }
+
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          sponsoredType,
+          sponsoredGoalAmount: Number(sponsoredGoalAmount),
+          sponsoredWithdrawalPercentage: Number(sponsoredWithdrawalPercentage)
+        }
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: 'Sponsored settings updated successfully'
       });
     }
 

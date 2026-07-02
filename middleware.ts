@@ -107,5 +107,9 @@ export const config = {
     '/admin',
     '/admin/:path*',
     '/api/((?!auth).)*', // all /api/* except /api/auth/*
+    '/login',
+    '/signup',
+    '/verify',
+    '/forgot-password',
   ],
 };

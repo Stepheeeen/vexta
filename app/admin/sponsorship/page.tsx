@@ -22,6 +22,7 @@ interface Leader {
   totalRoiWithdrawn: number;
   totalCommissionWithdrawn: number;
   roiBlocked: boolean;
+  withdrawalsBlocked: boolean;
   fundsFrozen: boolean;
   sponsoredWithdrawalPercentage: number;
   joined: string;
@@ -81,6 +82,15 @@ export default function AdminSponsorship() {
   const [selectedLeader, setSelectedLeader] = useState<Leader | null>(null);
   const [percentageAmount, setPercentageAmount] = useState('100');
   const [updatingPercentage, setUpdatingPercentage] = useState(false);
+
+  // Edit sponsored settings modal states
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedEditLeader, setSelectedEditLeader] = useState<Leader | null>(null);
+  const [editSponsoredType, setEditSponsoredType] = useState<'free' | 'goal_locked'>('free');
+  const [editGoalMultiplier, setEditGoalMultiplier] = useState('3');
+  const [editGoalAmount, setEditGoalAmount] = useState('');
+  const [editWithdrawalPercentage, setEditWithdrawalPercentage] = useState('100');
+  const [updatingSettings, setUpdatingSettings] = useState(false);
 
   const fetchLeaders = async (isSilent = false) => {
     if (!isSilent) setLoading(true);
@@ -181,6 +191,73 @@ export default function AdminSponsorship() {
       await fetchLeaders(true);
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    }
+  };
+
+  const handleToggleGlobalBlock = async (leaderId: string) => {
+    try {
+      const res = await fetch('/api/admin/sponsorship', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: leaderId, action: 'toggle_withdrawals_block' })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Request failed');
+      
+      toast({ title: 'Updated', description: data.message });
+      await fetchLeaders(true);
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    }
+  };
+
+  const handleUpdateSponsoredSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedEditLeader) return;
+
+    let finalGoalAmount = 0;
+    if (editSponsoredType === 'goal_locked') {
+      if (editGoalMultiplier === 'custom') {
+        finalGoalAmount = parseFloat(editGoalAmount);
+      } else {
+        finalGoalAmount = selectedEditLeader.giftedAmount * parseFloat(editGoalMultiplier);
+      }
+      if (isNaN(finalGoalAmount) || finalGoalAmount < 0) {
+        toast({ title: 'Invalid goal amount', variant: 'destructive' });
+        return;
+      }
+    }
+
+    const pct = parseFloat(editWithdrawalPercentage);
+    if (isNaN(pct) || pct < 0 || pct > 100) {
+      toast({ title: 'Invalid percentage', variant: 'destructive' });
+      return;
+    }
+
+    setUpdatingSettings(true);
+    try {
+      const res = await fetch('/api/admin/sponsorship', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: selectedEditLeader.id,
+          action: 'update_sponsored_settings',
+          sponsoredType: editSponsoredType,
+          sponsoredGoalAmount: finalGoalAmount,
+          sponsoredWithdrawalPercentage: pct
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to update settings');
+
+      toast({ title: 'Success', description: data.message });
+      setShowEditModal(false);
+      setSelectedEditLeader(null);
+      await fetchLeaders();
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } finally {
+      setUpdatingSettings(false);
     }
   };
 
@@ -509,6 +586,13 @@ export default function AdminSponsorship() {
                           }`}>
                             {(l.roiBlocked || (hasGoal && !goalMet)) ? 'ROI Blocked' : 'ROI Open'}
                           </span>
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold font-mono uppercase ${
+                            l.withdrawalsBlocked
+                              ? 'bg-red-500/10 text-red-500 border border-red-500/20' 
+                              : 'bg-green-500/10 text-green-500 border border-green-500/20'
+                          }`}>
+                            {l.withdrawalsBlocked ? 'Global Blocked' : 'Global Open'}
+                          </span>
                         </div>
                       </td>
                       <td className="py-4 text-right space-x-1.5 whitespace-nowrap">
@@ -533,14 +617,30 @@ export default function AdminSponsorship() {
                           {l.fundsFrozen ? 'Unfreeze' : 'Freeze Funds'}
                         </button>
                         <button
+                          onClick={() => handleToggleGlobalBlock(l.id)}
+                          className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border transition-all cursor-pointer font-bold ${
+                            l.withdrawalsBlocked
+                              ? 'border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                              : 'border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400'
+                          }`}
+                        >
+                          {l.withdrawalsBlocked ? 'Unblock W.' : 'Block W.'}
+                        </button>
+                        <button
                           onClick={() => {
-                            setSelectedLeader(l);
-                            setPercentageAmount(l.sponsoredWithdrawalPercentage?.toString() ?? '100');
-                            setShowPercentageModal(true);
+                            setSelectedEditLeader(l);
+                            setEditSponsoredType(l.type);
+                            setEditGoalAmount(l.goalAmount.toString());
+                            setEditWithdrawalPercentage(l.sponsoredWithdrawalPercentage?.toString() ?? '100');
+                            const ratio = l.giftedAmount > 0 ? (l.goalAmount / l.giftedAmount) : 3;
+                            if (ratio === 2) setEditGoalMultiplier('2');
+                            else if (ratio === 3) setEditGoalMultiplier('3');
+                            else setEditGoalMultiplier('custom');
+                            setShowEditModal(true);
                           }}
                           className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-zinc-200 font-bold transition-all cursor-pointer"
                         >
-                          <Edit2 className="w-3.5 h-3.5 text-blue-500" /> W. Pct: {l.sponsoredWithdrawalPercentage ?? 100}%
+                          <Edit2 className="w-3.5 h-3.5 text-blue-500" /> Edit Rules
                         </button>
                       </td>
                     </tr>
@@ -751,38 +851,96 @@ export default function AdminSponsorship() {
         </div>
       )}
 
-      {/* Set Withdrawal Percentage Modal */}
-      {showPercentageModal && selectedLeader && (
+      {/* Edit Sponsored Settings Modal */}
+      {showEditModal && selectedEditLeader && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#0A0F14]/95 border border-slate-200 dark:border-white/10 rounded-2xl w-full max-w-sm p-6 shadow-2xl font-sans relative">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white mb-3">
-              Set Withdrawal Percentage
+          <div className="bg-white dark:bg-[#0A0F14]/95 border border-slate-200 dark:border-white/10 rounded-2xl w-full max-w-md p-6 shadow-2xl font-sans relative">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white mb-5">
+              Edit Sponsored Account Rules
             </h3>
-            <p className="text-xs text-slate-550 dark:text-zinc-400 mb-4">
-              Set the percentage of passive earnings <span className="font-bold text-slate-700 dark:text-zinc-200">{selectedLeader.name}</span> is allowed to withdraw once they unlock their ROI.
-            </p>
+            
+            <div className="p-3 mb-4 bg-violet-500/5 border border-violet-500/20 rounded-xl text-xs">
+              <p className="text-[10px] text-violet-500 font-bold uppercase tracking-wider">Account Details</p>
+              <p className="font-bold text-slate-900 dark:text-white">{selectedEditLeader.name}</p>
+              <p className="text-[10px] text-slate-450 dark:text-gray-500 font-mono">{selectedEditLeader.email}</p>
+              <p className="mt-1 text-slate-600 dark:text-zinc-400 font-semibold">Gifted Capital: <span className="font-bold font-mono text-slate-800 dark:text-white">${selectedEditLeader.giftedAmount.toLocaleString()}</span></p>
+            </div>
 
-            <form onSubmit={handleUpdatePercentage} className="space-y-4">
+            <form onSubmit={handleUpdateSponsoredSettings} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 font-mono uppercase mb-2">Withdrawal Percentage (%)</label>
+                <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 uppercase mb-2">
+                  Account Rules/Type
+                </label>
+                <select
+                  value={editSponsoredType}
+                  onChange={e => setEditSponsoredType(e.target.value as any)}
+                  className="w-full bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white focus:outline-none"
+                >
+                  <option value="free">Free Account (No initial lock. Blocked if withdrawn &gt; $12 without referrals)</option>
+                  <option value="goal_locked">Goal-Locked Account (ROI withdrawals locked until goal is reached)</option>
+                </select>
+              </div>
+
+              {editSponsoredType === 'goal_locked' && (
+                <>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 uppercase mb-2">
+                      Goal Target
+                    </label>
+                    <select
+                      value={editGoalMultiplier}
+                      onChange={e => setEditGoalMultiplier(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white focus:outline-none"
+                    >
+                      <option value="2">2x (Must generate L1 sales: ${(selectedEditLeader.giftedAmount * 2).toLocaleString()})</option>
+                      <option value="3">3x (Must generate L1 sales: ${(selectedEditLeader.giftedAmount * 3).toLocaleString()})</option>
+                      <option value="custom">Custom Goal Amount</option>
+                    </select>
+                  </div>
+
+                  {editGoalMultiplier === 'custom' && (
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 uppercase mb-2">
+                        Custom Goal Amount (USD L1 sales)
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="e.g. 1000"
+                        value={editGoalAmount}
+                        onChange={e => setEditGoalAmount(e.target.value)}
+                        className="w-full bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-violet-500/50"
+                        required
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 uppercase mb-2">
+                  Allowed Withdrawal Percentage (%)
+                </label>
                 <input
                   type="number"
                   step="any"
                   min="0"
                   max="100"
-                  value={percentageAmount}
-                  onChange={e => setPercentageAmount(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-violet-500/50"
+                  value={editWithdrawalPercentage}
+                  onChange={e => setEditWithdrawalPercentage(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/8 rounded-xl px-4 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-violet-500/50"
                   required
                 />
+                <p className="text-[10px] text-slate-450 dark:text-zinc-500 mt-1 leading-normal">
+                  Controls the percentage of passive earnings allowed for withdrawal once the account is unlocked.
+                </p>
               </div>
 
               <div className="flex gap-2.5 pt-3">
                 <button
                   type="button"
                   onClick={() => {
-                    setShowPercentageModal(false);
-                    setSelectedLeader(null);
+                    setShowEditModal(false);
+                    setSelectedEditLeader(null);
                   }}
                   className="flex-1 py-2.5 border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 rounded-xl hover:bg-slate-100 text-xs font-bold text-slate-700 dark:text-zinc-200 cursor-pointer"
                 >
@@ -790,10 +948,10 @@ export default function AdminSponsorship() {
                 </button>
                 <button
                   type="submit"
-                  disabled={updatingPercentage || !percentageAmount}
+                  disabled={updatingSettings}
                   className="flex-1 py-2.5 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 rounded-xl text-white text-xs font-bold transition-all cursor-pointer"
                 >
-                  {updatingPercentage ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Save Changes'}
+                  {updatingSettings ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Save Changes'}
                 </button>
               </div>
             </form>

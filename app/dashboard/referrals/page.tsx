@@ -205,6 +205,7 @@ export default function ReferralsPage() {
                       <div className="w-5 h-5 rounded-md bg-violet-500/10 flex items-center justify-center flex-shrink-0">
                         <span className="text-[8px] font-bold text-violet-500 dark:text-violet-400">{level}</span>
                       </div>
+                      
                       <div className="min-w-0 flex-1 pr-2">
                         <p className="text-[11px] font-medium text-slate-900 dark:text-white truncate">{levelLabels[level] || `Level ${level}`}</p>
                         <p className="text-[9px] text-slate-500 dark:text-gray-500 font-mono truncate">{count} {t('referralsMembers')}</p>

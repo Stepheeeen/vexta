@@ -5176,8 +5176,8 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
     if (saved && Object.keys(translations).includes(saved)) {
       setLanguageState(saved);
     } else {
-      // Auto-detect browser language
-      const browserLang = navigator.language.toLowerCase();
+      // Auto-detect browser language safely
+      const browserLang = (navigator?.language || 'en').toLowerCase();
       if (browserLang.startsWith('es')) setLanguageState('es');
       else if (browserLang.startsWith('vi')) setLanguageState('vi');
       else if (browserLang.startsWith('th')) setLanguageState('th');
