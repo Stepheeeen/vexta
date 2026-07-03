@@ -281,13 +281,13 @@ export default function Dashboard() {
     },
     {
       label: t('passiveEarnings'),
-      value: `$${(data?.pools?.roi ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      value: `$${(data?.pools?.availablePassive ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       change: t('passiveEarningsSub'),
       color: 'text-emerald-600 dark:text-emerald-400',
     },
     {
       label: t('networkEarnings'),
-      value: `$${(data?.pools?.network ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      value: `$${(data?.pools?.availableNetwork ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       change: `${data?.stats.totalNetworkCount ?? 0} ${t('referralsStat2Sub')} · ${data?.stats.directReferrals ?? 0} ${t('overviewReferralsCount')}`,
       color: 'text-blue-600 dark:text-blue-400',
     },
