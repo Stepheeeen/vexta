@@ -87,7 +87,6 @@ export async function GET(req: NextRequest) {
     const stalePendingInvoices = await prisma.plisioInvoice.findMany({
       where: {
         status:    { in: ['pending', 'cancelled', 'expired'] },
-        activatedAt: null,
         createdAt: { gte: sevenDaysAgo, lte: cutoff },
       },
       orderBy: { createdAt: 'asc' },

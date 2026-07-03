@@ -4,6 +4,8 @@ import { prisma } from '@/lib/prisma';
 import { getAvailableBalance, getWithdrawableBalances, getP2pBalance } from '@/lib/balance';
 import { SYSTEM_CONFIG } from '@/lib/config/system';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   const payload = getUserFromRequest(req);
   if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
