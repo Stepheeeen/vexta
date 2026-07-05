@@ -44,7 +44,14 @@ export async function POST(req: NextRequest) {
     // Resolve referrer
     let referredById: string | undefined;
     if (referralCode) {
-      const referrer = await prisma.user.findUnique({ where: { referralCode } });
+      const referrer = await prisma.user.findFirst({ 
+        where: { 
+          referralCode: {
+            equals: referralCode,
+            mode: 'insensitive'
+          }
+        } 
+      });
       if (!referrer) {
         return NextResponse.json({ error: 'Invalid referral code' }, { status: 400 });
       }
