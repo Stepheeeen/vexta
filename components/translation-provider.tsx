@@ -99,6 +99,18 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     withdrawUsdtBep20: "USDT BEP20",
     depFundYourAccount: "Fund Your Account",
     depSubtitle: "Deposit USDT via BEP20 (Binance Smart Chain) exclusively. Choose a plan below to see minimum requirements, then submit your payment.",
+    depCriticalRulesTitle: "Critical Deposit Rules (Read Before Paying)",
+    depRule1Title: "USDT BEP-20 Only",
+    depRule1Desc: "Send ONLY Tether (USDT) on the Binance Smart Chain (BEP-20). Using TRC-20 or ERC-20 will result in permanent loss of funds.",
+    depRule2Title: "Send the EXACT Amount",
+    depRule2Desc: "If your exchange charges a withdrawal fee (e.g. $0.30), you must add it to your total. If the gateway receives even 1 cent less than the invoice amount, your payment will fail.",
+    depRule3Title: "30 Minute Time Limit",
+    depRule3Desc: "Invoices expire after 30 minutes. Do not send funds from exchanges (like Coinbase or Luno) that delay withdrawals for hours.",
+    depExchangeFeeTitle: "Exchange Fee Reminder:",
+    depExchangeFeeDesc: "If sending from an exchange (e.g. Binance, KuCoin), ensure you add their withdrawal fee to your withdrawal request so that exactly ",
+    depExchangeFeeDescSuffix: " USDT is received.",
+    depExpiredDoNotScan: "Expired — Do not scan",
+    depOpenSecureTab: "Open secure payment page in a new tab",
     depBep20Only: "USDT BEP20 Only",
     depBep20Desc: "We exclusively accept USDT on the Binance Smart Chain (BEP20). Do not send via TRC20 or ERC20.",
     depInvPlans: "Investment Plans",
@@ -695,6 +707,18 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     withdrawUsdtBep20: "USDT BEP20",
     depFundYourAccount: "Fondea tu Cuenta",
     depSubtitle: "Deposita USDT exclusivamente a través de BEP20 (Binance Smart Chain). Elige un plan a continuación para ver los requisitos mínimos, luego envía tu pago.",
+    depCriticalRulesTitle: "Reglas Críticas de Depósito (Leer Antes de Pagar)",
+    depRule1Title: "Solo USDT BEP-20",
+    depRule1Desc: "Envía SOLAMENTE Tether (USDT) en la Binance Smart Chain (BEP-20). El uso de TRC-20 o ERC-20 resultará en la pérdida permanente de los fondos.",
+    depRule2Title: "Envía la Cantidad EXACTA",
+    depRule2Desc: "Si tu exchange cobra una tarifa de retiro (ej. $0.30), debes sumarla al total. Si la pasarela recibe incluso 1 centavo menos del monto de la factura, el pago fallará.",
+    depRule3Title: "Límite de Tiempo de 30 Minutos",
+    depRule3Desc: "Las facturas expiran después de 30 minutos. No envíes fondos desde exchanges (como Coinbase o Luno) que retrasan los retiros por horas.",
+    depExchangeFeeTitle: "Recordatorio de Tarifa de Retiro:",
+    depExchangeFeeDesc: "Si realizas el envío desde una casa de cambio o exchange (ej. Binance, KuCoin), asegúrate de añadir su tarifa de retiro para que se reciba exactamente ",
+    depExchangeFeeDescSuffix: " USDT.",
+    depExpiredDoNotScan: "Expirado — No escanear",
+    depOpenSecureTab: "Abrir página de pago segura en una nueva pestaña",
     depBep20Only: "Solo USDT BEP20",
     depBep20Desc: "Aceptamos exclusivamente USDT en Binance Smart Chain (BEP20). No envíes por TRC20 ni ERC20.",
     depInvPlans: "Planes de Inversión",
@@ -5185,6 +5209,22 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
       else if (browserLang.startsWith('ko')) setLanguageState('ko');
       else if (browserLang.startsWith('fr')) setLanguageState('fr');
       else setLanguageState('en');
+    }
+
+    // Intercept client-side fetch calls globally for 401 Unauthorized (session timeout)
+    if (typeof window !== 'undefined') {
+      const originalFetch = window.fetch;
+      window.fetch = async (...args) => {
+        const response = await originalFetch(...args);
+        if (response.status === 401) {
+          const pathname = window.location.pathname;
+          if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
+            console.warn('[SessionTimeout] Protected API request returned 401. Redirecting to /login.');
+            window.location.href = '/login';
+          }
+        }
+        return response;
+      };
     }
   }, []);
 

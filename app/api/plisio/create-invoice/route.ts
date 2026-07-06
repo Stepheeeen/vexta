@@ -85,11 +85,31 @@ export async function POST(req: NextRequest) {
 
     if (existingInvoice?.invoiceUrl) {
       console.log(`[plisio/create-invoice] Reusing existing pending invoice ${existingInvoice.txnId} for user ${payload.userId}`);
+      
+      let walletAddress = '';
+      let cryptoAmount = existingInvoice.amount;
+      let expireAt = Math.floor(Date.now() / 1000) + 1800;
+
+      try {
+        const apiRes = await fetch(`https://api.plisio.net/api/v1/operations/${existingInvoice.txnId}?api_key=${secretKey}`);
+        const apiData = await apiRes.json() as any;
+        if (apiData.status === 'success' && apiData.data) {
+          walletAddress = apiData.data.wallet_hash || '';
+          cryptoAmount = apiData.data.amount ? parseFloat(apiData.data.amount) : cryptoAmount;
+          expireAt = apiData.data.expire_at_utc || expireAt;
+        }
+      } catch (e) {
+        console.error('[plisio/create-invoice] Failed to fetch existing invoice details:', e);
+      }
+
       return NextResponse.json({
         message:    'Existing invoice reused',
         invoiceUrl: existingInvoice.invoiceUrl,
         txnId:      existingInvoice.txnId,
         invoiceId:  existingInvoice.id,
+        walletAddress,
+        cryptoAmount,
+        expireAt,
       }, { status: 200 });
     }
 
@@ -142,7 +162,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { txn_id, invoice_url } = plisioData.data;
+    const { txn_id, invoice_url, wallet_hash, amount: cryptoAmount, expire_utc } = plisioData.data;
 
     // Persist the invoice record in our DB
     const invoice = await prisma.plisioInvoice.create({
@@ -162,6 +182,9 @@ export async function POST(req: NextRequest) {
       invoiceUrl: invoice_url,
       txnId:      txn_id,
       invoiceId:  invoice.id,
+      walletAddress: wallet_hash,
+      cryptoAmount: cryptoAmount || amount,
+      expireAt: expire_utc || (Math.floor(Date.now() / 1000) + 1800),
     }, { status: 201 });
 
   } catch (err) {

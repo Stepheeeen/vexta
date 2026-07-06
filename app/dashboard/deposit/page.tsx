@@ -8,7 +8,8 @@ import {
   ChevronRight,
   Zap,
   Crown,
-  Clock, AlertTriangle, FileText
+  Clock, AlertTriangle, FileText,
+  Copy, Check, X, ExternalLink
 } from 'lucide-react';
 import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
@@ -118,10 +119,99 @@ export default function DepositPage() {
   const [amount, setAmount] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // Modal payment states
+  const [invoiceDetails, setInvoiceDetails] = useState<{
+    invoiceId: string;
+    walletAddress: string;
+    cryptoAmount: number;
+    expireAt: number;
+    invoiceUrl: string;
+    txnId: string;
+  } | null>(null);
+  const [showModal, setShowModal] = useState(false);
+  const [timeLeft, setTimeLeft] = useState('');
+  const [copiedAddress, setCopiedAddress] = useState(false);
+  const [copiedAmount, setCopiedAmount] = useState(false);
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+
   const statusColor: Record<string, string> = {
     pending: 'text-amber-600 dark:text-amber-400 bg-amber-500/10',
     completed: 'text-emerald-600 dark:text-emerald-400 bg-emerald-500/10',
     failed: 'text-red-500 bg-red-500/10',
+  };
+
+  // Expiration countdown timer effect
+  useEffect(() => {
+    if (!invoiceDetails || !showModal || paymentConfirmed) return;
+
+    const updateTimer = () => {
+      const secondsLeft = invoiceDetails.expireAt - Math.floor(Date.now() / 1000);
+      if (secondsLeft <= 0) {
+        setTimeLeft('Expired');
+      } else {
+        const m = Math.floor(secondsLeft / 60);
+        const s = secondsLeft % 60;
+        setTimeLeft(`${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`);
+      }
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [invoiceDetails, showModal, paymentConfirmed]);
+
+  // Webhook polling effect to auto-detect confirmation
+  useEffect(() => {
+    if (!invoiceDetails || !showModal || paymentConfirmed) return;
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const res = await fetch('/api/dashboard/stats');
+        if (res.ok) {
+          const statsData = await res.json();
+          const txs = statsData.recentTransactions || [];
+          const foundCompleted = txs.some(
+            (tx: any) => tx.reference === invoiceDetails.txnId && tx.status === 'completed'
+          );
+          if (foundCompleted) {
+            setPaymentConfirmed(true);
+            toast({
+              title: t('depConfirmed') || 'Deposit Confirmed!',
+              description: t('depConfirmedDesc') || 'Your balance has been updated.',
+            });
+            
+            // Reload stats and transactions
+            const updatedTxs: DepositTx[] = txs.filter(
+              (tx: any) =>
+                tx.type === 'deposit' &&
+                (tx.status === 'completed' || tx.status === 'pending') &&
+                !tx.description?.includes('Investment activated')
+            );
+            setDeposits(updatedTxs.slice(0, 8));
+            const total = updatedTxs.reduce((sum, tx) => (tx.status === 'completed' ? sum + tx.amount : sum), 0);
+            setTotalDeposited(total);
+          }
+        }
+      } catch (err) {
+        console.error('[DepositModal] polling error:', err);
+      }
+    }, 5000);
+
+    return () => clearInterval(pollInterval);
+  }, [invoiceDetails, showModal, paymentConfirmed, t, toast]);
+
+  const copyToClipboard = (text: string, type: 'address' | 'amount') => {
+    navigator.clipboard.writeText(text);
+    if (type === 'address') {
+      setCopiedAddress(true);
+      setTimeout(() => setCopiedAddress(false), 2000);
+    } else {
+      setCopiedAmount(true);
+      setTimeout(() => setCopiedAmount(false), 2000);
+    }
+    toast({
+      title: t('copiedToClipboard') || 'Copied to clipboard!',
+    });
   };
 
   useEffect(() => {
@@ -178,14 +268,23 @@ export default function DepositPage() {
 
       if (!res.ok) throw new Error(data.error || 'Failed to create payment invoice');
 
-      // Redirect to Plisio secure hosted payment page
       if (data.invoiceUrl) {
-        window.location.href = data.invoiceUrl;
+        setInvoiceDetails({
+          invoiceId: data.invoiceId,
+          walletAddress: data.walletAddress,
+          cryptoAmount: data.cryptoAmount,
+          expireAt: data.expireAt,
+          invoiceUrl: data.invoiceUrl,
+          txnId: data.txnId,
+        });
+        setPaymentConfirmed(false);
+        setShowModal(true);
       } else {
         throw new Error('No invoice URL returned from server');
       }
     } catch (err: any) {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } finally {
       setSubmitting(false);
     }
   };
@@ -218,9 +317,9 @@ export default function DepositPage() {
               <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-500" />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">USDT BEP-20 Only</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">{t('depRule1Title') || 'USDT BEP-20 Only'}</p>
               <p className="text-xs text-slate-600 dark:text-gray-400">
-                Send ONLY Tether (USDT) on the <strong className="text-slate-800 dark:text-gray-300">Binance Smart Chain (BEP-20)</strong>. Using TRC-20 or ERC-20 will result in permanent loss of funds.
+                {t('depRule1Desc') || 'Send ONLY Tether (USDT) on the Binance Smart Chain (BEP-20). Using TRC-20 or ERC-20 will result in permanent loss of funds.'}
               </p>
             </div>
           </div>
@@ -229,9 +328,9 @@ export default function DepositPage() {
               <FileText className="w-4 h-4 text-amber-600 dark:text-amber-500" />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">Send the EXACT Amount</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">{t('depRule2Title') || 'Send the EXACT Amount'}</p>
               <p className="text-xs text-slate-600 dark:text-gray-400">
-                If your exchange charges a withdrawal fee (e.g. $0.30), you must add it to your total. If the gateway receives even 1 cent less than the invoice amount, your payment will fail.
+                {t('depRule2Desc') || 'If your exchange charges a withdrawal fee (e.g. $0.30), you must add it to your total. If the gateway receives even 1 cent less than the invoice amount, your payment will fail.'}
               </p>
             </div>
           </div>
@@ -240,9 +339,9 @@ export default function DepositPage() {
               <Clock className="w-4 h-4 text-amber-600 dark:text-amber-500" />
             </div>
             <div>
-              <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">30 Minute Time Limit</p>
+              <p className="text-sm font-bold text-slate-900 dark:text-white mb-1">{t('depRule3Title') || '30 Minute Time Limit'}</p>
               <p className="text-xs text-slate-600 dark:text-gray-400">
-                Invoices expire after 30 minutes. Do not send funds from exchanges (like Coinbase or Luno) that delay withdrawals for hours.
+                {t('depRule3Desc') || 'Invoices expire after 30 minutes. Do not send funds from exchanges (like Coinbase or Luno) that delay withdrawals for hours.'}
               </p>
             </div>
           </div>
@@ -318,10 +417,12 @@ export default function DepositPage() {
                     <div className="mt-2.5 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-400 space-y-1">
                       <p className="font-bold flex items-center gap-1">
                         <AlertTriangle className="w-3.5 h-3.5 text-amber-600 dark:text-amber-500" />
-                        Exchange Fee Reminder:
+                        {t('depExchangeFeeTitle') || 'Exchange Fee Reminder:'}
                       </p>
                       <p className="leading-normal">
-                        If sending from an exchange (e.g. Binance, KuCoin), ensure you add their withdrawal fee to your withdrawal request so that exactly <strong className="font-mono text-slate-900 dark:text-white font-bold">${parseFloat(amount).toFixed(2)} USDT</strong> is received.
+                        {t('depExchangeFeeDesc') || 'If sending from an exchange (e.g. Binance, KuCoin), ensure you add their withdrawal fee to your withdrawal request so that exactly '}
+                        <strong className="font-mono text-slate-900 dark:text-white font-bold">${parseFloat(amount).toFixed(2)} USDT</strong>
+                        {t('depExchangeFeeDescSuffix') || ' USDT is received.'}
                       </p>
                     </div>
                   )}
@@ -414,6 +515,168 @@ export default function DepositPage() {
 
           </div>
 
+        </div>
+      )}
+
+      {/* USDT Payment Modal */}
+      {showModal && invoiceDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in font-sans">
+          <div className="relative w-full max-w-2xl bg-white dark:bg-[#0A0F14]/95 border border-slate-200 dark:border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+            
+            {/* Modal Header */}
+            <div className="p-5 border-b border-slate-100 dark:border-white/5 flex items-center justify-between bg-slate-50 dark:bg-white/2">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-violet-500" />
+                <h3 className="font-bold text-sm text-slate-800 dark:text-white">
+                  {t('depositModalTitle') || 'USDT BEP20 Payment'}
+                </h3>
+              </div>
+              {!paymentConfirmed && (
+                <button
+                  onClick={() => setShowModal(false)}
+                  className="p-1.5 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-200/50 dark:border-white/5 text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 flex-1 overflow-y-auto">
+              {paymentConfirmed ? (
+                <div className="py-8 flex flex-col items-center text-center space-y-4">
+                  <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-500 animate-bounce">
+                    <Check className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-black text-slate-900 dark:text-white">
+                      {t('depConfirmed') || 'Deposit Confirmed!'}
+                    </h4>
+                    <p className="text-xs text-slate-500 dark:text-gray-400 mt-1 max-w-xs leading-normal">
+                      {t('depConfirmedDesc') || 'Your balance has been updated. Check your dashboard overview.'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowModal(false);
+                      setInvoiceDetails(null);
+                    }}
+                    className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-lg shadow-emerald-600/20"
+                  >
+                    {t('depBackDash') || 'Back to Dashboard'}
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                  
+                  {/* Left Column: QR Code & Countdown Timer */}
+                  <div className="space-y-4">
+                    {/* Expiration Timer Banner */}
+                    <div className={`flex items-center justify-between p-3 border rounded-xl text-xs ${
+                      timeLeft === 'Expired'
+                        ? 'bg-red-500/5 dark:bg-red-500/10 border-red-500/20 text-red-600 dark:text-red-400 font-bold'
+                        : 'bg-amber-500/5 dark:bg-amber-500/10 border-amber-500/20 text-amber-800 dark:text-amber-400'
+                    }`}>
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        <span className="font-semibold">
+                          {timeLeft === 'Expired'
+                            ? (t('depInvoiceExpired') || 'Invoice expired — please refresh')
+                            : (t('depositModalExpiry') || 'This invoice expires in')}
+                        </span>
+                      </div>
+                      <span className="font-mono font-bold">{timeLeft}</span>
+                    </div>
+
+                    {/* QR Code Frame */}
+                    <div className="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-white/2 border border-slate-100 dark:border-white/5 rounded-2xl">
+                      <div className={`p-3 bg-white border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm transition-opacity duration-300 ${
+                        timeLeft === 'Expired' ? 'opacity-40' : ''
+                      }`}>
+                        <img
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${invoiceDetails.walletAddress}`}
+                          alt="USDT BEP20 QR Code"
+                          className="w-36 h-36 object-contain"
+                        />
+                      </div>
+                      <p className="text-[10px] text-slate-400 dark:text-gray-500 font-medium mt-2">
+                        {timeLeft === 'Expired' ? (t('depExpiredDoNotScan') || 'Expired — Do not scan') : (t('depositModalScan') || 'Scan QR Code')}
+                      </p>
+                    </div>
+
+                    {/* Status Loading */}
+                    {timeLeft !== 'Expired' && (
+                      <div className="flex items-center justify-center gap-2 py-1 text-xs font-mono text-violet-500">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>{t('depAwaiting') || 'Awaiting network confirmation…'}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right Column: Payment Details & Warning Banner */}
+                  <div className="space-y-4">
+                    {/* Warning banner */}
+                    <div className="p-3 bg-red-500/5 dark:bg-red-500/10 border border-red-500/20 rounded-xl text-[10px] text-red-600 dark:text-red-400 leading-relaxed font-medium">
+                      {t('depWarning') || '⚠️ Only send USDT on BEP20 (Binance Smart Chain). Incorrect network may result in permanent loss.'}
+                    </div>
+
+                    {/* Amount field */}
+                    <div className={timeLeft === 'Expired' ? 'opacity-40 pointer-events-none' : ''}>
+                      <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">
+                        {t('depAmountDue') || 'Amount Due'} (USDT)
+                      </label>
+                      <div className="flex items-center gap-2 bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/5 p-3 rounded-xl">
+                        <span className="flex-1 font-mono text-sm font-black text-slate-900 dark:text-white">
+                          {invoiceDetails.cryptoAmount} USDT
+                        </span>
+                        <button
+                          onClick={() => copyToClipboard(String(invoiceDetails.cryptoAmount), 'amount')}
+                          disabled={timeLeft === 'Expired'}
+                          className="p-1.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 dark:text-gray-400 rounded-lg transition-all"
+                        >
+                          {copiedAmount ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Address field */}
+                    <div className={timeLeft === 'Expired' ? 'opacity-40 pointer-events-none' : ''}>
+                      <label className="block text-[10px] font-mono text-slate-400 uppercase tracking-wider mb-1.5">
+                        {t('depositModalAddress') || 'Send exactly to this BEP20 address:'}
+                      </label>
+                      <div className="flex items-center gap-2 bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/5 p-3 rounded-xl">
+                        <span className="flex-1 font-mono text-xs text-slate-500 dark:text-gray-300 break-all select-all leading-normal">
+                          {invoiceDetails.walletAddress}
+                        </span>
+                        <button
+                          onClick={() => copyToClipboard(invoiceDetails.walletAddress, 'address')}
+                          disabled={timeLeft === 'Expired'}
+                          className="p-1.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 dark:text-gray-400 rounded-lg transition-all"
+                        >
+                          {copiedAddress ? <Check className="w-3.5 h-3.5 text-emerald-550" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Direct Link Alternative */}
+                    <div className="text-center pt-2">
+                      <a
+                        href={invoiceDetails.invoiceUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                      >
+                        {t('depOpenSecureTab') || 'Open secure payment page in new tab'}
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  </div>
+
+                </div>
+              )}
+            </div>
+
+          </div>
         </div>
       )}
     </DashboardLayout>
