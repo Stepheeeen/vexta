@@ -91,12 +91,12 @@ export async function POST(req: NextRequest) {
       let expireAt = Math.floor(Date.now() / 1000) + 1800;
 
       try {
-        const apiRes = await fetch(`https://api.plisio.net/api/v1/operations/${existingInvoice.txnId}?api_key=${secretKey}`);
+        const apiRes = await fetch(`https://api.plisio.net/api/v1/invoices/${existingInvoice.txnId}?api_key=${secretKey}`);
         const apiData = await apiRes.json() as any;
-        if (apiData.status === 'success' && apiData.data) {
-          walletAddress = apiData.data.wallet_hash || '';
-          cryptoAmount = apiData.data.amount ? parseFloat(apiData.data.amount) : cryptoAmount;
-          expireAt = apiData.data.expire_at_utc || expireAt;
+        if (apiData.status === 'success' && apiData.data?.invoice) {
+          walletAddress = apiData.data.invoice.wallet_hash || '';
+          cryptoAmount = apiData.data.invoice.amount ? parseFloat(apiData.data.invoice.amount) : cryptoAmount;
+          expireAt = apiData.data.invoice.expire_utc ? parseInt(apiData.data.invoice.expire_utc) : expireAt;
         }
       } catch (e) {
         console.error('[plisio/create-invoice] Failed to fetch existing invoice details:', e);

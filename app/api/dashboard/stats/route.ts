@@ -82,10 +82,10 @@ export async function GET(req: NextRequest) {
     let hasUpdated = false;
     for (const invoice of pendingPlisioInvoices) {
       try {
-        const apiRes = await fetch(`https://api.plisio.net/api/v1/operations/${invoice.txnId}?api_key=${secretKey}`);
+        const apiRes = await fetch(`https://api.plisio.net/api/v1/invoices/${invoice.txnId}?api_key=${secretKey}`);
         const apiData = await apiRes.json() as any;
-        if (apiData.status === 'success' && apiData.data) {
-          const { status: plisioStatus, actual_sum: plisioActualSum, tx_url: txUrl } = apiData.data;
+        if (apiData.status === 'success' && apiData.data?.invoice) {
+          const { status: plisioStatus, received_amount: plisioActualSum, tx_url: txUrl } = apiData.data.invoice;
           
           if (plisioStatus === 'completed' || plisioStatus === 'mismatch') {
             const creditAmount = plisioActualSum ? parseFloat(plisioActualSum) : invoice.amount;

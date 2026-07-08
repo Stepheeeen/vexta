@@ -25,12 +25,14 @@ export function VextaLogo({
         width={1008}
         height={871}
         className={`object-contain ${className}`}
+        style={{ width: 'auto', height: 'auto' }}
         priority
       />
     );
   }
 
   const mobileSrc = isLight ? '/vexta-light.png' : '/vexta-dark.png';
+  const mobileWidth = isLight ? 208 : 220; // Matches cropped dimensions at 32px height
 
   return (
     <>
@@ -38,9 +40,10 @@ export function VextaLogo({
       <Image
         src={mobileSrc}
         alt="VEXTA"
-        width={200}
-        height={48}
-        className={`${className} block lg:hidden`}
+        width={mobileWidth}
+        height={32}
+        className={`${className} block lg:hidden max-h-[32px] w-auto object-contain`}
+        style={{ width: 'auto', height: 'auto' }}
         priority
       />
 
@@ -51,6 +54,7 @@ export function VextaLogo({
         width={200}
         height={72}
         className={`${className} hidden lg:block`}
+        style={{ width: 'auto', height: 'auto' }}
         priority
       />
     </>

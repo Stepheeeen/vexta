@@ -154,12 +154,12 @@ export async function POST(req: NextRequest) {
   
   if (secretKey) {
     try {
-      const apiRes = await fetch(`https://api.plisio.net/api/v1/operations/${txn_id}?api_key=${secretKey}`);
+      const apiRes = await fetch(`https://api.plisio.net/api/v1/invoices/${txn_id}?api_key=${secretKey}`);
       const apiData = await apiRes.json() as any;
-      if (apiData.status === 'success' && apiData.data) {
-        trueStatus = apiData.data.status;
-        trueActualSum = apiData.data.actual_sum ? parseFloat(apiData.data.actual_sum) : trueActualSum;
-        trueTxUrl = apiData.data.tx_url || payload.tx_url;
+      if (apiData.status === 'success' && apiData.data?.invoice) {
+        trueStatus = apiData.data.invoice.status;
+        trueActualSum = apiData.data.invoice.received_amount ? parseFloat(apiData.data.invoice.received_amount) : trueActualSum;
+        trueTxUrl = apiData.data.invoice.tx_url || payload.tx_url;
         console.log(`[plisio/webhook] Verified txn_id ${txn_id} via API: Status is ${trueStatus}, Actual Sum is ${trueActualSum}`);
       } else {
         console.error(`[plisio/webhook] API verification failed for ${txn_id}:`, apiData);

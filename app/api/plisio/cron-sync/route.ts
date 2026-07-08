@@ -105,17 +105,17 @@ export async function GET(req: NextRequest) {
       try {
         // Query Plisio API for the true status of this invoice
         const apiRes = await fetch(
-          `https://api.plisio.net/api/v1/operations/${invoice.txnId}?api_key=${secretKey}`
+          `https://api.plisio.net/api/v1/invoices/${invoice.txnId}?api_key=${secretKey}`
         );
         const apiData = await apiRes.json() as any;
 
-        if (apiData.status !== 'success' || !apiData.data) {
+        if (apiData.status !== 'success' || !apiData.data?.invoice) {
           console.error(`[plisio/cron-sync] Plisio API error for ${invoice.txnId}:`, apiData);
           results.errors++;
           continue;
         }
 
-        const { status: plisioStatus, actual_sum: plisioActualSum, tx_url: txUrl } = apiData.data;
+        const { status: plisioStatus, received_amount: plisioActualSum, tx_url: txUrl } = apiData.data.invoice;
 
         console.log(`[plisio/cron-sync] Invoice ${invoice.txnId} — Plisio status: ${plisioStatus}`);
 
