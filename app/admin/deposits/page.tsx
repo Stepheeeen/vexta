@@ -303,21 +303,49 @@ export default function AdminDeposits() {
 
       {/* Action Confirmation Modal */}
       <AlertDialog open={confirmAction !== null} onOpenChange={(open) => { if (!open) setConfirmAction(null); }}>
-        <AlertDialogContent className="bg-slate-900 border-white/10 text-white rounded-2xl p-6">
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-xl font-bold">
+        <AlertDialogContent className="relative bg-[#0c1017]/95 backdrop-blur-xl border border-white/10 text-white rounded-2xl p-6 shadow-2xl overflow-hidden max-w-md">
+          {/* Decorative branded top border */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-600 via-fuchsia-500 to-violet-600" />
+          
+          <AlertDialogHeader className="relative">
+            <AlertDialogTitle className="text-xl font-bold flex items-center gap-2.5">
+              <span className={`w-2.5 h-2.5 rounded-full ${
+                confirmAction?.action === 'approve' ? 'bg-violet-500 animate-pulse' : 'bg-red-500 animate-pulse'
+              }`} />
               {confirmAction?.action === 'approve'
                 ? (t('adminDepositsApproveTitle') || 'Approve Deposit')
                 : (t('adminDepositsRejectTitle') || 'Reject Deposit')}
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-slate-400 text-sm">
-              {confirmAction?.action === 'approve'
-                ? (t('adminDepositsConfirmApprove') || "Are you sure you want to approve this deposit request and credit the user's balance?")
-                : (t('adminDepositsConfirmReject') || "Are you sure you want to reject this deposit request?")}
-            </AlertDialogDescription>
+            <div className="text-slate-400 text-sm mt-3 space-y-3 font-sans">
+              <p>
+                {confirmAction?.action === 'approve'
+                  ? (t('adminDepositsConfirmApprove') || "Are you sure you want to approve this deposit request and credit the user's balance?")
+                  : (t('adminDepositsConfirmReject') || "Are you sure you want to reject this deposit request?")}
+              </p>
+              {(() => {
+                const dep = deposits.find(d => d.id === confirmAction?.id);
+                if (!dep) return null;
+                return (
+                  <div className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-1.5 font-mono text-xs text-slate-300">
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">User:</span>
+                      <span className="font-semibold text-white truncate max-w-[200px]" title={dep.user}>{dep.user}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Email:</span>
+                      <span className="font-semibold text-white truncate max-w-[200px]" title={dep.email}>{dep.email}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Amount:</span>
+                      <span className="font-bold text-violet-400">${dep.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-6 flex gap-3">
-            <AlertDialogCancel className="bg-transparent border-white/10 text-slate-300 hover:bg-white/5 hover:text-white rounded-xl py-2 px-4 text-sm font-semibold transition-colors">
+            <AlertDialogCancel className="flex-1 bg-white/5 border border-white/10 hover:bg-white/10 text-slate-300 hover:text-white rounded-xl py-2.5 px-5 text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
               {t('adminCancel') || 'Cancel'}
             </AlertDialogCancel>
             <AlertDialogAction
@@ -328,10 +356,10 @@ export default function AdminDeposits() {
                   await executeAction(id, action, isPlisio);
                 }
               }}
-              className={`rounded-xl py-2 px-4 text-sm font-bold text-white transition-colors ${
+              className={`flex-1 rounded-xl py-2.5 px-5 text-sm font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer ${
                 confirmAction?.action === 'approve'
-                  ? 'bg-emerald-600 hover:bg-emerald-700'
-                  : 'bg-red-600 hover:bg-red-700'
+                  ? 'bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 shadow-lg shadow-violet-600/25'
+                  : 'bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-lg shadow-red-600/25'
               }`}
             >
               {t('adminConfirm') || 'Confirm'}
