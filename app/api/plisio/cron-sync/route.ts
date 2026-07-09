@@ -79,15 +79,24 @@ export async function GET(req: NextRequest) {
 
     // ── Find invoices that have been pending/cancelled/expired long enough ──────
     // Grace period: 5 minutes. Gives the real-time webhook a chance to land first.
-    // Limit to the last 7 days to avoid scanning infinite history.
+    // Limit pending to last 48 hours and cancelled/expired to last 2 hours to avoid excessive API requests.
     const gracePeriodMs = 5 * 60 * 1000;
     const cutoff = new Date(Date.now() - gracePeriodMs);
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
+    const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
 
     const stalePendingInvoices = await prisma.plisioInvoice.findMany({
       where: {
-        status:    { in: ['pending', 'cancelled', 'expired'] },
-        createdAt: { gte: sevenDaysAgo, lte: cutoff },
+        OR: [
+          {
+            status: 'pending',
+            createdAt: { gte: fortyEightHoursAgo, lte: cutoff }
+          },
+          {
+            status: { in: ['cancelled', 'expired'] },
+            createdAt: { gte: twoHoursAgo, lte: cutoff }
+          }
+        ]
       },
       orderBy: { createdAt: 'asc' },
     });
@@ -119,14 +128,30 @@ export async function GET(req: NextRequest) {
 
         console.log(`[plisio/cron-sync] Invoice ${invoice.txnId} — Plisio status: ${plisioStatus}`);
 
-        if (plisioStatus === 'completed' || plisioStatus === 'mismatch') {
+        if (plisioStatus === 'completed') {
           // ── Payment confirmed: credit the user ────────────────────────────
           const creditAmount = plisioActualSum ? parseFloat(plisioActualSum) : invoice.amount;
           await handleCompletedPayment(invoice, creditAmount, txUrl);
           results.credited++;
           console.log(`[plisio/cron-sync] ✅ Auto-recovered $${creditAmount} for user ${invoice.userId} (${invoice.txnId})`);
 
-        } else if (['expired', 'cancelled', 'error'].includes(plisioStatus)) {
+        } else if (plisioStatus === 'mismatch' || plisioStatus === 'error') {
+          // Update status and received amount, but do NOT credit user/activate invoice.
+          // This leaves it uncredited for manual admin approval.
+          const creditAmount = plisioActualSum ? parseFloat(plisioActualSum) : invoice.amount;
+          const safeTxHash = Array.isArray(txUrl) ? txUrl.join(', ') : (txUrl ?? null);
+          await prisma.plisioInvoice.update({
+            where: { id: invoice.id },
+            data: {
+              status: plisioStatus,
+              amount: creditAmount,
+              plisioTxHash: safeTxHash || invoice.plisioTxHash,
+            }
+          });
+          results.closed++;
+          console.log(`[plisio/cron-sync] ⚠️ Marked mismatch invoice ${invoice.txnId} for manual resolution (Amount: ${creditAmount})`);
+
+        } else if (['expired', 'cancelled'].includes(plisioStatus)) {
           // ── Terminal failure: close the invoice in our DB (if status changed) ──
           if (invoice.status !== plisioStatus) {
             await prisma.plisioInvoice.update({
@@ -138,7 +163,6 @@ export async function GET(req: NextRequest) {
           } else {
             results.stillPending++;
           }
-
         } else {
           // ── Still pending/new — leave it for the next cycle ───────────────
           results.stillPending++;

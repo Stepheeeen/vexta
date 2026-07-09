@@ -20,13 +20,28 @@ export async function GET(req: NextRequest) {
     const secretKey = SYSTEM_CONFIG.plisio.secretKey;
     if (secretKey) {
       try {
+        const fortyEightHoursAgo = new Date();
+        fortyEightHoursAgo.setHours(fortyEightHoursAgo.getHours() - 48);
+
         const unactivatedInvoices = await prisma.plisioInvoice.findMany({
           where: {
-            OR: [
-              { activatedAt: null },
-              { activatedAt: { isSet: false } }
-            ],
-            status: 'pending'
+            AND: [
+              {
+                OR: [
+                  { activatedAt: null },
+                  { activatedAt: { isSet: false } }
+                ]
+              },
+              {
+                OR: [
+                  { status: 'pending' },
+                  {
+                    status: { in: ['cancelled', 'expired'] },
+                    createdAt: { gte: fortyEightHoursAgo }
+                  }
+                ]
+              }
+            ]
           }
         });
 

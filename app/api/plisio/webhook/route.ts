@@ -187,11 +187,16 @@ export async function POST(req: NextRequest) {
       `expected $${invoice.amount}, received crypto USD value: ${creditAmount}.`
     );
 
-    if (creditAmount > 0) {
-      await handleCompletedPayment(invoice, creditAmount, trueTxUrl);
-    } else {
-      console.error(`[plisio/webhook] MISMATCH: Credit amount is 0 for ${txn_id}, cannot credit.`);
-    }
+    // Update status and received amount, but do NOT credit user/activate invoice.
+    // This leaves it uncredited for manual admin approval.
+    await prisma.plisioInvoice.update({
+      where: { txnId: txn_id },
+      data: {
+        status: trueStatus,
+        amount: creditAmount,
+        plisioTxHash: trueTxUrl || invoice.plisioTxHash
+      }
+    });
   } else if (
     trueStatus === PLISIO_STATUS_EXPIRED   ||
     trueStatus === PLISIO_STATUS_CANCELLED

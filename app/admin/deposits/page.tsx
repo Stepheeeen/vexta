@@ -46,8 +46,12 @@ export default function AdminDeposits() {
     isPlisio?: boolean;
   } | null>(null);
 
-  const getStatusLabel = (status: string) => {
+  const getStatusLabel = (status: string, isPlisio?: boolean) => {
     const s = status.toLowerCase();
+    if (isPlisio) {
+      if (s === 'completed') return t('adminDepositsConfirmedUncredited') || 'Confirmed (Uncredited)';
+      if (s === 'mismatch') return t('adminDepositsMismatchedUncredited') || 'Mismatched (Uncredited)';
+    }
     if (s === 'pending') return t('adminDepositsPending') || 'Pending';
     if (s === 'completed' || s === 'approved') return t('adminDepositsApproved') || 'Approved';
     if (s === 'failed' || s === 'rejected') return t('adminDepositsRejected') || 'Rejected';
@@ -245,13 +249,15 @@ export default function AdminDeposits() {
                       {dep.date}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${dep.status === 'completed'
-                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
-                          : dep.status === 'failed'
-                            ? 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20'
-                            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${dep.isPlisio && (dep.status === 'completed' || dep.status === 'mismatch')
+                          ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                          : dep.status === 'completed' || dep.status === 'approved'
+                            ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
+                            : dep.status === 'failed' || dep.status === 'rejected'
+                              ? 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20'
+                              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
                         }`}>
-                        {getStatusLabel(dep.status)}
+                        {getStatusLabel(dep.status, dep.isPlisio)}
                       </span>
                     </td>
                     {(statusFilter === 'pending' || statusFilter === 'mismatched') && (
