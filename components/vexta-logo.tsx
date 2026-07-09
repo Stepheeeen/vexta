@@ -9,6 +9,22 @@ interface VextaLogoProps {
   variant?: 'transparent' | 'light' | 'dark' | 'icon-only';
 }
 
+function getResponsiveStyle(cls: string): React.CSSProperties {
+  const hasWidth = cls.includes('w-') || cls.includes('width-');
+  const hasHeight = cls.includes('h-') || cls.includes('height-');
+  
+  if (hasWidth && hasHeight) {
+    return {};
+  }
+  if (hasWidth) {
+    return { height: 'auto' };
+  }
+  if (hasHeight) {
+    return { width: 'auto' };
+  }
+  return { width: 'auto', height: 'auto' };
+}
+
 export function VextaLogo({
   className = 'h-[72px] w-auto',
   isLight = false,
@@ -16,6 +32,8 @@ export function VextaLogo({
 }: VextaLogoProps) {
   // If variant is icon-only or any of the legacy variants, always show the bull logo (logo1.png)
   const isIconOnly = variant && ['icon-only', 'transparent', 'light', 'dark'].includes(variant);
+
+  const logoStyle = getResponsiveStyle(className);
 
   if (isIconOnly) {
     return (
@@ -25,7 +43,7 @@ export function VextaLogo({
         width={1008}
         height={871}
         className={`object-contain ${className}`}
-        style={{ width: 'auto', height: 'auto' }}
+        style={logoStyle}
         priority
       />
     );
@@ -43,7 +61,7 @@ export function VextaLogo({
         width={mobileWidth}
         height={32}
         className={`${className} block lg:hidden max-h-[32px] w-auto object-contain`}
-        style={{ width: 'auto', height: 'auto' }}
+        style={logoStyle}
         priority
       />
 
@@ -54,7 +72,7 @@ export function VextaLogo({
         width={200}
         height={72}
         className={`${className} hidden lg:block`}
-        style={{ width: 'auto', height: 'auto' }}
+        style={logoStyle}
         priority
       />
     </>

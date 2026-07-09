@@ -5,6 +5,16 @@ import { AdminLayout } from '@/components/admin-layout';
 import { Search, Loader2, CheckCircle2, XCircle, ExternalLink, RefreshCw, Copy, Check } from 'lucide-react';
 import { useTranslation } from '@/components/translation-provider';
 import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface DepositRequest {
   id: string;
@@ -17,6 +27,7 @@ interface DepositRequest {
   date: string;
   status: string;
   description: string;
+  isPlisio?: boolean;
 }
 
 export default function AdminDeposits() {
@@ -29,20 +40,27 @@ export default function AdminDeposits() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('pending');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<{
+    id: string;
+    action: 'approve' | 'reject';
+    isPlisio?: boolean;
+  } | null>(null);
 
   const getStatusLabel = (status: string) => {
     const s = status.toLowerCase();
-    if (s === 'pending') return t('adminDepositsPending');
-    if (s === 'completed' || s === 'approved') return t('adminDepositsApproved');
-    if (s === 'failed' || s === 'rejected') return t('adminDepositsRejected');
+    if (s === 'pending') return t('adminDepositsPending') || 'Pending';
+    if (s === 'completed' || s === 'approved') return t('adminDepositsApproved') || 'Approved';
+    if (s === 'failed' || s === 'rejected') return t('adminDepositsRejected') || 'Rejected';
+    if (s === 'mismatch') return t('adminDepositsMismatched') || 'Mismatched';
     return status;
   };
 
   const getFilterLabel = (status: string) => {
-    if (status === 'pending') return t('adminDepositsPending');
-    if (status === 'completed') return t('adminDepositsApproved');
-    if (status === 'failed') return t('adminDepositsRejected');
-    if (status === 'all') return t('adminDepositsAll');
+    if (status === 'pending') return t('adminDepositsPending') || 'Pending';
+    if (status === 'completed') return t('adminDepositsApproved') || 'Approved';
+    if (status === 'failed') return t('adminDepositsRejected') || 'Rejected';
+    if (status === 'mismatched') return t('adminDepositsMismatched') || 'Mismatched';
+    if (status === 'all') return t('adminDepositsAll') || 'All';
     return status;
   };
 
@@ -65,17 +83,17 @@ export default function AdminDeposits() {
     fetchDeposits();
   }, [statusFilter]);
 
-  const handleAction = async (id: string, action: 'approve' | 'reject') => {
-    const actionWord = action === 'approve' ? (t('adminActionApprove') || 'approve') : (t('adminActionReject') || 'reject');
-    const confirmMsg = (t('adminDepositsConfirmAction') || 'Are you sure you want to {action} this deposit request?').replace('{action}', actionWord);
-    if (!confirm(confirmMsg)) return;
+  const handleAction = (id: string, action: 'approve' | 'reject', isPlisio?: boolean) => {
+    setConfirmAction({ id, action, isPlisio });
+  };
 
+  const executeAction = async (id: string, action: 'approve' | 'reject', isPlisio?: boolean) => {
     try {
       setActionLoadingId(id);
       const res = await fetch('/api/admin/deposits', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, action }),
+        body: JSON.stringify({ id, action, isPlisio }),
       });
 
       if (!res.ok) {
@@ -84,15 +102,15 @@ export default function AdminDeposits() {
       }
 
       toast({
-        title: t('adminAlertSuccess'),
-        description: t('adminActionSuccess'),
+        title: t('adminAlertSuccess') || 'Success',
+        description: t('adminActionSuccess') || 'Action completed successfully',
       });
 
       // Reload list
       await fetchDeposits();
     } catch (err: any) {
       toast({
-        title: t('adminAlertError'),
+        title: t('adminAlertError') || 'Error',
         description: err.message || 'An error occurred',
         variant: 'destructive',
       });
@@ -146,7 +164,7 @@ export default function AdminDeposits() {
         </div>
 
         <div className="flex gap-2">
-          {['pending', 'completed', 'failed', 'all'].map((status) => (
+          {['pending', 'completed', 'failed', 'mismatched', 'all'].map((status) => (
             <button
               key={status}
               onClick={() => setStatusFilter(status)}
@@ -181,7 +199,7 @@ export default function AdminDeposits() {
                   <th className="px-6 py-4 text-right text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColAmount') || 'Amount'}</th>
                   <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColDate') || 'Submitted Date'}</th>
                   <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColStatus') || 'Status'}</th>
-                  {statusFilter === 'pending' && (
+                  {(statusFilter === 'pending' || statusFilter === 'mismatched') && (
                     <th className="px-6 py-4 text-center text-slate-500 dark:text-gray-400 font-semibold text-sm">{t('adminColActions') || 'Actions'}</th>
                   )}
                 </tr>
@@ -227,22 +245,21 @@ export default function AdminDeposits() {
                       {dep.date}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                        dep.status === 'completed'
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${dep.status === 'completed'
                           ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'
                           : dep.status === 'failed'
-                          ? 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20'
-                          : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
-                      }`}>
+                            ? 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20'
+                            : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20'
+                        }`}>
                         {getStatusLabel(dep.status)}
                       </span>
                     </td>
-                    {statusFilter === 'pending' && (
+                    {(statusFilter === 'pending' || statusFilter === 'mismatched') && (
                       <td className="px-6 py-4 text-center">
                         <div className="flex items-center justify-center gap-2">
                           <button
                             disabled={actionLoadingId !== null}
-                            onClick={() => handleAction(dep.id, 'approve')}
+                            onClick={() => handleAction(dep.id, 'approve', dep.isPlisio)}
                             className="p-1.5 bg-emerald-500/10 hover:bg-emerald-500 text-emerald-600 dark:text-emerald-400 hover:text-white border border-emerald-500/20 rounded-lg transition-all"
                             title={t('adminActionApprove') || 'Approve Deposit'}
                           >
@@ -254,7 +271,7 @@ export default function AdminDeposits() {
                           </button>
                           <button
                             disabled={actionLoadingId !== null}
-                            onClick={() => handleAction(dep.id, 'reject')}
+                            onClick={() => handleAction(dep.id, 'reject', dep.isPlisio)}
                             className="p-1.5 bg-red-500/10 hover:bg-red-500 text-red-600 dark:text-red-400 hover:text-white border border-red-500/20 rounded-lg transition-all"
                             title={t('adminActionReject') || 'Reject Deposit'}
                           >
@@ -267,7 +284,7 @@ export default function AdminDeposits() {
                 ))}
                 {filteredDeposits.length === 0 && (
                   <tr>
-                    <td colSpan={statusFilter === 'pending' ? 7 : 6} className="px-6 py-12 text-center text-slate-400 dark:text-gray-500 text-sm">
+                    <td colSpan={(statusFilter === 'pending' || statusFilter === 'mismatched') ? 7 : 6} className="px-6 py-12 text-center text-slate-400 dark:text-gray-500 text-sm">
                       {t('adminDepositsNoMatch') || 'No matching deposit requests found.'}
                     </td>
                   </tr>
@@ -277,6 +294,45 @@ export default function AdminDeposits() {
           </div>
         )}
       </div>
+
+      {/* Action Confirmation Modal */}
+      <AlertDialog open={confirmAction !== null} onOpenChange={(open) => { if (!open) setConfirmAction(null); }}>
+        <AlertDialogContent className="bg-slate-900 border-white/10 text-white rounded-2xl p-6">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-xl font-bold">
+              {confirmAction?.action === 'approve'
+                ? (t('adminDepositsApproveTitle') || 'Approve Deposit')
+                : (t('adminDepositsRejectTitle') || 'Reject Deposit')}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-400 text-sm">
+              {confirmAction?.action === 'approve'
+                ? (t('adminDepositsConfirmApprove') || "Are you sure you want to approve this deposit request and credit the user's balance?")
+                : (t('adminDepositsConfirmReject') || "Are you sure you want to reject this deposit request?")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-6 flex gap-3">
+            <AlertDialogCancel className="bg-transparent border-white/10 text-slate-300 hover:bg-white/5 hover:text-white rounded-xl py-2 px-4 text-sm font-semibold transition-colors">
+              {t('adminCancel') || 'Cancel'}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (confirmAction) {
+                  const { id, action, isPlisio } = confirmAction;
+                  setConfirmAction(null);
+                  await executeAction(id, action, isPlisio);
+                }
+              }}
+              className={`rounded-xl py-2 px-4 text-sm font-bold text-white transition-colors ${
+                confirmAction?.action === 'approve'
+                  ? 'bg-emerald-600 hover:bg-emerald-700'
+                  : 'bg-red-600 hover:bg-red-700'
+              }`}
+            >
+              {t('adminConfirm') || 'Confirm'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 }
