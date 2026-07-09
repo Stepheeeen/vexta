@@ -307,8 +307,8 @@ export default function AdminDeposits() {
           {/* Decorative branded top border */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-600 via-fuchsia-500 to-violet-600" />
           
-          <AlertDialogHeader className="relative">
-            <AlertDialogTitle className="text-xl font-bold flex items-center gap-2.5">
+          <AlertDialogHeader className="relative text-center flex flex-col items-center justify-center">
+            <AlertDialogTitle className="text-xl font-bold flex items-center justify-center gap-2.5 text-center w-full">
               <span className={`w-2.5 h-2.5 rounded-full ${
                 confirmAction?.action === 'approve' ? 'bg-violet-500 animate-pulse' : 'bg-red-500 animate-pulse'
               }`} />
@@ -316,8 +316,8 @@ export default function AdminDeposits() {
                 ? (t('adminDepositsApproveTitle') || 'Approve Deposit')
                 : (t('adminDepositsRejectTitle') || 'Reject Deposit')}
             </AlertDialogTitle>
-            <div className="text-slate-400 text-sm mt-3 space-y-3 font-sans">
-              <p>
+            <div className="text-slate-400 text-sm mt-3 space-y-3 font-sans text-center w-full">
+              <p className="text-center">
                 {confirmAction?.action === 'approve'
                   ? (t('adminDepositsConfirmApprove') || "Are you sure you want to approve this deposit request and credit the user's balance?")
                   : (t('adminDepositsConfirmReject') || "Are you sure you want to reject this deposit request?")}
@@ -326,14 +326,14 @@ export default function AdminDeposits() {
                 const dep = deposits.find(d => d.id === confirmAction?.id);
                 if (!dep) return null;
                 return (
-                  <div className="p-3 bg-white/5 border border-white/5 rounded-xl space-y-1.5 font-mono text-xs text-slate-300">
+                  <div className="mx-auto w-full max-w-xs p-3 bg-white/5 border border-white/5 rounded-xl space-y-1.5 font-mono text-xs text-slate-300">
                     <div className="flex justify-between">
                       <span className="text-slate-500">User:</span>
-                      <span className="font-semibold text-white truncate max-w-[200px]" title={dep.user}>{dep.user}</span>
+                      <span className="font-semibold text-white truncate max-w-[160px]" title={dep.user}>{dep.user}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-500">Email:</span>
-                      <span className="font-semibold text-white truncate max-w-[200px]" title={dep.email}>{dep.email}</span>
+                      <span className="font-semibold text-white truncate max-w-[160px]" title={dep.email}>{dep.email}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-500">Amount:</span>
@@ -344,7 +344,7 @@ export default function AdminDeposits() {
               })()}
             </div>
           </AlertDialogHeader>
-          <AlertDialogFooter className="mt-6 flex gap-3">
+          <AlertDialogFooter className="mt-6 flex flex-row items-center justify-center sm:justify-center gap-3 w-full">
             <AlertDialogCancel className="flex-1 bg-white/5 border border-white/10 hover:bg-white/10 text-slate-300 hover:text-white rounded-xl py-2.5 px-5 text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
               {t('adminCancel') || 'Cancel'}
             </AlertDialogCancel>
