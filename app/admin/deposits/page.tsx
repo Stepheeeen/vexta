@@ -303,7 +303,7 @@ export default function AdminDeposits() {
 
       {/* Action Confirmation Modal */}
       <AlertDialog open={confirmAction !== null} onOpenChange={(open) => { if (!open) setConfirmAction(null); }}>
-        <AlertDialogContent className="relative bg-[#0c1017]/95 backdrop-blur-xl border border-white/10 text-white rounded-2xl p-6 shadow-2xl overflow-hidden max-w-md">
+        <AlertDialogContent className="bg-[#0c1017]/95 backdrop-blur-xl border border-white/10 text-white rounded-2xl p-6 shadow-2xl overflow-hidden max-w-md">
           {/* Decorative branded top border */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-violet-600 via-fuchsia-500 to-violet-600" />
           
