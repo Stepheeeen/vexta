@@ -14,11 +14,12 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const statusFilter = searchParams.get('status');
+    const triggerSync = searchParams.get('sync') === 'true';
 
     // ─── Live Sync with Plisio ───────────────────────────────────────────────
     // Only check invoices created in the last 7 days to prevent rate limits & timeouts
     const secretKey = SYSTEM_CONFIG.plisio.secretKey;
-    if (secretKey) {
+    if (secretKey && triggerSync) {
       try {
         const fortyEightHoursAgo = new Date();
         fortyEightHoursAgo.setHours(fortyEightHoursAgo.getHours() - 48);

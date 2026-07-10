@@ -68,14 +68,21 @@ export default function AdminDeposits() {
     return status;
   };
 
-  const fetchDeposits = async () => {
+  const fetchDeposits = async (forceSync = false) => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch(`/api/admin/deposits?status=${statusFilter}`);
+      const url = `/api/admin/deposits?status=${statusFilter}${forceSync ? '&sync=true' : ''}`;
+      const res = await fetch(url);
       if (!res.ok) throw new Error('Failed to fetch deposits');
       const data = await res.json();
       setDeposits(data.deposits || []);
+      if (forceSync) {
+        toast({
+          title: "Synced",
+          description: "Deposit states synchronized with Plisio successfully."
+        });
+      }
     } catch (err: any) {
       setError(err.message || 'An error occurred');
     } finally {
@@ -84,7 +91,7 @@ export default function AdminDeposits() {
   };
 
   useEffect(() => {
-    fetchDeposits();
+    fetchDeposits(false);
   }, [statusFilter]);
 
   const handleAction = (id: string, action: 'approve' | 'reject', isPlisio?: boolean) => {
@@ -146,7 +153,7 @@ export default function AdminDeposits() {
           <p className="text-slate-500 dark:text-gray-400">{t('adminDepositsSub') || 'Review and approve manual blockchain deposits'}</p>
         </div>
         <button
-          onClick={fetchDeposits}
+          onClick={() => fetchDeposits(true)}
           className="p-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 rounded-xl transition-colors text-slate-700 dark:text-slate-200"
           title={t('adminRefreshList') || 'Refresh list'}
         >
