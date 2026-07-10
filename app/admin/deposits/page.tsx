@@ -316,7 +316,7 @@ export default function AdminDeposits() {
                 ? (t('adminDepositsApproveTitle') || 'Approve Deposit')
                 : (t('adminDepositsRejectTitle') || 'Reject Deposit')}
             </AlertDialogTitle>
-            <div className="text-slate-400 text-sm mt-3 space-y-3 font-sans text-center w-full">
+            <AlertDialogDescription className="text-slate-400 text-sm mt-3 space-y-3 font-sans text-center w-full block">
               <p className="text-center">
                 {confirmAction?.action === 'approve'
                   ? (t('adminDepositsConfirmApprove') || "Are you sure you want to approve this deposit request and credit the user's balance?")
@@ -342,7 +342,7 @@ export default function AdminDeposits() {
                   </div>
                 );
               })()}
-            </div>
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="mt-6 flex flex-row items-center justify-center sm:justify-center gap-3 w-full">
             <AlertDialogCancel className="flex-1 bg-white/5 border border-white/10 hover:bg-white/10 text-slate-300 hover:text-white rounded-xl py-2.5 px-5 text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
