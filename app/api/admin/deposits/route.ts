@@ -33,13 +33,8 @@ export async function GET(req: NextRequest) {
                 ]
               },
               {
-                OR: [
-                  { status: 'pending' },
-                  {
-                    status: { in: ['cancelled', 'expired'] },
-                    createdAt: { gte: fortyEightHoursAgo }
-                  }
-                ]
+                status: { in: ['pending', 'cancelled', 'expired'] },
+                createdAt: { gte: fortyEightHoursAgo }
               }
             ]
           }

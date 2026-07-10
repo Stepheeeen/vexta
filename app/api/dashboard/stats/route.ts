@@ -70,9 +70,16 @@ export async function GET(req: NextRequest) {
     currentLevelIds = links.map((l) => l.referredId);
   }
 
+  const fortyEightHoursAgo = new Date();
+  fortyEightHoursAgo.setHours(fortyEightHoursAgo.getHours() - 48);
+
   // Fetch pending Plisio deposits (not yet confirmed by the network)
   let pendingPlisioInvoices = await prisma.plisioInvoice.findMany({
-    where: { userId, status: 'pending' },
+    where: { 
+      userId, 
+      status: 'pending',
+      createdAt: { gte: fortyEightHoursAgo }
+    },
     orderBy: { createdAt: 'desc' },
   });
 
