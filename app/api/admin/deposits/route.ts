@@ -53,13 +53,14 @@ export async function GET(req: NextRequest) {
                 const plisioStatus = data.data.invoice.status;
                 const receivedAmount = data.data.invoice.received_amount ? parseFloat(data.data.invoice.received_amount) : 0;
                 const txHash = data.data.invoice.tx_id;
+                const safeTxHash = Array.isArray(txHash) ? txHash.join(', ') : (txHash || null);
                 
                 if (plisioStatus !== inv.status && ['completed', 'mismatch', 'expired', 'failed'].includes(plisioStatus)) {
                   await prisma.plisioInvoice.update({
                     where: { id: inv.id },
                     data: {
                       status: plisioStatus,
-                      plisioTxHash: txHash || inv.plisioTxHash,
+                      plisioTxHash: safeTxHash || inv.plisioTxHash,
                       amount: plisioStatus === 'mismatch' && receivedAmount > 0 ? receivedAmount : inv.amount
                     }
                   });
