@@ -1,12 +1,1 @@
-{
-  "crons": [
-    {
-      "path": "/api/admin/run-daily-roi",
-      "schedule": "0 14 * * 1-5"
-    },
-    {
-      "path": "/api/plisio/cron-sync",
-      "schedule": "*/5 * * * *"
-    }
-  ]
-}
+{}
