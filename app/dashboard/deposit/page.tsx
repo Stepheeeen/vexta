@@ -133,6 +133,7 @@ export default function DepositPage() {
   const [copiedAddress, setCopiedAddress] = useState(false);
   const [copiedAmount, setCopiedAmount] = useState(false);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
+  const [syncingId, setSyncingId] = useState<string | null>(null);
 
   const statusColor: Record<string, string> = {
     pending: 'text-amber-600 dark:text-amber-400 bg-amber-500/10',
@@ -286,6 +287,55 @@ export default function DepositPage() {
       toast({ title: 'Error', description: err.message, variant: 'destructive' });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleCheckStatus = async (invoiceDbId: string) => {
+    setSyncingId(invoiceDbId);
+    try {
+      const res = await fetch('/api/plisio/check-invoice', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: invoiceDbId }),
+      });
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error || 'Failed to sync status');
+      
+      if (data.status === 'completed' || data.status === 'mismatch') {
+        toast({
+          title: t('depConfirmed') || 'Deposit Confirmed!',
+          description: data.message || 'Your balance has been updated.',
+        });
+      } else {
+        toast({
+          title: t('depPending') || 'Still Pending',
+          description: data.message || 'Transaction is still awaiting confirmation.',
+        });
+      }
+
+      // Reload stats and transactions
+      const statsRes = await fetch('/api/dashboard/stats');
+      if (statsRes.ok) {
+        const statsData = await statsRes.json();
+        const txs: DepositTx[] = (statsData.recentTransactions || []).filter(
+          (tx: any) =>
+            tx.type === 'deposit' &&
+            (tx.status === 'completed' || tx.status === 'pending') &&
+            !tx.description?.includes('Investment activated')
+        );
+        setDeposits(txs.slice(0, 8));
+        const total = txs.reduce((sum, tx) => (tx.status === 'completed' ? sum + tx.amount : sum), 0);
+        setTotalDeposited(total);
+      }
+    } catch (err: any) {
+      toast({
+        title: 'Sync Failed',
+        description: err.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setSyncingId(null);
     }
   };
 
@@ -499,6 +549,20 @@ export default function DepositPage() {
                           </p>
                         </div>
                         <div className="flex items-center gap-3">
+                          {dep.status === 'pending' && dep.id.startsWith('plisio-pending-') && (
+                            <button
+                              disabled={syncingId !== null}
+                              onClick={() => handleCheckStatus(dep.id.replace('plisio-pending-', ''))}
+                              className="px-2.5 py-1 bg-violet-600/10 hover:bg-violet-600 border border-violet-500/20 text-violet-600 dark:text-violet-400 hover:text-white dark:hover:text-white text-[10px] font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                            >
+                              {syncingId === dep.id.replace('plisio-pending-', '') ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                <Clock className="w-3.5 h-3.5" />
+                              )}
+                              {t('depCheckStatus') || 'Check Status'}
+                            </button>
+                          )}
                           <span className={`text-[9px] font-bold font-mono px-2 py-0.5 rounded-full ${statusColor[dep.status] || 'bg-slate-200 text-slate-600'}`}>
                             {dep.status.toUpperCase()}
                           </span>
