@@ -35,6 +35,23 @@ export async function middleware(req: NextRequest) {
       }
     }
 
+    // Cron job bypass for run-daily-roi
+    if (pathname === '/api/admin/run-daily-roi') {
+      const cronSecret = process.env.CRON_SECRET;
+      const cronHeader = req.headers.get('x-cron-key');
+      const authHeader = req.headers.get('authorization');
+      const querySecret = req.nextUrl.searchParams.get('secret');
+
+      const isCronCall =
+        (cronSecret && cronHeader === cronSecret) ||
+        (cronSecret && authHeader === `Bearer ${cronSecret}`) ||
+        (cronSecret && querySecret === cronSecret);
+
+      if (isCronCall) {
+        return NextResponse.next();
+      }
+    }
+
     const token = req.cookies.get('vexta_token')?.value;
     if (!token) {
       if (pathname.startsWith('/api/')) {
