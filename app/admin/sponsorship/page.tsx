@@ -580,11 +580,18 @@ export default function AdminSponsorship() {
                             {l.fundsFrozen ? 'Frozen' : 'Unlocked'}
                           </span>
                           <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold font-mono uppercase ${
-                            (l.roiBlocked || (hasGoal && !goalMet)) 
+                            l.roiBlocked
                               ? 'bg-red-500/10 text-red-500 border border-red-500/20' 
                               : 'bg-green-500/10 text-green-500 border border-green-500/20'
                           }`}>
-                            {(l.roiBlocked || (hasGoal && !goalMet)) ? 'ROI Blocked' : 'ROI Open'}
+                            {l.roiBlocked ? 'ROI Gen Blocked' : 'ROI Gen Active'}
+                          </span>
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold font-mono uppercase ${
+                            (hasGoal && !goalMet)
+                              ? 'bg-red-500/10 text-red-500 border border-red-500/20' 
+                              : 'bg-green-500/10 text-green-500 border border-green-500/20'
+                          }`}>
+                            {(hasGoal && !goalMet) ? 'W. Locked (Goal)' : 'W. Unlocked'}
                           </span>
                           <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold font-mono uppercase ${
                             l.withdrawalsBlocked

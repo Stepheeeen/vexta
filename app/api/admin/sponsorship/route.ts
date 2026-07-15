@@ -19,7 +19,6 @@ export async function GET(req: NextRequest) {
       // Find normal users that are not sponsored
       const users = await prisma.user.findMany({
         where: {
-          isSponsored: false,
           role: 'user',
           OR: [
             { email: { contains: search, mode: 'insensitive' } },
@@ -165,7 +164,7 @@ export async function POST(req: NextRequest) {
     const promoDuration = settings?.promoDuration ?? 40;
     const promoNoBonus = settings?.promoNoBonus ?? true;
 
-    const duration = promoCampaignActive ? promoDuration : plan.duration;
+    const duration = plan.duration; // Sponsored accounts always use the plan's regular duration, not the 40-day promo duration
     const noBonus = promoCampaignActive ? promoNoBonus : false;
 
     const startDate = new Date();

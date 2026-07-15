@@ -654,18 +654,27 @@ export default function DepositPage() {
 
                     {/* QR Code Frame */}
                     <div className="flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-white/2 border border-slate-100 dark:border-white/5 rounded-2xl">
-                      <div className={`p-3 bg-white border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm transition-opacity duration-300 ${
-                        timeLeft === 'Expired' ? 'opacity-40' : ''
-                      }`}>
-                        <img
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${invoiceDetails.walletAddress}`}
-                          alt="USDT BEP20 QR Code"
-                          className="w-36 h-36 object-contain"
-                        />
-                      </div>
-                      <p className="text-[10px] text-slate-400 dark:text-gray-500 font-medium mt-2">
-                        {timeLeft === 'Expired' ? (t('depExpiredDoNotScan') || 'Expired — Do not scan') : (t('depositModalScan') || 'Scan QR Code')}
-                      </p>
+                      {(!invoiceDetails.walletAddress || invoiceDetails.walletAddress === 'undefined') ? (
+                        <div className="flex flex-col items-center justify-center p-8 bg-white border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm h-44 w-full">
+                          <Loader2 className="w-8 h-8 animate-spin text-violet-500 mb-2" />
+                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider text-center">Pending Generation</p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className={`p-3 bg-white border border-slate-200 dark:border-white/10 rounded-2xl shadow-sm transition-opacity duration-300 ${
+                            timeLeft === 'Expired' ? 'opacity-40' : ''
+                          }`}>
+                            <img
+                              src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${invoiceDetails.walletAddress}`}
+                              alt="USDT BEP20 QR Code"
+                              className="w-36 h-36 object-contain"
+                            />
+                          </div>
+                          <p className="text-[10px] text-slate-400 dark:text-gray-500 font-medium mt-2">
+                            {timeLeft === 'Expired' ? (t('depExpiredDoNotScan') || 'Expired — Do not scan') : (t('depositModalScan') || 'Scan QR Code')}
+                          </p>
+                        </>
+                      )}
                     </div>
 
                     {/* Status Loading */}
@@ -710,7 +719,9 @@ export default function DepositPage() {
                       </label>
                       <div className="flex items-center gap-2 bg-slate-50 dark:bg-white/3 border border-slate-200 dark:border-white/5 p-3 rounded-xl">
                         <span className="flex-1 font-mono text-xs text-slate-500 dark:text-gray-300 break-all select-all leading-normal">
-                          {invoiceDetails.walletAddress}
+                          {(!invoiceDetails.walletAddress || invoiceDetails.walletAddress === 'undefined') 
+                            ? 'Pending generation...' 
+                            : invoiceDetails.walletAddress}
                         </span>
                         <button
                           onClick={() => copyToClipboard(invoiceDetails.walletAddress, 'address')}
