@@ -35,8 +35,8 @@ export async function middleware(req: NextRequest) {
       }
     }
 
-    // Cron job bypass for run-daily-roi
-    if (pathname === '/api/admin/run-daily-roi') {
+    // Cron job bypass for run-daily-roi (robust against trailing slashes)
+    if (pathname === '/api/admin/run-daily-roi' || pathname === '/api/admin/run-daily-roi/') {
       const cronSecret = process.env.CRON_SECRET;
       const cronHeader = req.headers.get('x-cron-key');
       const authHeader = req.headers.get('authorization');
