@@ -216,9 +216,11 @@ export async function sendBatchPayoutOTPEmail(
   }
 }
 
+
 /**
  * Sends an email notification report for a cron job execution (success or failure).
- * Includes clean formatted HTML and highlights log information on failure.
+ * Includes HTML + plain-text body for maximum deliverability (iCloud requires text/plain
+ * to avoid spam filtering on emails from custom domains).
  */
 export async function sendCronReportEmail(
   email: string,
@@ -239,34 +241,54 @@ export async function sendCronReportEmail(
     return true;
   }
 
+  const runTime = new Date().toUTCString();
+  const statusIcon = status === 'SUCCESS' ? '✅' : '❌';
+  const statusColor = status === 'SUCCESS' ? '#10B981' : '#EF4444';
+  const subject = `${statusIcon} [${SYSTEM_CONFIG.brand.name}] Cron: ${cronName} — ${status}`;
+
+  // Plain-text version — required for iCloud / Apple Mail to avoid spam filtering
+  const plainText = [
+    `${SYSTEM_CONFIG.brand.name} — Cron Job Report`,
+    `Job: ${cronName}`,
+    `Status: ${status}`,
+    `Time: ${runTime}`,
+    ``,
+    `--- Execution Report ---`,
+    report,
+    logs ? `\n--- Error Details ---\n${logs}` : '',
+    ``,
+    `This is an automated notification from the ${SYSTEM_CONFIG.brand.name} network engine.`,
+  ].join('\n');
+
+  // Always use the configured from address — never fall back to resend.dev defaults
+  const fromEmail = process.env.RESEND_FROM_EMAIL || `${SYSTEM_CONFIG.brand.name} System <noreply@vexta.network>`;
+
   try {
-    const fromEmail = process.env.RESEND_FROM_EMAIL || `${SYSTEM_CONFIG.brand.name} Cron <cron@resend.dev>`;
-    const statusColor = status === 'SUCCESS' ? '#10B981' : '#EF4444';
-    const subject = `${status === 'SUCCESS' ? '✅' : '❌'} Cron Job ${cronName} - ${status} (${SYSTEM_CONFIG.brand.name})`;
-    
     const { error } = await resend.emails.send({
       from: fromEmail,
       to: email,
-      subject: subject,
+      subject,
+      text: plainText,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 12px; background-color: #0d1420; color: #ffffff;">
           <h2 style="color: ${statusColor}; font-weight: 700; margin-bottom: 4px;">Cron Job: ${cronName}</h2>
-          <div style="display: inline-block; background: ${statusColor}22; color: ${statusColor}; padding: 4px 12px; border-radius: 9999px; font-size: 14px; font-weight: bold; margin-bottom: 20px;">
-            ${status}
+          <div style="display: inline-block; background: ${statusColor}22; color: ${statusColor}; padding: 4px 12px; border-radius: 9999px; font-size: 14px; font-weight: bold; margin-bottom: 8px;">
+            ${statusIcon} ${status}
           </div>
-          
+          <p style="color: #6b7280; font-size: 12px; margin-top: 0; margin-bottom: 20px;">Run time: ${runTime}</p>
+
           <div style="background: #1a2436; border: 1px solid rgba(229, 231, 235, 0.1); border-radius: 8px; padding: 16px; margin-bottom: 20px;">
             <h3 style="margin-top: 0; color: #9ca3af; font-size: 14px;">Execution Report</h3>
-            <p style="margin: 0; font-size: 16px; line-height: 1.5; color: #e5e7eb; white-space: pre-wrap;">${report}</p>
+            <p style="margin: 0; font-size: 15px; line-height: 1.6; color: #e5e7eb; white-space: pre-wrap;">${report}</p>
           </div>
-          
+
           ${logs ? `
             <div style="background: #1f2937; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 8px; padding: 16px;">
-              <h3 style="margin-top: 0; color: #ef4444; font-size: 14px;">Error Details & Logs</h3>
+              <h3 style="margin-top: 0; color: #ef4444; font-size: 14px;">Error Details &amp; Logs</h3>
               <pre style="margin: 0; font-family: monospace; font-size: 12px; line-height: 1.4; color: #f9fafb; white-space: pre-wrap; overflow-x: auto;">${logs}</pre>
             </div>
           ` : ''}
-          
+
           <p style="color: #808A9D; font-size: 12px; margin-top: 30px; border-top: 1px solid rgba(229, 231, 235, 0.1); padding-top: 20px;">
             This is an automated system notification from the ${SYSTEM_CONFIG.brand.name} network engine.
           </p>
@@ -284,4 +306,3 @@ export async function sendCronReportEmail(
     return false;
   }
 }
-

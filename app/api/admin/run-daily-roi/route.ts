@@ -6,6 +6,38 @@ import { logAdminAction } from '@/lib/audit-logger';
 import { sendCronReportEmail } from '@/lib/mail';
 
 /**
+ * Returns the list of emails to notify for cron reports.
+ * Reads from CRON_REPORT_EMAIL (comma-separated). Falls back to a safe default.
+ */
+function getCronReportRecipients(): string[] {
+  const raw = process.env.CRON_REPORT_EMAIL || 'stepheeeen@icloud.com';
+  return raw.split(',').map((e) => e.trim()).filter(Boolean);
+}
+
+/**
+ * Fire-and-forget cron report email — wrapped in its own try/catch so
+ * an email failure NEVER affects the HTTP response sent back to cron-job.org.
+ */
+async function notifyCronResult(
+  status: 'SUCCESS' | 'FAILURE',
+  cronName: string,
+  report: string,
+  logs?: string
+): Promise<void> {
+  const recipients = getCronReportRecipients();
+  try {
+    await Promise.all(
+      recipients.map((email) =>
+        sendCronReportEmail(email, cronName, status, report, logs)
+      )
+    );
+  } catch (emailErr) {
+    // Never let an email error crash the cron job
+    console.error('[run-daily-roi] Failed to send cron report email:', emailErr);
+  }
+}
+
+/**
  * POST /api/admin/run-daily-roi
  *
  * Runs the daily ROI distribution:
@@ -47,7 +79,12 @@ async function handleRun(req: NextRequest) {
 
     const result = await runDailyRoiDistribution(bypassWeekendCheck);
 
-    const reportMsg = `Daily ROI payout executed successfully.\nProcessed ${result.usersPaid} active investments.\nTotal Distributed: $${result.totalDistributed.toFixed(2)}`;
+    const reportMsg = [
+      `Daily ROI payout executed successfully.`,
+      `Processed: ${result.usersPaid} active investment(s).`,
+      `Total Distributed: $${result.totalDistributed.toFixed(2)} USDT`,
+      `Run time: ${new Date().toUTCString()}`,
+    ].join('\n');
 
     // Log to Admin Audit Logs
     const firstAdmin = await prisma.user.findFirst({ where: { role: 'admin' } });
@@ -55,13 +92,8 @@ async function handleRun(req: NextRequest) {
       await logAdminAction(firstAdmin.id, null, 'CRON_DAILY_ROI_SUCCESS', reportMsg);
     }
 
-    // Send Email Report
-    await sendCronReportEmail(
-      'stepheeeen@icloud.com',
-      'Daily ROI Payout',
-      'SUCCESS',
-      reportMsg
-    );
+    // Send Email Report — isolated so email failures never break the cron response
+    await notifyCronResult('SUCCESS', 'Daily ROI Payout', reportMsg);
 
     return NextResponse.json({
       success:         true,
@@ -97,11 +129,10 @@ async function handleRun(req: NextRequest) {
       await logAdminAction(firstAdmin.id, null, 'CRON_DAILY_ROI_FAILURE', `Daily ROI failed: ${errMsg}`);
     }
 
-    // Send Email Notification with Logs
-    await sendCronReportEmail(
-      'stepheeeen@icloud.com',
-      'Daily ROI Payout',
+    // Send Email Notification with Logs — isolated so email failures never mask the real error
+    await notifyCronResult(
       'FAILURE',
+      'Daily ROI Payout',
       `Daily ROI payout failed to run: ${errMsg}`,
       errStack
     );
