@@ -56,6 +56,24 @@ export async function propagateCommissions(
     const grossAmount = +(investmentAmount * rate).toFixed(2);
     if (grossAmount <= 0) { currentUserId = link.referrerId; continue; }
 
+    // ── Idempotency guard ────────────────────────────────────────────────────
+    // A commission row is unique per (investmentId, level). If one already
+    // exists, this level was already paid on a previous run — skip ALL side
+    // effects (earning application + balance credit) and walk up. Without this,
+    // a retry re-runs applyEarningToInvestments for already-paid levels
+    // (corrupting the 200% cap accounting) and then throws on the unique
+    // constraint at commission.create, so the retry never reaches the levels
+    // that were actually missing — leaving them permanently unpaid.
+    const existing = await client.commission.findUnique({
+      where: { investmentId_level: { investmentId, level } },
+      select: { id: true },
+    });
+    if (existing) {
+      console.log(`[REFERRAL] L${level} already paid for investment ${investmentId} — skipping.`);
+      currentUserId = link.referrerId;
+      continue;
+    }
+
     // ── Route through 200% cap engine ────────────────────────────────────────
     // applyEarningToInvestments handles capacity routing + investment completion.
     // It returns how much was actually credited (fits in packages) vs forfeited.

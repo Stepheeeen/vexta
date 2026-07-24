@@ -455,7 +455,7 @@ export default function AdminSettings() {
           <button
             type="submit"
             disabled={savingCommissions}
-            className="w-full mt-4 py-3 bg-violet-600 hover:bg-violet-750 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+            className="w-full mt-4 py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
           >
             {savingCommissions ? t('adminSettingsSaving') : savedCommissions ? <><Check className="w-5 h-5" /> {t('adminSettingsSaved')}</> : t('adminSettingsSaveCommissionBtn')}
           </button>
@@ -540,7 +540,7 @@ export default function AdminSettings() {
           <button
             type="submit"
             disabled={savingCampaign}
-            className="w-full mt-4 py-3 bg-violet-600 hover:bg-violet-750 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+            className="w-full mt-4 py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
           >
             {savingCampaign ? t('adminSettingsSaving') : savedCampaign ? <><Check className="w-5 h-5" /> {t('adminSettingsSaved') || 'Saved!'}</> : (t('adminSettingsSaveCampaign') || 'Save Campaign Settings')}
           </button>
@@ -594,7 +594,7 @@ export default function AdminSettings() {
           <button
             type="submit"
             disabled={savingNotifications}
-            className="w-full mt-4 py-3 bg-violet-600 hover:bg-violet-750 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+            className="w-full mt-4 py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
           >
             {savingNotifications ? t('adminSettingsSaving') : savedNotifications ? <><Check className="w-5 h-5" /> {t('adminSettingsSaved')}</> : t('adminSettingsSaveNotificationsBtn')}
           </button>
@@ -655,7 +655,7 @@ export default function AdminSettings() {
         <button
           type="submit"
           disabled={savingVolume}
-          className="w-full mt-4 py-3 bg-violet-600 hover:bg-violet-750 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+          className="w-full mt-4 py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
         >
           {savingVolume ? t('adminSettingsSaving') : savedVolume ? <><Check className="w-5 h-5" /> {t('adminSettingsSaved') || 'Saved!'}</> : (t('adminSettingsSaveVolume') || 'Save Volume Bonus')}
         </button>
@@ -704,7 +704,7 @@ export default function AdminSettings() {
           <button
             type="submit"
             disabled={savingSecurity}
-            className="w-full mt-4 py-3 bg-violet-600 hover:bg-violet-750 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+            className="w-full mt-4 py-3 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
           >
             {savingSecurity ? t('adminSettingsSaving') : savedSecurity ? <><Check className="w-5 h-5" /> {t('adminSettingsSaved')}</> : t('adminSettingsSaveSecurityBtn')}
           </button>

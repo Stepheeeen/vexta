@@ -28,6 +28,16 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    // When deposit promos are switched off, the investment engine grants a $0
+    // tier bonus (see app/api/investments/route.ts). Zero out the advertised
+    // bonus here too so the deposit UI never promises a +10%/+20% that won't be
+    // applied on activation.
+    const settings = await prisma.settings.findFirst();
+    const depositPromosActive = settings?.depositPromosActive ?? true;
+    if (!depositPromosActive) {
+      plans = plans.map((p) => ({ ...p, bonus: 0 }));
+    }
+
     return NextResponse.json({ plans });
   } catch (err) {
     console.error('[plans/GET]', err);

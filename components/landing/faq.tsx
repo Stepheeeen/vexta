@@ -44,7 +44,7 @@ export function FAQ() {
                 onClick={() => setOpen(open === i ? null : i)}
                 className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left"
               >
-                <span className={`font-medium text-sm sm:text-base transition-colors ${open === i ? 'text-violet-750 font-semibold' : 'text-slate-700'}`}>
+                <span className={`font-medium text-sm sm:text-base transition-colors ${open === i ? 'text-violet-700 font-semibold' : 'text-slate-700'}`}>
                   {q}
                 </span>
                 <ChevronDown

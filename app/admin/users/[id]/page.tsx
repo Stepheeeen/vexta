@@ -314,7 +314,7 @@ export default function AdminUserDetails() {
             </div>
             <button
               type="submit"
-              className="w-full py-2 bg-violet-655 hover:bg-violet-700 text-white font-bold rounded-xl text-xs transition cursor-pointer"
+              className="w-full py-2 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl text-xs transition cursor-pointer"
             >
               {t('adminUserDetailUpdateEmail') || 'Update Email Address'}
             </button>
@@ -334,7 +334,7 @@ export default function AdminUserDetails() {
             </div>
             <button
               type="submit"
-              className="w-full py-2 bg-violet-655 hover:bg-violet-750 text-white font-bold rounded-xl text-xs transition cursor-pointer"
+              className="w-full py-2 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl text-xs transition cursor-pointer"
             >
               {t('adminUserDetailSetTempPassword') || 'Set Temporary Password'}
             </button>
@@ -352,7 +352,7 @@ export default function AdminUserDetails() {
                 <select
                   value={unlockType}
                   onChange={(e) => setUnlockType(e.target.value)}
-                  className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-2.5 text-slate-750 dark:text-gray-300 focus:outline-none focus:border-violet-500 text-sm"
+                  className="w-full bg-slate-50 dark:bg-white/2 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-2.5 text-slate-700 dark:text-gray-300 focus:outline-none focus:border-violet-500 text-sm"
                 >
                   <option value="none">{t('adminUserDetailKeepStandard') || 'Keep Standard Rules'}</option>
                   <option value="amount">{t('adminUserDetailUnlockCustom') || 'Unlock Custom Amount (One-time)'}</option>
@@ -380,7 +380,7 @@ export default function AdminUserDetails() {
 
             <button
               type="submit"
-              className="w-full py-2.5 bg-violet-655 hover:bg-violet-750 text-white font-bold rounded-xl text-sm transition cursor-pointer mt-6"
+              className="w-full py-2.5 bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-xl text-sm transition cursor-pointer mt-6"
             >
               {t('adminUserDetailSaveOverride') || 'Save Unlock Override'}
             </button>

@@ -233,7 +233,7 @@ export default function AdminDashboard() {
           </div>
           <button
             type="submit"
-            className="px-4 py-2 bg-violet-600 hover:bg-violet-750 text-white text-xs font-bold rounded-xl shadow-md transition cursor-pointer"
+            className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-xs font-bold rounded-xl shadow-md transition cursor-pointer"
           >
             Find User
           </button>
