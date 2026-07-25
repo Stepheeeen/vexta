@@ -7,16 +7,28 @@ import { sendCronReportEmail } from '@/lib/mail';
 
 /**
  * Returns the list of emails to notify for cron reports.
- * Reads from CRON_REPORT_EMAIL (comma-separated). Falls back to a safe default.
+ * Reads from CRON_REPORT_EMAIL (comma-separated) and merges with all admin emails in database.
  */
-function getCronReportRecipients(): string[] {
-  const raw = process.env.CRON_REPORT_EMAIL || 'stepheeeen@icloud.com';
-  return raw.split(',').map((e) => e.trim()).filter(Boolean);
+async function getCronReportRecipients(): Promise<string[]> {
+  const envRaw = process.env.CRON_REPORT_EMAIL || 'stepheeeen@icloud.com';
+  const envRecipients = envRaw.split(',').map((e) => e.trim().toLowerCase()).filter(Boolean);
+
+  try {
+    const adminUsers = await prisma.user.findMany({
+      where: { role: 'admin' },
+      select: { email: true }
+    });
+    const dbAdminEmails = adminUsers.map(u => u.email.trim().toLowerCase());
+    return Array.from(new Set([...envRecipients, ...dbAdminEmails]));
+  } catch (err) {
+    console.error('[run-daily-roi] Failed to fetch admin emails from DB:', err);
+    return envRecipients;
+  }
 }
 
 /**
  * Fire-and-forget cron report email — wrapped in its own try/catch so
- * an email failure NEVER affects the HTTP response sent back to cron-job.org.
+ * an email failure NEVER affects the HTTP response sent back to cron-job.org or GitHub Actions.
  */
 async function notifyCronResult(
   status: 'SUCCESS' | 'FAILURE',
@@ -24,7 +36,7 @@ async function notifyCronResult(
   report: string,
   logs?: string
 ): Promise<void> {
-  const recipients = getCronReportRecipients();
+  const recipients = await getCronReportRecipients();
   try {
     await Promise.all(
       recipients.map((email) =>

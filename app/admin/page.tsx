@@ -61,10 +61,8 @@ export default function AdminDashboard() {
   const [error, setError] = useState<string | null>(null);
 
   const [searchEmail, setSearchEmail] = useState('');
-  const [executingRoi, setExecutingRoi] = useState(false);
   const [resettingLock, setResettingLock] = useState(false);
   const [executingSync, setExecutingSync] = useState(false);
-  const [bypassWeekend, setBypassWeekend] = useState(false);
 
   const handleSyncNetworkAndDeposits = async () => {
     setExecutingSync(true);
@@ -100,32 +98,7 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleRunDailyRoi = async () => {
-    if (!confirm("Are you sure you want to trigger the daily profit distribution manually for all users?")) return;
-    setExecutingRoi(true);
-    try {
-      const res = await fetch('/api/admin/run-daily-roi', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ bypassWeekendCheck: bypassWeekend })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Payout execution failed');
-      toast({
-        title: "Success",
-        description: `Manual ROI payout executed successfully! Paid ${data.usersPaid} investments, total distributed: $${data.totalDistributed.toFixed(2)} USDT.`
-      });
-      fetchDashboardData();
-    } catch (err: any) {
-      toast({
-        title: "Payout Error",
-        description: err.message || "Failed to execute profit distribution",
-        variant: 'destructive'
-      });
-    } finally {
-      setExecutingRoi(false);
-    }
-  };
+
 
   const handleResetRoiLock = async () => {
     if (!confirm("Are you sure you want to reset the daily profit distribution running lock? Only use this if a previous run crashed and is stuck.")) return;
@@ -298,17 +271,9 @@ export default function AdminDashboard() {
           Arbitrage & ROI Distribution Operations
         </h3>
         <p className="text-xs text-slate-500 dark:text-gray-400 mb-6">
-          Manually execute the daily 1% ROI distribution to all active investments, or reset the running lock if the cron is stuck.
+          Daily 1% ROI distributions execute automatically Mon–Fri via scheduled cron. Use the controls below to manually sync network deposits or reset the execution lock if needed.
         </p>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-          <button
-            onClick={handleRunDailyRoi}
-            disabled={executingRoi}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white font-bold rounded-xl transition cursor-pointer text-sm"
-          >
-            {executingRoi ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-            Execute Daily Payout
-          </button>
           <button
             onClick={handleSyncNetworkAndDeposits}
             disabled={executingSync}
@@ -325,18 +290,6 @@ export default function AdminDashboard() {
             {resettingLock ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
             Reset ROI Lock
           </button>
-        </div>
-        <div className="mt-4 flex items-center gap-2">
-          <input
-            type="checkbox"
-            id="bypass-weekend"
-            checked={bypassWeekend}
-            onChange={(e) => setBypassWeekend(e.target.checked)}
-            className="rounded border-slate-350 dark:border-white/10 text-violet-600 focus:ring-violet-500"
-          />
-          <label htmlFor="bypass-weekend" className="text-xs text-slate-500 dark:text-gray-400 cursor-pointer select-none">
-            Bypass Weekend Check (Allow Saturday/Sunday payout)
-          </label>
         </div>
       </div>
 
