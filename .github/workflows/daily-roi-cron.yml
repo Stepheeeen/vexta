@@ -1,0 +1,16 @@
+name: Daily ROI Distribution Cron
+
+on:
+  schedule:
+    # Run Monday to Friday at 09:00 UTC
+    - cron: '0 9 * * 1-5'
+  workflow_dispatch: # Allows manual trigger from GitHub UI anytime
+
+jobs:
+  run-daily-roi:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Daily ROI distribution endpoint
+        run: |
+          curl -i -X POST \
+            "https://vexta.network/api/admin/run-daily-roi?secret=${{ secrets.CRON_SECRET }}&source=github_action&t=$(date +%s)"

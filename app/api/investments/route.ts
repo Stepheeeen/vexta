@@ -184,23 +184,19 @@ export async function POST(req: NextRequest) {
     // undo a successfully committed investment.
     }, { timeout: 30000 });
 
-    // 9. Fire-and-forget commission propagation AFTER the investment is committed.
-    // commissionStatus starts as 'pending'; we mark it 'completed' on success.
-    // If the server crashes here, the retry-commissions endpoint will pick it up.
+    // 9. Synchronously propagate commissions AFTER the investment transaction is committed.
+    // Idempotent: Commission records prevent duplicate payouts per (investmentId, level).
     const investmentId = result.investment.id;
-    propagateCommissions(payload.userId, investmentId, amount)
-      .then(async levels => {
-        console.log(`[investments/POST] Commissions propagated: ${levels.length} levels for investment ${investmentId}`);
-        // Mark commissionStatus as completed so the reconciler skips it
-        await prisma.investment.update({
-          where: { id: investmentId },
-          data:  { commissionStatus: 'completed' } as any,
-        }).catch(e => console.error('[investments/POST] Failed to update commissionStatus:', e));
-      })
-      .catch(async commErr => {
-        console.error('[investments/POST] Commission propagation error (non-fatal, investment committed):', commErr);
-        // commissionStatus remains 'pending' — retry-commissions endpoint will retry it
+    try {
+      const levels = await propagateCommissions(payload.userId, investmentId, amount);
+      await prisma.investment.update({
+        where: { id: investmentId },
+        data:  { commissionStatus: 'completed' } as any,
       });
+      console.log(`[investments/POST] Synchronous commissions propagated: ${levels.length} levels for investment ${investmentId}`);
+    } catch (commErr) {
+      console.error('[investments/POST] Commission propagation error (non-fatal, investment committed):', commErr);
+    }
 
     return NextResponse.json(
       {

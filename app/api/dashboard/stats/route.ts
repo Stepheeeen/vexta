@@ -3,6 +3,7 @@ import { getUserFromRequest } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { getAvailableBalance, getWithdrawableBalances, getP2pBalance } from '@/lib/balance';
 import { SYSTEM_CONFIG } from '@/lib/config/system';
+import { propagateCommissions } from '@/lib/referral-engine';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,17 +58,50 @@ export async function GET(req: NextRequest) {
   // Referrals count (direct)
   const directReferrals = await prisma.referralLink.count({ where: { referrerId: userId } });
 
-  // Total network count (all levels BFS)
+  // Total network count & downline user IDs (all levels BFS)
   let totalNetworkCount = 0;
   let currentLevelIds = [userId];
+  const allDownlineUserIds: string[] = [];
+
   for (let level = 1; level <= 13; level++) {
     const links = await prisma.referralLink.findMany({
       where: { referrerId: { in: currentLevelIds } },
       select: { referredId: true },
     });
     if (links.length === 0) break;
-    totalNetworkCount += links.length;
-    currentLevelIds = links.map((l) => l.referredId);
+    const referredIds = links.map((l) => l.referredId);
+    totalNetworkCount += referredIds.length;
+    allDownlineUserIds.push(...referredIds);
+    currentLevelIds = referredIds;
+  }
+
+  // ── Client Auto-Sync: Reconcile any pending team commissions on dashboard load ─────
+  if (allDownlineUserIds.length > 0) {
+    try {
+      const pendingDownlineInvs = await prisma.investment.findMany({
+        where: {
+          userId: { in: allDownlineUserIds },
+          commissionStatus: 'pending',
+          isVirtual: false,
+        } as any,
+        select: { id: true, userId: true, amount: true },
+        take: 10,
+      });
+
+      for (const inv of pendingDownlineInvs) {
+        try {
+          await propagateCommissions(inv.userId, inv.id, inv.amount);
+          await prisma.investment.update({
+            where: { id: inv.id },
+            data:  { commissionStatus: 'completed' } as any,
+          });
+        } catch (e) {
+          console.error(`[stats/auto-sync] Commission sync error for inv ${inv.id}:`, e);
+        }
+      }
+    } catch (err) {
+      console.error('[stats/auto-sync] Downline commission check error:', err);
+    }
   }
 
   const fortyEightHoursAgo = new Date();

@@ -63,7 +63,35 @@ export default function AdminDashboard() {
   const [searchEmail, setSearchEmail] = useState('');
   const [executingRoi, setExecutingRoi] = useState(false);
   const [resettingLock, setResettingLock] = useState(false);
+  const [executingSync, setExecutingSync] = useState(false);
   const [bypassWeekend, setBypassWeekend] = useState(false);
+
+  const handleSyncNetworkAndDeposits = async () => {
+    setExecutingSync(true);
+    try {
+      // 1. Reconcile commissions
+      const commRes = await fetch('/api/admin/retry-commissions', { method: 'POST' });
+      const commData = await commRes.json();
+      
+      // 2. Sync Plisio deposits
+      const plisioRes = await fetch('/api/plisio/cron-sync');
+      const plisioData = await plisioRes.json();
+
+      toast({
+        title: "Network & Deposits Synced",
+        description: `Commissions retried: ${commData.retried ?? 0}, Plisio deposits synced: ${plisioData.activated ?? 0}.`
+      });
+      fetchDashboardData();
+    } catch (err: any) {
+      toast({
+        title: "Sync Error",
+        description: err.message || "Failed to sync network & deposits",
+        variant: 'destructive'
+      });
+    } finally {
+      setExecutingSync(false);
+    }
+  };
 
   const handleQuickSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -280,6 +308,14 @@ export default function AdminDashboard() {
           >
             {executingRoi ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
             Execute Daily Payout
+          </button>
+          <button
+            onClick={handleSyncNetworkAndDeposits}
+            disabled={executingSync}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold rounded-xl transition cursor-pointer text-sm"
+          >
+            {executingSync ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+            Sync Network & Deposits
           </button>
           <button
             onClick={handleResetRoiLock}
