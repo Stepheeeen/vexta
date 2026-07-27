@@ -29,6 +29,8 @@ model User {
 
   verificationCode        String?
   verificationCodeExpires DateTime?
+  resetPasswordCode       String?
+  resetPasswordExpires     DateTime?
   /// OTP brute-force protection — counts consecutive wrong attempts
   otpAttempts     Int       @default(0)
   /// Locks OTP verification until this time after 5 failed attempts

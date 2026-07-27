@@ -52,6 +52,55 @@ export async function sendVerificationEmail(email: string, firstName: string, co
 }
 
 /**
+ * Sends a 6-digit email verification code for resetting password via Resend.
+ * Falls back to logging to console if the Resend API key is missing or dummy.
+ */
+export async function sendPasswordResetEmail(email: string, firstName: string, code: string): Promise<boolean> {
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey || apiKey === 're_123456789' || apiKey.startsWith('your_')) {
+    console.log(`\n==================================================`);
+    console.log(`📬  [EMAIL SIMULATION - PASSWORD RESET] To: ${email}`);
+    console.log(`🔑  Reset Code: ${code}`);
+    console.log(`==================================================\n`);
+    return true;
+  }
+
+  try {
+    const fromEmail = process.env.RESEND_FROM_EMAIL || `${SYSTEM_CONFIG.brand.name} Auth <onboarding@resend.dev>`;
+    const { error } = await resend.emails.send({
+      from: fromEmail,
+      to: email,
+      subject: `Reset your ${SYSTEM_CONFIG.brand.name} password`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 12px; background-color: #0d1420; color: #ffffff;">
+          <h2 style="color: #00D9FF; font-weight: 300;">Reset Your Password</h2>
+          <p>Hi ${firstName},</p>
+          <p>We received a request to reset the password for your ${SYSTEM_CONFIG.brand.name} account.</p>
+          <p>Please use the following 6-digit verification code to complete your password reset:</p>
+          <div style="background: #1a2436; color: #00D9FF; font-family: monospace; font-size: 24px; font-weight: 700; text-align: center; padding: 15px; margin: 20px 0; border-radius: 8px; letter-spacing: 4px; border: 1px solid rgba(0, 217, 255, 0.2);">
+            ${code}
+          </div>
+          <p style="color: #808A9D; font-size: 12px; margin-top: 30px;">
+            This reset code is valid for 1 hour. If you did not request a password reset, please ignore this email and your password will remain unchanged.
+          </p>
+        </div>
+      `,
+    });
+
+    if (error) {
+      console.error('[Resend Password Reset Error]', error);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error('[Resend Password Reset Exception]', err);
+    return false;
+  }
+}
+
+/**
  * Sends a 6-digit email OTP for confirming account deletion.
  * Falls back to logging to console if the Resend API key is missing or dummy.
  */

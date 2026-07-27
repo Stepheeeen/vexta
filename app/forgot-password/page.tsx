@@ -13,16 +13,37 @@ export default function ForgotPasswordPage() {
   const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.includes('@') || !email.includes('.')) {
       setError(t('forgotPasswordInvalidEmail'));
       return;
     }
     setError('');
-    setIsSubmitted(true);
+    setIsLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to send password reset code');
+      }
+
+      setIsSubmitted(true);
+    } catch (err: any) {
+      setError(err.message || 'Failed to send password reset code');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -79,9 +100,12 @@ export default function ForgotPasswordPage() {
 
                 <button
                   type="submit"
-                  className="w-full px-4 py-4 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-gray-100 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group/btn relative overflow-hidden"
+                  disabled={isLoading}
+                  className="w-full px-4 py-4 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-gray-100 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group/btn relative overflow-hidden disabled:opacity-50"
                 >
-                  <span className="relative z-10 font-mono tracking-widest text-sm uppercase">{t('forgotPasswordSendBtn')}</span>
+                  <span className="relative z-10 font-mono tracking-widest text-sm uppercase">
+                    {isLoading ? 'Sending...' : t('forgotPasswordSendBtn')}
+                  </span>
                   <ArrowRight className="w-4 h-4 relative z-10 group-hover/btn:translate-x-1 transition-transform" />
                 </button>
               </form>
@@ -96,9 +120,18 @@ export default function ForgotPasswordPage() {
               <h2 className="text-2xl font-light text-slate-900 dark:text-[#FFFFFF] mb-2 font-sans tracking-tight">
                 {t('forgotPasswordSentTitle')}
               </h2>
-              <p className="text-slate-500 dark:text-[#808A9D] text-xs leading-relaxed font-mono mt-4 mb-8">
+              <p className="text-slate-500 dark:text-[#808A9D] text-xs leading-relaxed font-mono mt-4 mb-6">
                 {t('forgotPasswordSentDesc')}
               </p>
+              
+              <Link
+                href={`/reset-password?email=${encodeURIComponent(email)}`}
+                className="w-full mb-3 flex items-center justify-center px-4 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-gray-100 font-semibold rounded-xl transition-all duration-300 group/btn"
+              >
+                <span className="relative z-10 font-mono tracking-widest text-sm uppercase">Enter Reset Code</span>
+                <ArrowRight className="w-4 h-4 ml-2 relative z-10 group-hover/btn:translate-x-1 transition-transform" />
+              </Link>
+
               <button
                 onClick={() => setIsSubmitted(false)}
                 className="w-full px-4 py-3 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-white/50 hover:text-slate-900 dark:hover:text-[#FFFFFF] hover:bg-slate-100 dark:hover:bg-white/5 font-mono text-sm tracking-widest rounded-xl transition-all uppercase"
