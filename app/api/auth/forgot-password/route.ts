@@ -21,10 +21,17 @@ export async function POST(req: NextRequest) {
 
     const { email } = parsed.data;
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    let user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      user = await prisma.user.findFirst({
+        where: {
+          email: { equals: email, mode: 'insensitive' }
+        }
+      });
+    }
 
-    // Only generate reset code if user exists and account is active
-    if (user && user.isActive) {
+    // Generate reset code if user exists
+    if (user && user.isActive !== false) {
       const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
       const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
@@ -36,7 +43,14 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      await sendPasswordResetEmail(user.email, user.firstName, resetCode);
+      const emailSent = await sendPasswordResetEmail(user.email, user.firstName, resetCode);
+      if (!emailSent) {
+        console.error(`[forgot-password] Failed to deliver password reset email to ${user.email}`);
+      } else {
+        console.log(`[forgot-password] Password reset code sent successfully to ${user.email}`);
+      }
+    } else {
+      console.warn(`[forgot-password] User not found or inactive for email: ${email}`);
     }
 
     // Always return generic success message to prevent user enumeration

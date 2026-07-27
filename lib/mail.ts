@@ -67,9 +67,11 @@ export async function sendPasswordResetEmail(email: string, firstName: string, c
   }
 
   try {
-    const fromEmail = process.env.RESEND_FROM_EMAIL || `${SYSTEM_CONFIG.brand.name} Auth <onboarding@resend.dev>`;
-    const { error } = await resend.emails.send({
-      from: fromEmail,
+    const defaultFrom = `${SYSTEM_CONFIG.brand.name} Auth <onboarding@resend.dev>`;
+    const configuredFrom = process.env.RESEND_FROM_EMAIL || defaultFrom;
+    
+    let { error } = await resend.emails.send({
+      from: configuredFrom,
       to: email,
       subject: `Reset your ${SYSTEM_CONFIG.brand.name} password`,
       html: `
@@ -87,6 +89,30 @@ export async function sendPasswordResetEmail(email: string, firstName: string, c
         </div>
       `,
     });
+
+    if (error && configuredFrom !== defaultFrom) {
+      console.warn(`[Resend Password Reset] Failed with '${configuredFrom}', retrying with fallback '${defaultFrom}'...`, error);
+      const retryResult = await resend.emails.send({
+        from: defaultFrom,
+        to: email,
+        subject: `Reset your ${SYSTEM_CONFIG.brand.name} password`,
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #f0f0f0; border-radius: 12px; background-color: #0d1420; color: #ffffff;">
+            <h2 style="color: #00D9FF; font-weight: 300;">Reset Your Password</h2>
+            <p>Hi ${firstName},</p>
+            <p>We received a request to reset the password for your ${SYSTEM_CONFIG.brand.name} account.</p>
+            <p>Please use the following 6-digit verification code to complete your password reset:</p>
+            <div style="background: #1a2436; color: #00D9FF; font-family: monospace; font-size: 24px; font-weight: 700; text-align: center; padding: 15px; margin: 20px 0; border-radius: 8px; letter-spacing: 4px; border: 1px solid rgba(0, 217, 255, 0.2);">
+              ${code}
+            </div>
+            <p style="color: #808A9D; font-size: 12px; margin-top: 30px;">
+              This reset code is valid for 1 hour. If you did not request a password reset, please ignore this email and your password will remain unchanged.
+            </p>
+          </div>
+        `,
+      });
+      error = retryResult.error;
+    }
 
     if (error) {
       console.error('[Resend Password Reset Error]', error);

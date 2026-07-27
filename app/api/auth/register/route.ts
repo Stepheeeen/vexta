@@ -6,7 +6,7 @@ import { hashPassword, signToken, generateReferralCode } from '@/lib/auth';
 const schema = z.object({
   firstName: z.string().min(1, 'First name is required').max(50),
   lastName:  z.string().min(1, 'Last name is required').max(50),
-  email:     z.string().email('Invalid email address'),
+  email:     z.string().email('Invalid email address').transform(val => val.trim().toLowerCase()),
   country:   z.string().min(1, 'Country is required'),
   whatsappOrTelegram: z.string().optional(),
   password:  z.string().min(8, 'Password must be at least 8 characters'),
@@ -35,8 +35,12 @@ export async function POST(req: NextRequest) {
 
     const { firstName, lastName, email, country, whatsappOrTelegram, password, referralCode } = parsed.data;
 
-    // Check duplicate email
-    const existing = await prisma.user.findUnique({ where: { email } });
+    // Check duplicate email (exact + case-insensitive)
+    const existing = await prisma.user.findFirst({
+      where: {
+        email: { equals: email, mode: 'insensitive' }
+      }
+    });
     if (existing) {
       return NextResponse.json({ error: 'An account with this email already exists' }, { status: 409 });
     }

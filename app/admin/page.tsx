@@ -63,6 +63,35 @@ export default function AdminDashboard() {
   const [searchEmail, setSearchEmail] = useState('');
   const [resettingLock, setResettingLock] = useState(false);
   const [executingSync, setExecutingSync] = useState(false);
+  const [executingRoi, setExecutingRoi] = useState(false);
+  const [bypassWeekend, setBypassWeekend] = useState(false);
+
+  const handleRunDailyRoi = async () => {
+    if (!confirm(`Are you sure you want to trigger daily ROI payouts now?${bypassWeekend ? ' (Bypassing weekend check)' : ''}`)) return;
+    setExecutingRoi(true);
+    try {
+      const res = await fetch('/api/admin/run-daily-roi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bypassWeekendCheck: bypassWeekend }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to execute ROI payout');
+      toast({
+        title: "ROI Payout Executed",
+        description: `Successfully paid ${data.usersPaid ?? 0} active investment(s). Total distributed: $${(data.totalDistributed ?? 0).toFixed(2)} USDT.`
+      });
+      fetchDashboardData();
+    } catch (err: any) {
+      toast({
+        title: "ROI Payout Error",
+        description: err.message || "Failed to execute ROI payout",
+        variant: 'destructive'
+      });
+    } finally {
+      setExecutingRoi(false);
+    }
+  };
 
   const handleSyncNetworkAndDeposits = async () => {
     setExecutingSync(true);
@@ -275,6 +304,14 @@ export default function AdminDashboard() {
         </p>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
           <button
+            onClick={handleRunDailyRoi}
+            disabled={executingRoi}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-violet-600 hover:bg-violet-700 disabled:opacity-50 text-white font-bold rounded-xl transition cursor-pointer text-sm shadow-md"
+          >
+            {executingRoi ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 fill-current" />}
+            Run Daily ROI Payout
+          </button>
+          <button
             onClick={handleSyncNetworkAndDeposits}
             disabled={executingSync}
             className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold rounded-xl transition cursor-pointer text-sm"
@@ -290,6 +327,18 @@ export default function AdminDashboard() {
             {resettingLock ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
             Reset ROI Lock
           </button>
+        </div>
+        <div className="mt-3 flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="bypassWeekendCheck"
+            checked={bypassWeekend}
+            onChange={(e) => setBypassWeekend(e.target.checked)}
+            className="w-4 h-4 rounded text-violet-600 focus:ring-violet-500 cursor-pointer"
+          />
+          <label htmlFor="bypassWeekendCheck" className="text-xs text-slate-500 dark:text-gray-400 font-mono cursor-pointer">
+            Bypass Weekend & Day-of-Week Check (for manual testing/overrides)
+          </label>
         </div>
       </div>
 
