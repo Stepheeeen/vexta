@@ -123,9 +123,9 @@ export default function Login() {
             <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-600 dark:text-amber-400 text-xs font-mono flex items-start gap-3">
               <Lock className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold uppercase tracking-wider mb-1">Server Migration In Progress</p>
+                <p className="font-bold uppercase tracking-wider mb-1">{t('migrationNoticeTitle')}</p>
                 <p className="normal-case opacity-90">
-                  User login is temporarily paused while VEXTA is migrating to its official servers. Administrator accounts may log in below.
+                  {t('migrationNoticeLoginNote')}
                 </p>
               </div>
             </div>

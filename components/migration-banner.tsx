@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { ShieldCheck, Server, Sparkles, Lock, ArrowUpRight } from 'lucide-react';
+import { ShieldCheck, Server, Sparkles, Lock } from 'lucide-react';
+import { useTranslation } from '@/components/translation-provider';
 
 interface MigrationBannerProps {
   compact?: boolean;
@@ -14,10 +15,18 @@ interface MigrationBannerProps {
 export function MigrationBanner({
   compact = false,
   className = '',
-  title = 'Official Server Migration in Progress',
-  message = 'VEXTA is currently being migrated to our official production infrastructure following the successful conclusion of our Beta Testing phase.',
-  reassurance = 'All user accounts, portfolios, transactions, and funds are 100% safe and secure.',
+  title,
+  message,
+  reassurance,
 }: MigrationBannerProps) {
+  const { t } = useTranslation();
+
+  const displayTitle = title || t('migrationNoticeTitle');
+  const displayMessage = message || t('migrationNoticeMessage');
+  const displayReassurance = reassurance || t('migrationNoticeReassurance');
+  const betaBadge = t('migrationNoticeBetaEnded');
+  const fundsBadge = t('migrationNoticeFundsSecure');
+
   if (compact) {
     return (
       <div className={`w-full bg-gradient-to-r from-amber-500/10 via-violet-500/10 to-emerald-500/10 border border-amber-500/20 dark:border-amber-400/30 rounded-xl p-4 backdrop-blur-md ${className}`}>
@@ -28,17 +37,17 @@ export function MigrationBanner({
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-semibold font-mono uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                {title}
+                {displayTitle}
               </span>
               <span className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-[#00FF88] border border-emerald-500/20">
-                <ShieldCheck className="w-3 h-3" /> Funds 100% Secure
+                <ShieldCheck className="w-3 h-3" /> {fundsBadge}
               </span>
             </div>
             <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed font-sans">
-              {message}
+              {displayMessage}
             </p>
             <p className="text-[11px] font-mono text-emerald-600 dark:text-[#00FF88] mt-1.5 flex items-center gap-1">
-              <Lock className="w-3 h-3" /> {reassurance}
+              <Lock className="w-3 h-3" /> {displayReassurance}
             </p>
           </div>
         </div>
@@ -57,12 +66,12 @@ export function MigrationBanner({
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-mono tracking-wider">
             <Sparkles className="w-3.5 h-3.5 text-[#00D9FF] animate-pulse" />
-            <span>BETA PHASE CONCLUDED</span>
+            <span>{betaBadge}</span>
           </div>
 
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[#00FF88] text-xs font-mono tracking-wider">
             <ShieldCheck className="w-3.5 h-3.5 text-[#00FF88]" />
-            <span>FUNDS 100% SAFE & SECURE</span>
+            <span>{fundsBadge}</span>
           </div>
         </div>
 
@@ -70,10 +79,10 @@ export function MigrationBanner({
         <div className="space-y-2">
           <h3 className="text-xl sm:text-2xl font-light text-white tracking-tight font-sans flex items-center gap-3">
             <Server className="w-6 h-6 text-[#00D9FF] shrink-0" />
-            <span>{title}</span>
+            <span>{displayTitle}</span>
           </h3>
           <p className="text-slate-300 text-sm leading-relaxed font-sans">
-            {message}
+            {displayMessage}
           </p>
         </div>
 
@@ -82,10 +91,7 @@ export function MigrationBanner({
           <Lock className="w-5 h-5 text-[#00FF88] shrink-0 mt-0.5" />
           <div className="text-xs space-y-1">
             <p className="font-mono font-semibold text-[#00FF88]">
-              {reassurance}
-            </p>
-            <p className="text-slate-400 font-sans text-[11px] leading-relaxed">
-              Database synchronization and official domain routing are being finalized. All balance records, active investment plans, and referral structures will be restored immediately upon migration completion.
+              {displayReassurance}
             </p>
           </div>
         </div>

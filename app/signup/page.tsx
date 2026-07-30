@@ -282,9 +282,9 @@ export default function SignUp() {
             <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-600 dark:text-amber-400 text-xs font-mono flex items-start gap-3">
               <Lock className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold uppercase tracking-wider mb-1">Registration Temporarily Paused</p>
+                <p className="font-bold uppercase tracking-wider mb-1">{t('migrationNoticeSignupTitle')}</p>
                 <p className="normal-case opacity-90">
-                  New user signups are paused during server migration. All existing accounts and funds remain 100% safe.
+                  {t('migrationNoticeSignupDesc')}
                 </p>
               </div>
             </div>
@@ -535,7 +535,7 @@ export default function SignUp() {
                 <Loader2 className="w-4 h-4 animate-spin text-white dark:text-black" />
               ) : !newRegistrations ? (
                 <span className="relative z-10 font-mono tracking-wider text-xs uppercase flex items-center gap-1.5 text-amber-500 dark:text-amber-400">
-                  <Lock className="w-3.5 h-3.5" /> REGISTRATION PAUSED
+                  <Lock className="w-3.5 h-3.5" /> {t('migrationNoticeSignupBtn')}
                 </span>
               ) : (
                 <>

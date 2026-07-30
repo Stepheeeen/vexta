@@ -1,26 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyTokenEdge } from '@/lib/auth-edge';
 
-const PUBLIC_PATHS = ['/', '/login', '/signup', '/forgot-password', '/api/auth', '/verify'];
+const PUBLIC_PATHS = ['/', '/login', '/signup', '/forgot-password', '/api/auth', '/verify', '/api/public'];
 const DASHBOARD_PREFIX = '/dashboard';
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const isEnvMaintenance = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true' || process.env.MAINTENANCE_MODE === 'true';
 
   // Allow public paths and API auth routes
   if (PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p))) {
-    // If user is already logged in and verified, don't let them go to login/signup/verify
     const token = req.cookies.get('vexta_token')?.value;
     if (token) {
       try {
         const payload = await verifyTokenEdge(token);
+
+        // If maintenance is active and user is not admin, clear session cookie immediately
+        if (isEnvMaintenance && payload.role !== 'admin') {
+          const response = NextResponse.next();
+          response.cookies.delete('vexta_token');
+          return response;
+        }
+
+        // If user is already logged in and verified, don't let them go to login/signup/verify
         if (payload.isVerified && (pathname === '/login' || pathname === '/signup' || pathname === '/verify')) {
           if (payload.role === 'admin') {
             return NextResponse.redirect(new URL('/admin', req.url));
           }
           return NextResponse.redirect(new URL('/dashboard', req.url));
         }
-      } catch {}
+      } catch {
+        // Expired or invalid token — clear cookie
+        const response = NextResponse.next();
+        response.cookies.delete('vexta_token');
+        return response;
+      }
     }
     return NextResponse.next();
   }
@@ -94,6 +108,21 @@ export async function middleware(req: NextRequest) {
 
     try {
       const payload = await verifyTokenEdge(token);
+
+      // If maintenance mode is active and user is not admin, clear cookie and block access
+      if (isEnvMaintenance && payload.role !== 'admin') {
+        if (pathname.startsWith('/api/')) {
+          const res = NextResponse.json(
+            { error: 'Platform is in maintenance mode for server migration.', maintenanceMode: true },
+            { status: 503 }
+          );
+          res.cookies.delete('vexta_token');
+          return res;
+        }
+        const response = NextResponse.redirect(new URL('/login?maintenance=true', req.url));
+        response.cookies.delete('vexta_token');
+        return response;
+      }
       
       // If user is not verified, they must verify
       if (!payload.isVerified) {
@@ -101,18 +130,6 @@ export async function middleware(req: NextRequest) {
           return NextResponse.json({ error: 'Verification required' }, { status: 403 });
         }
         return NextResponse.redirect(new URL('/verify', req.url));
-      }
-
-      // If maintenance mode is set via env and user is not admin, redirect dashboard access to login with maintenance flag
-      const isEnvMaintenance = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true' || process.env.MAINTENANCE_MODE === 'true';
-      if (isEnvMaintenance && payload.role !== 'admin') {
-        if (pathname.startsWith('/api/')) {
-          return NextResponse.json(
-            { error: 'Platform is in maintenance mode for server migration.', maintenanceMode: true },
-            { status: 503 }
-          );
-        }
-        return NextResponse.redirect(new URL('/login?maintenance=true', req.url));
       }
 
       return NextResponse.next();
@@ -136,7 +153,7 @@ export const config = {
     '/dashboard/:path*',
     '/admin',
     '/admin/:path*',
-    '/api/((?!auth).)*', // all /api/* except /api/auth/*
+    '/api/((?!auth).)*',
     '/login',
     '/signup',
     '/verify',

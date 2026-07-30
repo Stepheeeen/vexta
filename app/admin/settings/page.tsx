@@ -701,6 +701,37 @@ export default function AdminSettings() {
             <p className="text-xs text-slate-500 dark:text-gray-400 mt-2">{t('adminSettingsIpWhitelistHint')}</p>
           </div>
 
+          <div className="pt-4 border-t border-slate-200 dark:border-white/5">
+            <button
+              type="button"
+              onClick={async () => {
+                if (confirm('Are you sure you want to log out all non-admin users across the platform immediately?')) {
+                  try {
+                    const res = await fetch('/api/admin/logout-all', { method: 'POST' });
+                    if (res.ok) {
+                      toast({
+                        title: t('adminAlertSuccess') || 'Success',
+                        description: 'All non-admin users have been logged out and maintenance mode is active.',
+                      });
+                      setSettings(prev => ({ ...prev, maintenanceMode: true }));
+                    } else {
+                      throw new Error('Failed to log out all users');
+                    }
+                  } catch (err: any) {
+                    toast({
+                      title: t('adminAlertError') || 'Error',
+                      description: err.message || 'Failed to log out all users',
+                      variant: 'destructive',
+                    });
+                  }
+                }
+              }}
+              className="w-full py-3 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 font-bold border border-red-500/30 rounded-xl transition-colors flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-wider"
+            >
+              ⚠️ Force Log Out All Users (Invalidate Sessions)
+            </button>
+          </div>
+
           <button
             type="submit"
             disabled={savingSecurity}
