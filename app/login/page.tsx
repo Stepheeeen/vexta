@@ -46,10 +46,6 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (maintenanceMode) {
-      setError('Login is temporarily disabled while VEXTA is migrating to its official servers. All user funds and accounts are 100% safe.');
-      return;
-    }
     if (!formData.email.includes('@') || !formData.email.includes('.')) {
       setError(t('forgotPasswordInvalidEmail'));
       return;
@@ -129,7 +125,7 @@ export default function Login() {
               <div>
                 <p className="font-bold uppercase tracking-wider mb-1">Server Migration In Progress</p>
                 <p className="normal-case opacity-90">
-                  User login is temporarily paused while VEXTA is being migrated to its official servers. All accounts and funds are completely safe.
+                  User login is temporarily paused while VEXTA is migrating to its official servers. Administrator accounts may log in below.
                 </p>
               </div>
             </div>
@@ -155,7 +151,7 @@ export default function Login() {
                   className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:border-violet-500/50 dark:focus:border-[#00D9FF]/50 focus:ring-1 focus:ring-violet-500/50 dark:focus:ring-[#00D9FF]/50 focus:bg-white/10 transition-all duration-300 font-mono text-sm disabled:opacity-50"
                   placeholder="you@example.com"
                   required
-                  disabled={loading || maintenanceMode}
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -178,13 +174,12 @@ export default function Login() {
                   className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl pl-4 pr-12 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:border-violet-500/50 dark:focus:border-[#00FF88]/50 focus:ring-1 focus:ring-violet-500/50 dark:focus:ring-[#00FF88]/50 focus:bg-white/10 transition-all duration-300 font-mono disabled:opacity-50"
                   placeholder="••••••••••••"
                   required
-                  disabled={loading || maintenanceMode}
+                  disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/60 focus:outline-none transition-colors"
-                  disabled={maintenanceMode}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -193,15 +188,11 @@ export default function Login() {
 
             <button
               type="submit"
-              disabled={loading || maintenanceMode}
-              className="w-full mt-8 px-4 py-4 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-gray-100 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group/btn relative overflow-hidden disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+              disabled={loading}
+              className="w-full mt-8 px-4 py-4 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-gray-100 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group/btn relative overflow-hidden disabled:opacity-50 cursor-pointer"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin text-white dark:text-black" />
-              ) : maintenanceMode ? (
-                <span className="relative z-10 font-mono tracking-wider text-xs uppercase flex items-center gap-2 text-amber-500 dark:text-amber-400">
-                  <Lock className="w-3.5 h-3.5" /> LOGIN PAUSED (SERVER MIGRATION)
-                </span>
               ) : (
                 <>
                   <span className="relative z-10 font-mono tracking-widest text-sm uppercase">{t('loginSignInBtn')}</span>
