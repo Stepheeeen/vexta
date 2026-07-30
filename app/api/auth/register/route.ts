@@ -16,9 +16,12 @@ const schema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const settings = await prisma.settings.findFirst();
-    if (settings && !settings.newRegistrations) {
+    const envDisableReg = process.env.NEXT_PUBLIC_DISABLE_REGISTRATION === 'true' || process.env.DISABLE_REGISTRATION === 'true';
+    const isRegistrationsDisabled = envDisableReg || (settings && !settings.newRegistrations);
+
+    if (isRegistrationsDisabled) {
       return NextResponse.json(
-        { error: 'New registrations are temporarily disabled by the administrator.' },
+        { error: 'New account registrations are temporarily paused while VEXTA is migrating to its official servers. All existing accounts and funds are 100% safe.' },
         { status: 403 }
       );
     }

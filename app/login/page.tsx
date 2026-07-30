@@ -1,13 +1,14 @@
 "use client"
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { VextaLogoText } from '@/components/vexta-logo';
 import { BackgroundPattern } from '@/components/background-pattern';
-import { ArrowRight, Activity, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { ArrowRight, Activity, Eye, EyeOff, Loader2, Lock } from 'lucide-react';
 import { useTranslation } from '@/components/translation-provider';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { useRouter } from 'next/navigation';
+import { MigrationBanner } from '@/components/migration-banner';
 
 export default function Login() {
   const router = useRouter();
@@ -20,6 +21,20 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // System status flags
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [migrationNotice, setMigrationNotice] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/public/system-status')
+      .then(res => res.json())
+      .then(data => {
+        if (data.maintenanceMode) setMaintenanceMode(true);
+        if (data.migrationNotice) setMigrationNotice(true);
+      })
+      .catch(err => console.error('Failed to fetch system status', err));
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -31,6 +46,10 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (maintenanceMode) {
+      setError('Login is temporarily disabled while VEXTA is migrating to its official servers. All user funds and accounts are 100% safe.');
+      return;
+    }
     if (!formData.email.includes('@') || !formData.email.includes('.')) {
       setError(t('forgotPasswordInvalidEmail'));
       return;
@@ -77,8 +96,8 @@ export default function Login() {
       <BackgroundPattern />
       <LanguageSwitcher />
 
-      <div className="w-full max-w-md relative z-10 mt-12 mb-12">
-        <div className="mb-8 text-center flex flex-col items-center">
+      <div className="w-full max-w-md relative z-10 mt-12 mb-12 space-y-6">
+        <div className="text-center flex flex-col items-center">
           <Link href="/">
             <VextaLogoText />
           </Link>
@@ -87,6 +106,11 @@ export default function Login() {
             <span className="text-xs text-violet-600 dark:text-[#00D9FF] font-mono tracking-wider">{t('secureConnection')}</span>
           </div>
         </div>
+
+        {/* High-visibility Migration Banner */}
+        {migrationNotice && (
+          <MigrationBanner compact />
+        )}
 
         <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-3xl border border-slate-200 dark:border-white/5 rounded-2xl p-10 shadow-sm dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] relative overflow-hidden group">
           <h1 className="text-3xl font-light text-slate-900 dark:text-[#FFFFFF] mb-2 font-sans tracking-tight">
@@ -98,6 +122,18 @@ export default function Login() {
           <p className="text-slate-500 dark:text-[#808A9D] text-sm mb-8 font-mono">
             {t('loginSubtitle')}
           </p>
+
+          {maintenanceMode && (
+            <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-600 dark:text-amber-400 text-xs font-mono flex items-start gap-3">
+              <Lock className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold uppercase tracking-wider mb-1">Server Migration In Progress</p>
+                <p className="normal-case opacity-90">
+                  User login is temporarily paused while VEXTA is being migrated to its official servers. All accounts and funds are completely safe.
+                </p>
+              </div>
+            </div>
+          )}
 
           {error && (
             <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-600 dark:text-red-400 text-xs font-mono">
@@ -116,10 +152,10 @@ export default function Login() {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:border-violet-500/50 dark:focus:border-[#00D9FF]/50 focus:ring-1 focus:ring-violet-500/50 dark:focus:ring-[#00D9FF]/50 focus:bg-white/10 transition-all duration-300 font-mono text-sm"
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:border-violet-500/50 dark:focus:border-[#00D9FF]/50 focus:ring-1 focus:ring-violet-500/50 dark:focus:ring-[#00D9FF]/50 focus:bg-white/10 transition-all duration-300 font-mono text-sm disabled:opacity-50"
                   placeholder="you@example.com"
                   required
-                  disabled={loading}
+                  disabled={loading || maintenanceMode}
                 />
               </div>
             </div>
@@ -139,15 +175,16 @@ export default function Login() {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl pl-4 pr-12 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:border-violet-500/50 dark:focus:border-[#00FF88]/50 focus:ring-1 focus:ring-violet-500/50 dark:focus:ring-[#00FF88]/50 focus:bg-white/10 transition-all duration-300 font-mono"
+                  className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl pl-4 pr-12 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:border-violet-500/50 dark:focus:border-[#00FF88]/50 focus:ring-1 focus:ring-violet-500/50 dark:focus:ring-[#00FF88]/50 focus:bg-white/10 transition-all duration-300 font-mono disabled:opacity-50"
                   placeholder="••••••••••••"
                   required
-                  disabled={loading}
+                  disabled={loading || maintenanceMode}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/60 focus:outline-none transition-colors"
+                  disabled={maintenanceMode}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -156,11 +193,15 @@ export default function Login() {
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full mt-8 px-4 py-4 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-gray-100 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group/btn relative overflow-hidden disabled:opacity-50"
+              disabled={loading || maintenanceMode}
+              className="w-full mt-8 px-4 py-4 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-gray-100 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group/btn relative overflow-hidden disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin text-white dark:text-black" />
+              ) : maintenanceMode ? (
+                <span className="relative z-10 font-mono tracking-wider text-xs uppercase flex items-center gap-2 text-amber-500 dark:text-amber-400">
+                  <Lock className="w-3.5 h-3.5" /> LOGIN PAUSED (SERVER MIGRATION)
+                </span>
               ) : (
                 <>
                   <span className="relative z-10 font-mono tracking-widest text-sm uppercase">{t('loginSignInBtn')}</span>

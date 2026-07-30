@@ -103,6 +103,18 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(new URL('/verify', req.url));
       }
 
+      // If maintenance mode is set via env and user is not admin, redirect dashboard access to login with maintenance flag
+      const isEnvMaintenance = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true' || process.env.MAINTENANCE_MODE === 'true';
+      if (isEnvMaintenance && payload.role !== 'admin') {
+        if (pathname.startsWith('/api/')) {
+          return NextResponse.json(
+            { error: 'Platform is in maintenance mode for server migration.', maintenanceMode: true },
+            { status: 503 }
+          );
+        }
+        return NextResponse.redirect(new URL('/login?maintenance=true', req.url));
+      }
+
       return NextResponse.next();
     } catch (err) {
       console.error('[middleware-dashboard-error]', err);

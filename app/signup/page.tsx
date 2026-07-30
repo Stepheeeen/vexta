@@ -4,12 +4,13 @@ import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { VextaLogoText } from '@/components/vexta-logo';
 import { BackgroundPattern } from '@/components/background-pattern';
-import { ArrowRight, Activity, Hexagon, Eye, EyeOff, Loader2, Check } from 'lucide-react';
+import { ArrowRight, Activity, Hexagon, Eye, EyeOff, Loader2, Check, Lock } from 'lucide-react';
 import { useTranslation } from '@/components/translation-provider';
 import { LanguageSwitcher } from '@/components/language-switcher';
 import { useRouter } from 'next/navigation';
 import { countries } from '@/lib/countries';
 import { safeGetItem, safeRemoveItem } from '@/lib/storage';
+import { MigrationBanner } from '@/components/migration-banner';
 
 export default function SignUp() {
   const router = useRouter();
@@ -26,6 +27,20 @@ export default function SignUp() {
     referralCode: '',
     acceptTerms: false,
   });
+
+  // System status flags
+  const [newRegistrations, setNewRegistrations] = useState(true);
+  const [migrationNotice, setMigrationNotice] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/public/system-status')
+      .then(res => res.json())
+      .then(data => {
+        if (typeof data.newRegistrations === 'boolean') setNewRegistrations(data.newRegistrations);
+        if (data.migrationNotice) setMigrationNotice(true);
+      })
+      .catch(err => console.error('Failed to fetch system status', err));
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -54,6 +69,7 @@ export default function SignUp() {
   }, []);
 
   const checkEmailAvailability = async (email: string) => {
+    if (!newRegistrations) return;
     const trimmed = email.trim();
     const isFormatValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
     if (!isFormatValid) {
@@ -97,6 +113,7 @@ export default function SignUp() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!newRegistrations) return;
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -145,6 +162,10 @@ export default function SignUp() {
   };
 
   const handleNext = async () => {
+    if (!newRegistrations) {
+      setSubmitError('New registrations are temporarily paused while VEXTA is migrating to its official servers.');
+      return;
+    }
     if (validateStep(step)) {
       if (step === 1) {
         setLoading(true);
@@ -211,8 +232,8 @@ export default function SignUp() {
       <BackgroundPattern />
       <LanguageSwitcher />
       
-      <div className="w-full max-w-md relative z-10 mt-12 mb-12">
-        <div className="mb-8 text-center flex flex-col items-center">
+      <div className="w-full max-w-md relative z-10 mt-12 mb-12 space-y-6">
+        <div className="text-center flex flex-col items-center">
           <Link href="/">
             <VextaLogoText />
           </Link>
@@ -221,6 +242,11 @@ export default function SignUp() {
             <span className="text-xs text-violet-600 dark:text-[#00FF88] font-mono tracking-wider">{t('nodeInitialization')}</span>
           </div>
         </div>
+
+        {/* High-visibility Migration Banner */}
+        {migrationNotice && (
+          <MigrationBanner compact />
+        )}
 
         <div className="bg-white dark:bg-[#0A0F14]/60 backdrop-blur-3xl border border-slate-200 dark:border-white/5 rounded-2xl p-10 shadow-sm dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] relative overflow-hidden group">
           {/* Progress */}
@@ -252,6 +278,18 @@ export default function SignUp() {
             {step === 3 && t('signupStep3Sub')}
           </p>
 
+          {!newRegistrations && (
+            <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl text-amber-600 dark:text-amber-400 text-xs font-mono flex items-start gap-3">
+              <Lock className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold uppercase tracking-wider mb-1">Registration Temporarily Paused</p>
+                <p className="normal-case opacity-90">
+                  New user signups are paused during server migration. All existing accounts and funds remain 100% safe.
+                </p>
+              </div>
+            </div>
+          )}
+
           {submitError && (
             <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 dark:text-red-400 text-xs font-mono">
               {submitError}
@@ -270,7 +308,8 @@ export default function SignUp() {
                       name="firstName"
                       value={formData.firstName}
                       onChange={handleChange}
-                      className={`w-full bg-slate-50 dark:bg-white/5 border ${errors.firstName ? 'border-red-500/50 focus:ring-red-500/50' : 'border-slate-200 dark:border-white/5 focus:border-violet-500/50 dark:focus:border-[#00D9FF]/50 focus:ring-violet-500/50 dark:focus:ring-[#00D9FF]/50'} rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono text-sm`}
+                      disabled={!newRegistrations || loading}
+                      className={`w-full bg-slate-50 dark:bg-white/5 border ${errors.firstName ? 'border-red-500/50 focus:ring-red-500/50' : 'border-slate-200 dark:border-white/5 focus:border-violet-500/50 dark:focus:border-[#00D9FF]/50 focus:ring-violet-500/50 dark:focus:ring-[#00D9FF]/50'} rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono text-sm disabled:opacity-50`}
                       placeholder="Jane"
                     />
                     {errors.firstName && <p className="text-[10px] text-red-500 dark:text-red-400 mt-1 font-mono uppercase tracking-wider">{errors.firstName}</p>}
@@ -282,7 +321,8 @@ export default function SignUp() {
                       name="lastName"
                       value={formData.lastName}
                       onChange={handleChange}
-                      className={`w-full bg-slate-50 dark:bg-white/5 border ${errors.lastName ? 'border-red-500/50 focus:ring-red-500/50' : 'border-slate-200 dark:border-white/5 focus:border-violet-500/50 dark:focus:border-[#00D9FF]/50 focus:ring-violet-500/50 dark:focus:ring-[#00D9FF]/50'} rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono text-sm`}
+                      disabled={!newRegistrations || loading}
+                      className={`w-full bg-slate-50 dark:bg-white/5 border ${errors.lastName ? 'border-red-500/50 focus:ring-red-500/50' : 'border-slate-200 dark:border-white/5 focus:border-violet-500/50 dark:focus:border-[#00D9FF]/50 focus:ring-violet-500/50 dark:focus:ring-[#00D9FF]/50'} rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono text-sm disabled:opacity-50`}
                       placeholder="Doe"
                     />
                     {errors.lastName && <p className="text-[10px] text-red-500 dark:text-red-400 mt-1 font-mono uppercase tracking-wider">{errors.lastName}</p>}
@@ -298,13 +338,14 @@ export default function SignUp() {
                       value={formData.email}
                       onChange={handleChange}
                       onBlur={(e) => checkEmailAvailability(e.target.value)}
+                      disabled={!newRegistrations || loading}
                       className={`w-full bg-slate-50 dark:bg-white/5 border ${
                         errors.email 
                           ? 'border-red-500/50 focus:ring-red-500/50' 
                           : emailAvailable === true
                             ? 'border-emerald-500/50 dark:border-[#00FF88]/50 focus:border-emerald-500 dark:focus:border-[#00FF88] focus:ring-emerald-500/50 dark:focus:ring-[#00FF88]/50'
                             : 'border-slate-200 dark:border-white/5 focus:border-violet-500/50 dark:focus:border-[#00D9FF]/50 focus:ring-violet-500/50 dark:focus:ring-[#00D9FF]/50'
-                      } rounded-xl pl-4 pr-10 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono text-sm`}
+                      } rounded-xl pl-4 pr-10 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono text-sm disabled:opacity-50`}
                       placeholder="you@example.com"
                     />
                     <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
@@ -327,11 +368,12 @@ export default function SignUp() {
                   <select
                     name="country"
                     value={formData.country}
+                    disabled={!newRegistrations || loading}
                     onChange={(e: any) => {
                       setFormData(prev => ({ ...prev, country: e.target.value }));
                       if (errors.country) setErrors(prev => ({ ...prev, country: '' }));
                     }}
-                    className={`w-full bg-slate-50 dark:bg-white/5 border ${errors.country ? 'border-red-500/50 focus:ring-red-500/50' : 'border-slate-200 dark:border-white/5 focus:border-violet-500/50 dark:focus:border-[#00D9FF]/50 focus:ring-violet-500/50 dark:focus:ring-[#00D9FF]/50'} rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#FFFFFF] focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono text-sm`}
+                    className={`w-full bg-slate-50 dark:bg-white/5 border ${errors.country ? 'border-red-500/50 focus:ring-red-500/50' : 'border-slate-200 dark:border-white/5 focus:border-violet-500/50 dark:focus:border-[#00D9FF]/50 focus:ring-violet-500/50 dark:focus:ring-[#00D9FF]/50'} rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#FFFFFF] focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono text-sm disabled:opacity-50`}
                   >
                     <option value="" className="text-slate-400 dark:text-white/30 bg-white dark:bg-[#0F1419]">{t('signupSelectCountry')}</option>
                     {countries.map((country) => (
@@ -349,10 +391,11 @@ export default function SignUp() {
                     type="text"
                     name="whatsappOrTelegram"
                     value={formData.whatsappOrTelegram}
+                    disabled={!newRegistrations || loading}
                     onChange={(e: any) => {
                       setFormData(prev => ({ ...prev, whatsappOrTelegram: e.target.value }));
                     }}
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 focus:border-violet-500/50 dark:focus:border-[#00D9FF]/50 focus:ring-violet-500/50 dark:focus:ring-[#00D9FF]/50 rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono text-sm"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 focus:border-violet-500/50 dark:focus:border-[#00D9FF]/50 focus:ring-violet-500/50 dark:focus:ring-[#00D9FF]/50 rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono text-sm disabled:opacity-50"
                     placeholder="+1234567890 (optional)"
                   />
                 </div>
@@ -370,12 +413,14 @@ export default function SignUp() {
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
-                      className={`w-full bg-slate-50 dark:bg-white/5 border ${errors.password ? 'border-red-500/50 focus:ring-red-500/50' : 'border-slate-200 dark:border-white/5 focus:border-violet-500/50 dark:focus:border-[#00FF88]/50 focus:ring-violet-500/50 dark:focus:ring-[#00FF88]/50'} rounded-xl pl-4 pr-12 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono`}
+                      disabled={!newRegistrations || loading}
+                      className={`w-full bg-slate-50 dark:bg-white/5 border ${errors.password ? 'border-red-500/50 focus:ring-red-500/50' : 'border-slate-200 dark:border-white/5 focus:border-violet-500/50 dark:focus:border-[#00FF88]/50 focus:ring-violet-500/50 dark:focus:ring-[#00FF88]/50'} rounded-xl pl-4 pr-12 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono disabled:opacity-50`}
                       placeholder="••••••••••••"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
+                      disabled={!newRegistrations || loading}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/60 focus:outline-none transition-colors"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -395,12 +440,14 @@ export default function SignUp() {
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      className={`w-full bg-slate-50 dark:bg-white/5 border ${errors.confirmPassword ? 'border-red-500/50 focus:ring-red-500/50' : 'border-slate-200 dark:border-white/5 focus:border-violet-500/50 dark:focus:border-[#00FF88]/50 focus:ring-violet-500/50 dark:focus:ring-[#00FF88]/50'} rounded-xl pl-4 pr-12 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono`}
+                      disabled={!newRegistrations || loading}
+                      className={`w-full bg-slate-50 dark:bg-white/5 border ${errors.confirmPassword ? 'border-red-500/50 focus:ring-red-500/50' : 'border-slate-200 dark:border-white/5 focus:border-violet-500/50 dark:focus:border-[#00FF88]/50 focus:ring-violet-500/50 dark:focus:ring-[#00FF88]/50'} rounded-xl pl-4 pr-12 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:ring-1 focus:bg-white/10 transition-all font-mono disabled:opacity-50`}
                       placeholder="••••••••••••"
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      disabled={!newRegistrations || loading}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-white/30 hover:text-slate-600 dark:hover:text-white/60 focus:outline-none transition-colors"
                     >
                       {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -421,9 +468,9 @@ export default function SignUp() {
                     name="referralCode"
                     value={formData.referralCode}
                     onChange={handleChange}
-                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:border-violet-500/50 dark:focus:border-[#00D9FF]/50 focus:ring-1 focus:ring-violet-500/50 dark:focus:ring-[#00D9FF]/50 focus:bg-white/10 transition-all font-mono text-sm"
+                    className="w-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/5 rounded-xl px-4 py-3.5 text-slate-900 dark:text-[#FFFFFF] placeholder-slate-400 dark:placeholder-white/20 focus:outline-none focus:border-violet-500/50 dark:focus:border-[#00D9FF]/50 focus:ring-1 focus:ring-violet-500/50 dark:focus:ring-[#00D9FF]/50 focus:bg-white/10 transition-all font-mono text-sm disabled:opacity-50"
                     placeholder="VEXTA123"
-                    disabled={loading}
+                    disabled={!newRegistrations || loading}
                   />
                 </div>
 
@@ -436,11 +483,11 @@ export default function SignUp() {
 
                 <div 
                   onClick={() => {
-                    if (loading) return;
+                    if (!newRegistrations || loading) return;
                     setFormData(prev => ({ ...prev, acceptTerms: !prev.acceptTerms }));
                     if (errors.acceptTerms) setErrors(prev => ({ ...prev, acceptTerms: '' }));
                   }}
-                  className="flex items-start gap-3 cursor-pointer group mt-4"
+                  className={`flex items-start gap-3 cursor-pointer group mt-4 ${!newRegistrations ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   <div className="relative flex items-center justify-center mt-0.5">
                     <input
@@ -449,7 +496,7 @@ export default function SignUp() {
                       checked={formData.acceptTerms}
                       readOnly
                       className={`w-5 h-5 rounded-md border ${errors.acceptTerms ? 'border-red-500 bg-red-500/10' : 'border-slate-300 dark:border-white/20 bg-slate-50 dark:bg-white/5'} appearance-none checked:bg-slate-900 dark:checked:bg-white checked:border-slate-900 dark:checked:border-white transition-all cursor-pointer peer`}
-                      disabled={loading}
+                      disabled={!newRegistrations || loading}
                     />
                     <div className="absolute text-white dark:text-black pointer-events-none opacity-0 peer-checked:opacity-100">
                       <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
@@ -481,11 +528,15 @@ export default function SignUp() {
             )}
             <button
               onClick={handleNext}
-              disabled={loading || (step === 1 && (emailChecking || emailAvailable === false))}
-              className={`flex-[2] px-4 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-gray-100 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group/btn relative overflow-hidden disabled:opacity-50`}
+              disabled={loading || !newRegistrations || (step === 1 && (emailChecking || emailAvailable === false))}
+              className={`flex-[2] px-4 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-gray-100 font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group/btn relative overflow-hidden disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed`}
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin text-white dark:text-black" />
+              ) : !newRegistrations ? (
+                <span className="relative z-10 font-mono tracking-wider text-xs uppercase flex items-center gap-1.5 text-amber-500 dark:text-amber-400">
+                  <Lock className="w-3.5 h-3.5" /> REGISTRATION PAUSED
+                </span>
               ) : (
                 <>
                   <span className="relative z-10 font-mono tracking-widest text-sm uppercase">

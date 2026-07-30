@@ -30,6 +30,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
+    // Maintenance / Server Migration check (Admins bypass maintenance)
+    const settings = await prisma.settings.findFirst();
+    const envMaintenance = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true' || process.env.MAINTENANCE_MODE === 'true';
+    const isMaintenance = envMaintenance || Boolean(settings?.maintenanceMode);
+
+    if (isMaintenance && user.role !== 'admin') {
+      return NextResponse.json(
+        { error: 'User login is temporarily paused while VEXTA is migrating to its official servers. All user accounts and funds are completely safe and secure.' },
+        { status: 503 }
+      );
+    }
+
     if (!user.isVerified) {
       // Generate verification code
       const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();

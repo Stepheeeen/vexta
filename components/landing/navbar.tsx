@@ -32,8 +32,18 @@ export function Navbar() {
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
 
+  // System Status
+  const [systemStatus, setSystemStatus] = useState<any>(null);
+
   // Mount flag — required for portal & theme to work correctly
   useEffect(() => { setMounted(true); }, []);
+
+  useEffect(() => {
+    fetch('/api/public/system-status')
+      .then(res => res.json())
+      .then(data => setSystemStatus(data))
+      .catch(err => console.error('System status error:', err));
+  }, []);
 
   // Lock body scroll when drawer is open
   useEffect(() => {
@@ -328,6 +338,12 @@ export function Navbar() {
     <>
       {/* ── Top bar — server-rendered, no hydration issues ──────────── */}
       <header className={`fixed top-0 left-0 right-0 z-[900] transition-all duration-300 ${navbarBg}`}>
+        {systemStatus?.migrationNotice && (
+          <div className="bg-gradient-to-r from-amber-600 via-violet-600 to-emerald-600 text-white text-center py-1.5 px-4 text-xs font-mono tracking-wide flex items-center justify-center gap-2 shadow-md">
+            <span className="font-bold uppercase tracking-wider bg-black/20 px-2 py-0.5 rounded text-[10px]">NOTICE</span>
+            <span className="truncate">VEXTA is migrating to official servers. All accounts & funds are 100% safe and secure.</span>
+          </div>
+        )}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-10 lg:h-20">
 
