@@ -292,7 +292,7 @@ export default function SignUp() {
 
           {submitError && (
             <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 dark:text-red-400 text-xs font-mono">
-              {submitError}
+              {t(submitError) !== submitError ? t(submitError) : submitError}
             </div>
           )}
 

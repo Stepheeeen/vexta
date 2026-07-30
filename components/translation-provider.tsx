@@ -655,6 +655,8 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     migrationNoticeSignupTitle: 'Registration Temporarily Paused',
     migrationNoticeSignupDesc: 'New user signups are paused during server migration. All existing accounts and funds remain 100% safe.',
     migrationNoticeSignupBtn: 'REGISTRATION PAUSED (SERVER MIGRATION)',
+    loginPausedMaintenance: 'User login is temporarily paused while VEXTA is migrating to its official servers. All user accounts and funds are completely safe and secure.',
+    registrationPausedMaintenance: 'New account registrations are temporarily paused while VEXTA is migrating to its official servers. All existing accounts and funds are 100% safe.',
   },
   es: {
     notifRecent: "Notificaciones Recientes",
@@ -1274,6 +1276,8 @@ const baseTranslations: Record<Language, Record<string, string>> = {
     migrationNoticeSignupTitle: 'Registro Pausado Temporalmente',
     migrationNoticeSignupDesc: 'Los registros de nuevos usuarios están pausados durante la migración del servidor. Todas las cuentas y fondos existentes permanecen 100% seguros.',
     migrationNoticeSignupBtn: 'REGISTRO PAUSADO (MIGRACIÓN DE SERVIDOR)',
+    loginPausedMaintenance: 'El inicio de sesión de usuarios está pausado temporalmente mientras VEXTA se migra a sus servidores oficiales. Todas las cuentas de usuario y fondos están completamente seguros a salvo.',
+    registrationPausedMaintenance: 'Los registros de nuevas cuentas están pausados temporalmente mientras VEXTA se migra a sus servidores oficiales. Todas las cuentas y fondos existentes están 100% seguros.',
   },
   vi: {
     overview: 'Tổng quan',

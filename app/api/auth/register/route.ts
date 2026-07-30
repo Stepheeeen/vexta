@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
 
     if (isRegistrationsDisabled) {
       return NextResponse.json(
-        { error: 'New account registrations are temporarily paused while VEXTA is migrating to its official servers. All existing accounts and funds are 100% safe.' },
+        { error: 'registrationPausedMaintenance' },
         { status: 403 }
       );
     }

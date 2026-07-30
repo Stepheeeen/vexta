@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
     if (isMaintenance && user.role !== 'admin') {
       return NextResponse.json(
-        { error: 'User login is temporarily paused while VEXTA is migrating to its official servers. All user accounts and funds are completely safe and secure.' },
+        { error: 'loginPausedMaintenance' },
         { status: 503 }
       );
     }
