@@ -5559,11 +5559,14 @@ export function TranslationProvider({ children }: { children: React.ReactNode })
   );
 }
 
+const defaultContext: TranslationContextType = {
+  language: 'en',
+  setLanguage: () => {},
+  t: (key: string) => translations['en']?.[key] || key,
+};
+
 export function useTranslation() {
   const context = useContext(TranslationContext);
-  if (!context) {
-    throw new Error('useTranslation must be used within a TranslationProvider');
-  }
-  return context;
+  return context || defaultContext;
 }
 
